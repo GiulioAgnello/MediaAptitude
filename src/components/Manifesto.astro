@@ -1,52 +1,56 @@
 ---
 /**
- * Sezione manifesto "negazione" (ispirata al pattern di Keyformat).
- * Ogni punto: frase barrata (ciò che NON facciamo) -> verità evidenziata.
- * Reveal allo scroll via data-reveal (CSS-first, zero JS).
+ * Manifesto "negazione" come SEQUENZA pinnata (stile Keyformat).
+ * - Con GSAP: la sezione si pinna; scrollando, ogni frase entra, poi sfuma
+ *   e lascia spazio alla successiva.
+ * - Senza JS / reduced-motion: lista verticale leggibile (no broken state).
+ * GSAP caricato on-demand quando la sezione si avvicina.
  */
 import { manifesto } from '../data/content';
 ---
 
-<ol class="manifesto stagger" role="list">
-  {manifesto.map((point) => (
-    <li class="manifesto__item" data-reveal>
-      <p class="manifesto__strike"><s>{point.strike}</s></p>
-      <p class="manifesto__truth">{point.truth}</p>
-    </li>
-  ))}
-</ol>
+<div class="mf" data-mf>
+  <div class="mf__stage" data-mf-stage>
+    {manifesto.map((point) => (
+      <div class="mf__item" data-mf-item>
+        <p class="mf__strike">
+          <span class="mf__txt">{point.strike}</span>
+          <span class="mf__line" aria-hidden="true"></span>
+        </p>
+        <p class="mf__truth">{point.truth}</p>
+      </div>
+    ))}
+  </div>
+</div>
 
 <style>
-  .manifesto { display: grid; gap: var(--sp-7); max-width: 980px; }
-  .manifesto__item {
+  /* ---- Fallback (no JS): lista verticale ---- */
+  .mf__stage { display: grid; gap: var(--sp-7); max-width: 980px; }
+  .mf__item {
     display: grid;
     gap: var(--sp-2);
     padding-bottom: var(--sp-6);
     border-bottom: 1px solid var(--c-border);
   }
-  .manifesto__item:last-child { border-bottom: none; padding-bottom: 0; }
+  .mf__item:last-child { border-bottom: none; padding-bottom: 0; }
 
-  .manifesto__strike {
+  .mf__strike {
+    position: relative;
+    display: inline-block;
     font-family: var(--font-heading);
     font-weight: var(--fw-medium);
     font-size: var(--fs-lg);
     color: var(--c-slate-400);
   }
-  .manifesto__strike s {
-    text-decoration: none;
-    position: relative;
-  }
-  /* Barratura disegnata: parte da 0 e si completa quando l'elemento entra. */
-  .manifesto__strike s::after {
-    content: '';
+  .mf__line {
     position: absolute;
     left: 0; top: 55%;
     width: 100%; height: 2px;
     background: var(--c-slate-400);
-    transform: scaleX(0);
+    transform: scaleX(1);      /* visibile di default (fallback) */
     transform-origin: left;
   }
-  .manifesto__truth {
+  .mf__truth {
     font-family: var(--font-heading);
     font-weight: var(--fw-bold);
     font-size: var(--fs-xl);
@@ -55,19 +59,91 @@ import { manifesto } from '../data/content';
     letter-spacing: -0.01em;
   }
 
-  /* Animazione della barratura legata allo scroll (progressive enhancement). */
-  @supports (animation-timeline: view()) {
-    @media (prefers-reduced-motion: no-preference) {
-      .manifesto__strike s::after {
-        animation: strike-grow both linear;
-        animation-timeline: view();
-        animation-range: entry 8% cover 28%;
-      }
-      @keyframes strike-grow { to { transform: scaleX(1); } }
-    }
+  /* ---- Modalità sequenza (attivata da GSAP) ---- */
+  .mf.is-seq .mf__stage {
+    position: relative;
+    height: 100vh;
+    display: block;
+    max-width: none;
   }
-  /* Senza scroll-timeline: la barratura resta visibile per non perdere il senso. */
-  @supports not (animation-timeline: view()) {
-    .manifesto__strike s::after { transform: scaleX(1); }
+  .mf.is-seq .mf__item {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    align-content: center;
+    gap: var(--sp-4);
+    max-width: 18ch;
+    padding-bottom: 0;
+    border-bottom: none;
   }
+  .mf.is-seq .mf__strike { font-size: clamp(1.25rem, 1rem + 1.2vw, 1.75rem); }
+  .mf.is-seq .mf__truth { font-size: clamp(2rem, 1.2rem + 3.5vw, 4rem); max-width: 18ch; }
 </style>
+
+<script>
+  const wrap = document.querySelector<HTMLElement>('[data-mf]');
+  const stage = wrap?.querySelector<HTMLElement>('[data-mf-stage]');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  function initManifesto() {
+    if (!wrap || !stage || reduce.matches) return;
+    const items = Array.from(stage.querySelectorAll<HTMLElement>('[data-mf-item]'));
+    if (items.length < 2) return;
+
+    Promise.all([import('gsap'), import('gsap/ScrollTrigger')])
+      .then(([{ gsap }, { ScrollTrigger }]) => {
+        gsap.registerPlugin(ScrollTrigger);
+        wrap.classList.add('is-seq');
+
+        // Stato iniziale: tutte nascoste tranne la prima.
+        items.forEach((it, i) => {
+          const line = it.querySelector('.mf__line');
+          gsap.set(it, { opacity: i === 0 ? 1 : 0, y: i === 0 ? 0 : 60 });
+          if (line) gsap.set(line, { scaleX: i === 0 ? 1 : 0 });
+        });
+
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: wrap,
+            start: 'top top',
+            end: () => '+=' + items.length * window.innerHeight,
+            pin: stage,
+            scrub: true,
+            anticipatePin: 1,
+            invalidateOnRefresh: true,
+          },
+        });
+
+        items.forEach((it, i) => {
+          const line = it.querySelector('.mf__line');
+          if (i === 0) {
+            if (line) tl.to(line, { scaleX: 1, duration: 0.4 });
+          } else {
+            tl.to(it, { opacity: 1, y: 0, duration: 1 });
+            if (line) tl.to(line, { scaleX: 1, duration: 0.4 }, '<0.2');
+          }
+          // Esce (tranne l'ultima), poi entra la successiva.
+          if (i < items.length - 1) {
+            tl.to(it, { opacity: 0, y: -60, duration: 1 }, '+=0.6');
+          }
+        });
+
+        if ((document as any).fonts?.ready) {
+          (document as any).fonts.ready.then(() => ScrollTrigger.refresh());
+        }
+      })
+      .catch(() => {});
+  }
+
+  if (wrap && 'IntersectionObserver' in window) {
+    const io = new IntersectionObserver(
+      (entries, obs) => {
+        if (entries.some((e) => e.isIntersecting)) { obs.disconnect(); initManifesto(); }
+      },
+      { rootMargin: '600px 0px' }
+    );
+    io.observe(wrap);
+  } else {
+    initManifesto();
+  }
+</script>

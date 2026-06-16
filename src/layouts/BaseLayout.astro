@@ -34,6 +34,28 @@ const { title, description, path, noindex } = Astro.props;
     />
 
     <Seo title={title} description={description} path={path} noindex={noindex} />
+
+    {/* Reveal allo scroll: fallback per browser senza animation-timeline nativo.
+        Su Chrome/Edge esce subito (usa la via CSS pura). Aggiunge .io-reveal
+        prima del paint per evitare flash, poi attiva un IntersectionObserver. */}
+    <script is:inline>
+      (function () {
+        try {
+          var nativeOk = window.CSS && CSS.supports && CSS.supports('animation-timeline: view()');
+          if (nativeOk) return;
+          if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+          document.documentElement.classList.add('io-reveal');
+          addEventListener('DOMContentLoaded', function () {
+            var io = new IntersectionObserver(function (entries) {
+              entries.forEach(function (e) {
+                if (e.isIntersecting) { e.target.classList.add('is-visible'); io.unobserve(e.target); }
+              });
+            }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+            document.querySelectorAll('[data-reveal]').forEach(function (el) { io.observe(el); });
+          });
+        } catch (err) {}
+      })();
+    </script>
   </head>
   <body>
     <a href="#main" class="skip-link">Salta al contenuto</a>

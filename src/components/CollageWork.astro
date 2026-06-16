@@ -1,0 +1,229 @@
+---
+/**
+ * Portfolio "collage" in stile Keyformat.
+ * - Default (no JS / reduced-motion / mobile): cluster di card leggibile (flex-wrap).
+ * - Con GSAP (desktop): la sezione si "pinna" e lo scroll verticale traina il track
+ *   in orizzontale (scrub) con parallax per profondità.
+ * GSAP è caricato on-demand (dynamic import) solo quando la sezione si avvicina.
+ * Le card sono mockup placeholder a gradiente: in S3 -> screenshot reali da WP.
+ */
+import type { CaseStudy } from '../data/content';
+interface Props { items: CaseStudy[]; }
+const { items } = Astro.props;
+
+const gradients = [
+  'linear-gradient(135deg, #2d5bff, #00d4c7)',
+  'linear-gradient(135deg, #1e3fcc, #2d5bff)',
+  'linear-gradient(135deg, #00d4c7, #2d5bff)',
+  'linear-gradient(135deg, #161b26, #2d5bff)',
+  'linear-gradient(135deg, #2d5bff, #6f8cff)',
+  'linear-gradient(135deg, #0d1117, #00d4c7)',
+];
+
+// Scatter "artistico": tipo dispositivo, dimensione, profondità (parallax), offset Y, rotazione.
+const layout = [
+  { type: 'browser', size: 'lg', depth: 1.0, ty: -50, rot: -3 },
+  { type: 'phone',   size: 'sm', depth: 2.4, ty: 70,  rot: 4 },
+  { type: 'browser', size: 'md', depth: 1.6, ty: 20,  rot: 2 },
+  { type: 'phone',   size: 'sm', depth: 0.8, ty: -90, rot: -5 },
+  { type: 'browser', size: 'lg', depth: 2.0, ty: 50,  rot: 3 },
+  { type: 'browser', size: 'md', depth: 1.2, ty: -20, rot: -2 },
+];
+const lay = (i: number) => layout[i % layout.length];
+---
+
+<section class="collage" id="lavori" data-collage aria-label="Lavori realizzati">
+  <div class="collage__inner" data-collage-inner>
+    <div class="collage__track" data-collage-track>
+
+      <header class="collage__intro collage__cell">
+        <span class="eyebrow">Portfolio</span>
+        <h2>Lavori<br />realizzati</h2>
+        <p class="lead">Progetti, tecnologie e risultati. Una storia che prende forma grazie alle persone.</p>
+      </header>
+
+      {items.map((item, i) => {
+        const l = lay(i);
+        const g = gradients[i % gradients.length];
+        return (
+          <article
+            class:list={['device', `device--${l.type}`, `is-${l.size}`, 'collage__cell']}
+            data-depth={l.depth}
+            style={`--ty:${l.ty}px; --rot:${l.rot}deg`}
+          >
+            <div class="device__frame">
+              {l.type === 'browser' && (
+                <span class="device__bar" aria-hidden="true"><i></i><i></i><i></i></span>
+              )}
+              <span class="device__screen" style={`background:${g}`}></span>
+            </div>
+            <div class="device__caption">
+              <span class="device__cat">{item.category}</span>
+              <span class="device__title">{item.title}</span>
+              <span class="device__result">{item.result}</span>
+            </div>
+          </article>
+        );
+      })}
+
+      <div class="collage__statement collage__cell" aria-hidden="true">
+        <p>Ogni progetto è unico<br />come la storia che racconta.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<style>
+  .collage {
+    background: var(--c-ink-900);
+    color: #fff;
+    overflow: hidden;
+  }
+  .collage__inner {
+    display: flex;
+    align-items: center;
+    padding-block: var(--section-py);
+  }
+  .collage__track {
+    display: flex;
+    flex-wrap: wrap;            /* fallback leggibile senza JS */
+    align-items: center;
+    justify-content: center;
+    gap: clamp(2rem, 1rem + 4vw, 5rem);
+    padding-inline: var(--container-pad);
+    width: 100%;
+  }
+
+  /* Intro e statement */
+  .collage__intro { max-width: 460px; }
+  .collage__intro h2 { color: #fff; font-size: var(--fs-3xl); }
+  .collage__intro .lead { color: var(--c-slate-400); margin-top: var(--sp-4); }
+  .collage__statement p {
+    font-family: var(--font-heading);
+    font-weight: var(--fw-bold);
+    font-size: clamp(1.8rem, 1rem + 3vw, 3.2rem);
+    line-height: var(--lh-tight);
+    color: #fff;
+    max-width: 14ch;
+  }
+
+  /* Card dispositivo */
+  .device { flex: none; display: grid; gap: var(--sp-3); }
+  .device__frame {
+    border-radius: var(--radius-md);
+    background: #fff;
+    box-shadow: var(--shadow-lg);
+    padding: 10px;
+    overflow: hidden;
+  }
+  .device__bar { display: flex; gap: 6px; padding: 4px 4px 10px; }
+  .device__bar i { width: 9px; height: 9px; border-radius: 50%; background: #d7dde6; }
+  .device__screen { display: block; border-radius: 8px; width: 100%; }
+
+  .device--browser .device__screen { aspect-ratio: 16 / 10; }
+  .device--phone .device__frame { border-radius: 28px; padding: 12px; }
+  .device--phone .device__screen { aspect-ratio: 9 / 18; border-radius: 18px; }
+
+  .device.is-lg { width: clamp(280px, 34vw, 440px); }
+  .device.is-md { width: clamp(240px, 26vw, 340px); }
+  .device.is-sm { width: clamp(150px, 18vw, 210px); }
+
+  .device__caption { display: grid; gap: 2px; max-width: 30ch; }
+  .device__cat {
+    font-family: var(--font-heading);
+    font-weight: var(--fw-semibold);
+    font-size: var(--fs-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--c-accent);
+  }
+  .device__title { font-family: var(--font-heading); font-weight: var(--fw-bold); font-size: var(--fs-md); color: #fff; }
+  .device__result { font-size: var(--fs-sm); color: var(--c-slate-400); }
+
+  /* ---- Modalità pinned (attivata da GSAP) ---- */
+  .collage.is-pinned .collage__inner { height: 100vh; }
+  .collage.is-pinned .collage__track {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    will-change: transform;
+  }
+  .collage.is-pinned .device { transform: translateY(var(--ty)) rotate(var(--rot)); }
+
+  @media (max-width: 860px) {
+    .collage__track { gap: var(--sp-6); }
+    .device.is-lg, .device.is-md, .device.is-sm { width: min(80vw, 360px); }
+  }
+</style>
+
+<script>
+  // Carica GSAP + ScrollTrigger SOLO quando la sezione si avvicina e solo dove ha senso.
+  const section = document.querySelector<HTMLElement>('[data-collage]');
+  const track = section?.querySelector<HTMLElement>('[data-collage-track]');
+  const wideEnough = window.matchMedia('(min-width: 861px)');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  function initCollage() {
+    if (!section || !track || !wideEnough.matches || reduce.matches) return;
+
+    Promise.all([import('gsap'), import('gsap/ScrollTrigger')])
+      .then(([{ gsap }, { ScrollTrigger }]) => {
+        gsap.registerPlugin(ScrollTrigger);
+        section.classList.add('is-pinned');
+
+        const distance = () => Math.max(0, track.scrollWidth - window.innerWidth + 120);
+
+        // Track in orizzontale, traino dallo scroll verticale (scrub).
+        const drive = gsap.to(track, {
+          x: () => -distance(),
+          ease: 'none',
+          scrollTrigger: {
+            trigger: section,
+            start: 'top top',
+            end: () => '+=' + distance(),
+            pin: true,
+            scrub: 1,
+            anticipatePin: 1,
+            invalidateOnRefresh: true,
+          },
+        });
+
+        // Parallax: le card si muovono di più/meno in base alla profondità.
+        try {
+          section.querySelectorAll<HTMLElement>('[data-depth]').forEach((el) => {
+            const depth = parseFloat(el.dataset.depth || '1');
+            gsap.to(el, {
+              x: (depth - 1.4) * 120,
+              ease: 'none',
+              scrollTrigger: {
+                trigger: el,
+                containerAnimation: drive,
+                start: 'left right',
+                end: 'right left',
+                scrub: true,
+              },
+            });
+          });
+        } catch (e) { /* il parallax è un extra: se fallisce, resta lo scrub base */ }
+
+        // Ricalcola dopo il caricamento dei font (cambiano le larghezze).
+        if ((document as any).fonts?.ready) {
+          (document as any).fonts.ready.then(() => ScrollTrigger.refresh());
+        }
+      })
+      .catch(() => { /* GSAP non disponibile: resta il fallback statico */ });
+  }
+
+  // On-demand: attiva quando manca poco alla sezione.
+  if (section && 'IntersectionObserver' in window) {
+    const io = new IntersectionObserver(
+      (entries, obs) => {
+        if (entries.some((e) => e.isIntersecting)) { obs.disconnect(); initCollage(); }
+      },
+      { rootMargin: '600px 0px' }
+    );
+    io.observe(section);
+  } else {
+    initCollage();
+  }
+</script>

@@ -217,38 +217,44 @@ p { text-wrap: pretty; }
    @supports, quindi i browser che non supportano la feature (o chi ha
    reduced-motion) mostrano i contenuti subito, sempre visibili.
    ============================================================ */
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
+@media (prefers-reduced-motion: no-preference) {
+  /* Variabili di direzione condivise dalle due strade (native + JS fallback). */
+  [data-reveal] { --reveal-from-y: 30px; --reveal-from-x: 0px; --reveal-scale: 1; --reveal-start: 2%; --reveal-end: 24%; }
+  [data-reveal='left'] { --reveal-from-y: 0px; --reveal-from-x: -36px; }
+  [data-reveal='right'] { --reveal-from-y: 0px; --reveal-from-x: 36px; }
+  [data-reveal='scale'] { --reveal-from-y: 16px; --reveal-scale: 0.96; }
+
+  /* STRADA 1 — nativa, zero JS (Chrome/Edge). */
+  @supports (animation-timeline: view()) {
     [data-reveal] {
-      --reveal-from-y: 30px;
-      --reveal-from-x: 0px;
-      --reveal-scale: 1;
-      --reveal-start: 2%;
-      --reveal-end: 24%;
       opacity: 0;
-      transform: translate3d(var(--reveal-from-x), var(--reveal-from-y), 0)
-        scale(var(--reveal-scale));
+      transform: translate3d(var(--reveal-from-x), var(--reveal-from-y), 0) scale(var(--reveal-scale));
       animation: reveal-in both linear;
       animation-timeline: view();
       animation-range: entry var(--reveal-start) cover var(--reveal-end);
       will-change: opacity, transform;
     }
-
-    /* Direzioni alternative */
-    [data-reveal='left'] { --reveal-from-y: 0px; --reveal-from-x: -36px; }
-    [data-reveal='right'] { --reveal-from-y: 0px; --reveal-from-x: 36px; }
-    [data-reveal='scale'] { --reveal-from-y: 16px; --reveal-scale: 0.96; }
-
-    @keyframes reveal-in {
-      to { opacity: 1; transform: none; }
-    }
-
-    /* Stagger: figli diretti di .stagger entrano in sequenza,
-       spostando l'inizio del range per i primi elementi. */
+    @keyframes reveal-in { to { opacity: 1; transform: none; } }
     .stagger > *:nth-child(2) { --reveal-start: 5%; }
     .stagger > *:nth-child(3) { --reveal-start: 8%; }
     .stagger > *:nth-child(4) { --reveal-start: 11%; }
     .stagger > *:nth-child(5) { --reveal-start: 14%; }
     .stagger > *:nth-child(6) { --reveal-start: 16%; }
   }
+
+  /* STRADA 2 — fallback IntersectionObserver (Firefox/Safari).
+     La classe .io-reveal viene aggiunta dal JS SOLO se il timeline nativo
+     manca: se il JS non parte, i contenuti restano visibili (no broken state). */
+  html.io-reveal [data-reveal] {
+    opacity: 0;
+    transform: translate3d(var(--reveal-from-x), var(--reveal-from-y), 0) scale(var(--reveal-scale));
+    transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+    will-change: opacity, transform;
+  }
+  html.io-reveal [data-reveal].is-visible { opacity: 1; transform: none; }
+  html.io-reveal .stagger > *:nth-child(2) { transition-delay: 0.08s; }
+  html.io-reveal .stagger > *:nth-child(3) { transition-delay: 0.16s; }
+  html.io-reveal .stagger > *:nth-child(4) { transition-delay: 0.24s; }
+  html.io-reveal .stagger > *:nth-child(5) { transition-delay: 0.32s; }
+  html.io-reveal .stagger > *:nth-child(6) { transition-delay: 0.40s; }
 }

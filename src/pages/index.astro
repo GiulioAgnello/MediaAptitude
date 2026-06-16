@@ -4,7 +4,7 @@ import Hero from '../components/Hero.astro';
 import Section from '../components/Section.astro';
 import ServiceCard from '../components/ServiceCard.astro';
 import TechBadge from '../components/TechBadge.astro';
-import WorkList from '../components/WorkList.astro';
+import CollageWork from '../components/CollageWork.astro';
 import TeamMember from '../components/TeamMember.astro';
 import Manifesto from '../components/Manifesto.astro';
 import Button from '../components/Button.astro';
@@ -67,15 +67,8 @@ import { site, cta } from '../data/site';
     </div>
   </Section>
 
-  <!-- LAVORI -->
-  <Section
-    id="lavori"
-    eyebrow="Portfolio"
-    title="Lavori realizzati"
-    lead="Una selezione di progetti e dei risultati ottenuti, con le tecnologie impiegate."
-  >
-    <WorkList items={caseStudies} />
-  </Section>
+  <!-- LAVORI (collage GSAP) -->
+  <CollageWork items={caseStudies} />
 
   <!-- TEAM -->
   <Section
