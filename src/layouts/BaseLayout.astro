@@ -1,0 +1,61 @@
+---
+import '../styles/global.css';
+import Seo from '../components/Seo.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { site } from '../data/site';
+
+interface Props {
+  title?: string;
+  description?: string;
+  path?: string;
+  noindex?: boolean;
+}
+
+const { title, description, path, noindex } = Astro.props;
+---
+
+<!doctype html>
+<html lang={site.lang}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- Font: Rajdhani (heading) + Inter (body).
+         preconnect riduce la latenza; display=swap evita testo invisibile (CWV).
+         In S4 valuteremo il self-hosting dei font per azzerare il blocco di rete. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <Seo title={title} description={description} path={path} noindex={noindex} />
+  </head>
+  <body>
+    <a href="#main" class="skip-link">Salta al contenuto</a>
+    <Header />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+
+    <style>
+      .skip-link {
+        position: absolute;
+        left: var(--sp-4);
+        top: -100px;
+        z-index: var(--z-overlay);
+        background: var(--c-brand);
+        color: #fff;
+        padding: var(--sp-2) var(--sp-4);
+        border-radius: var(--radius-sm);
+        transition: top var(--dur-fast) var(--ease);
+      }
+      .skip-link:focus { top: var(--sp-4); }
+    </style>
+  </body>
+</html>

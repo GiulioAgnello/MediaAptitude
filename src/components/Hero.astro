@@ -1,0 +1,80 @@
+---
+import Button from './Button.astro';
+import { cta } from '../data/site';
+---
+
+<section class="hero">
+  <div class="hero__bg" aria-hidden="true"></div>
+  <div class="container hero__inner">
+    <span class="eyebrow">Studio IT consociato</span>
+    <h1 class="hero__title">
+      Costruiamo prodotti digitali<br />
+      <span class="hero__accent">veloci, curati e che convertono.</span>
+    </h1>
+    <p class="hero__lead lead">
+      Presenza online, UX/UI, gestionali ed e-commerce. Uniamo tecnologie
+      innovative e best practice consolidate per progetti solidi e pronti a crescere.
+    </p>
+    <div class="hero__actions">
+      <Button href={cta.href} variant="primary">{cta.label}</Button>
+      <Button href="/#lavori" variant="ghost">Guarda i nostri lavori</Button>
+    </div>
+    <ul class="hero__stats" role="list">
+      <li><strong>4</strong><span>Aree di competenza</span></li>
+      <li><strong>SEO-first</strong><span>Approccio integrato</span></li>
+      <li><strong>Headless</strong><span>Architettura moderna</span></li>
+    </ul>
+  </div>
+</section>
+
+<style>
+  .hero { position: relative; overflow: hidden; padding-block: clamp(4rem, 3rem + 8vw, 9rem); }
+  .hero__bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(60% 60% at 80% 0%, var(--c-brand-soft) 0%, transparent 60%),
+      radial-gradient(50% 50% at 0% 100%, var(--c-accent-soft) 0%, transparent 55%);
+    z-index: -1;
+  }
+  .hero__inner { display: grid; gap: var(--sp-5); max-width: 880px; }
+  .hero__title { font-size: var(--fs-3xl); }
+  .hero__accent {
+    background: linear-gradient(120deg, var(--c-brand), var(--c-accent));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .hero__lead { max-width: 56ch; }
+  .hero__actions { display: flex; flex-wrap: wrap; gap: var(--sp-3); margin-top: var(--sp-2); }
+  .hero__stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-7);
+    margin-top: var(--sp-6);
+    padding-top: var(--sp-6);
+    border-top: 1px solid var(--c-border);
+  }
+  .hero__stats li { display: grid; gap: 2px; }
+  .hero__stats strong {
+    font-family: var(--font-heading);
+    font-weight: var(--fw-bold);
+    font-size: var(--fs-xl);
+    color: var(--c-ink-900);
+  }
+  .hero__stats span { font-size: var(--fs-sm); color: var(--c-text-muted); }
+
+  /* Entrance on-load, in sequenza. Solo CSS, niente JS. */
+  @media (prefers-reduced-motion: no-preference) {
+    .hero__inner > * { animation: hero-in 0.7s var(--ease) both; }
+    .hero__inner > *:nth-child(1) { animation-delay: 0.05s; }
+    .hero__inner > *:nth-child(2) { animation-delay: 0.15s; }
+    .hero__inner > *:nth-child(3) { animation-delay: 0.25s; }
+    .hero__inner > *:nth-child(4) { animation-delay: 0.35s; }
+    .hero__inner > *:nth-child(5) { animation-delay: 0.45s; }
+    @keyframes hero-in {
+      from { opacity: 0; transform: translateY(22px); }
+      to { opacity: 1; transform: none; }
+    }
+  }
+</style>

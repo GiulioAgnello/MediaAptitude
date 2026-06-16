@@ -1,0 +1,159 @@
+---
+import Logo from './Logo.astro';
+import Button from './Button.astro';
+import { mainNav, cta } from '../data/site';
+---
+
+<header class="header" data-header>
+  <div class="container header__inner">
+    <Logo />
+
+    <nav class="nav" aria-label="Navigazione principale">
+      <ul class="nav__list" role="list">
+        {mainNav.map((item) => (
+          <li><a class="nav__link" href={item.href}>{item.label}</a></li>
+        ))}
+      </ul>
+    </nav>
+
+    <div class="header__cta">
+      <Button href={cta.href} variant="primary">{cta.label}</Button>
+    </div>
+
+    <button class="burger" data-burger aria-label="Apri menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+
+  <!-- Menu mobile -->
+  <div class="mobile-menu" data-mobile-menu hidden>
+    <nav aria-label="Navigazione mobile">
+      <ul role="list">
+        {mainNav.map((item) => (
+          <li><a href={item.href} data-mobile-link>{item.label}</a></li>
+        ))}
+        <li><a href={cta.href} class="mobile-menu__cta" data-mobile-link>{cta.label}</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-header);
+    background-color: color-mix(in srgb, var(--c-surface) 88%, transparent);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid transparent;
+    transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+  }
+  .header[data-scrolled] {
+    border-bottom-color: var(--c-border);
+    box-shadow: var(--shadow-sm);
+  }
+  .header__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-5);
+    min-height: 72px;
+  }
+
+  .nav__list { display: flex; gap: var(--sp-5); align-items: center; }
+  .nav__link {
+    font-family: var(--font-heading);
+    font-weight: var(--fw-semibold);
+    font-size: var(--fs-sm);
+    color: var(--c-text-muted);
+    position: relative;
+    padding-block: var(--sp-2);
+    transition: color var(--dur-fast) var(--ease);
+  }
+  .nav__link::after {
+    content: '';
+    position: absolute;
+    left: 0; bottom: 0;
+    width: 0; height: 2px;
+    background: var(--c-brand);
+    transition: width var(--dur) var(--ease);
+  }
+  .nav__link:hover { color: var(--c-text); }
+  .nav__link:hover::after { width: 100%; }
+
+  .burger {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    padding: var(--sp-2);
+  }
+  .burger span {
+    width: 24px; height: 2px;
+    background: var(--c-ink-900);
+    border-radius: 2px;
+    transition: transform var(--dur) var(--ease), opacity var(--dur-fast) var(--ease);
+  }
+  .burger[aria-expanded='true'] span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .burger[aria-expanded='true'] span:nth-child(2) { opacity: 0; }
+  .burger[aria-expanded='true'] span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  .mobile-menu {
+    border-top: 1px solid var(--c-border);
+    background: var(--c-surface);
+    padding: var(--sp-4) var(--container-pad) var(--sp-6);
+  }
+  .mobile-menu ul { display: flex; flex-direction: column; gap: var(--sp-1); }
+  .mobile-menu a {
+    display: block;
+    font-family: var(--font-heading);
+    font-weight: var(--fw-semibold);
+    font-size: var(--fs-md);
+    padding: var(--sp-3) var(--sp-2);
+    border-radius: var(--radius-sm);
+  }
+  .mobile-menu a:hover { background: var(--c-bg-alt); color: var(--c-brand); }
+  .mobile-menu__cta {
+    margin-top: var(--sp-3);
+    background: var(--c-brand);
+    color: #fff !important;
+    text-align: center;
+    border-radius: var(--radius-full) !important;
+  }
+
+  @media (max-width: 860px) {
+    .nav, .header__cta { display: none; }
+    .burger { display: flex; }
+  }
+  @media (min-width: 861px) {
+    .mobile-menu { display: none; }
+  }
+</style>
+
+<script>
+  // Header: ombra allo scroll + toggle menu mobile. JS vanilla, zero dipendenze.
+  const header = document.querySelector('[data-header]');
+  const burger = document.querySelector('[data-burger]');
+  const menu = document.querySelector('[data-mobile-menu]') as HTMLElement | null;
+
+  const onScroll = () => {
+    if (!header) return;
+    if (window.scrollY > 8) header.setAttribute('data-scrolled', '');
+    else header.removeAttribute('data-scrolled');
+  };
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  const setMenu = (open: boolean) => {
+    if (!burger || !menu) return;
+    burger.setAttribute('aria-expanded', String(open));
+    burger.setAttribute('aria-label', open ? 'Chiudi menu' : 'Apri menu');
+    menu.hidden = !open;
+  };
+
+  burger?.addEventListener('click', () => {
+    setMenu(burger.getAttribute('aria-expanded') !== 'true');
+  });
+  document.querySelectorAll('[data-mobile-link]').forEach((link) =>
+    link.addEventListener('click', () => setMenu(false))
+  );
+</script>

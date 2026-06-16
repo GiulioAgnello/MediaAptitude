@@ -1,0 +1,138 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/Hero.astro';
+import Section from '../components/Section.astro';
+import ServiceCard from '../components/ServiceCard.astro';
+import TechBadge from '../components/TechBadge.astro';
+import WorkList from '../components/WorkList.astro';
+import TeamMember from '../components/TeamMember.astro';
+import Manifesto from '../components/Manifesto.astro';
+import Button from '../components/Button.astro';
+import { services, techStack, caseStudies, team } from '../data/content';
+import { site, cta } from '../data/site';
+---
+
+<BaseLayout path="/">
+  <Hero />
+
+  <!-- MANIFESTO / POSIZIONAMENTO -->
+  <Section
+    id="manifesto"
+    variant="alt"
+    eyebrow="Perché Media Aptitude"
+    title="Lavoriamo controcorrente, per natura."
+    lead="Il nostro modo di stare nei progetti, raccontato per differenza."
+  >
+    <Manifesto />
+  </Section>
+
+  <!-- SERVIZI -->
+  <Section
+    id="servizi"
+    eyebrow="Cosa facciamo"
+    title="Quattro aree, un unico standard di qualità"
+    lead="Copriamo l'intero ciclo di vita del prodotto digitale, dalla strategia alla messa online."
+  >
+    <div class="grid grid--4 stagger">
+      {services.map((service) => (
+        <div class="reveal-item" data-reveal><ServiceCard service={service} /></div>
+      ))}
+    </div>
+  </Section>
+
+  <!-- APPROCCIO / TECNOLOGIE -->
+  <Section
+    id="approccio"
+    variant="alt"
+    eyebrow="Il nostro approccio"
+    title="Innovazione dove serve, solidità sempre"
+    lead="Adottiamo strumenti moderni come architetture headless e React, ma poggiamo su best practice consolidate: codice manutenibile, performance e SEO non sono optional."
+  >
+    <div class="approach stagger">
+      <div class="approach__col" data-reveal>
+        <h3>Tecnologie innovative</h3>
+        <p class="lead">Architetture headless, frontend componibili e build statiche per siti rapidissimi e indicizzabili.</p>
+      </div>
+      <div class="approach__col" data-reveal>
+        <h3>Best practice consolidate</h3>
+        <p class="lead">Codice pulito e documentato, componenti riutilizzabili, accessibilità e standard SEO applicati su ogni pagina.</p>
+      </div>
+    </div>
+
+    <div class="tech-cloud" data-reveal="scale">
+      <h4 class="tech-cloud__title">Stack che usiamo</h4>
+      <div class="tech-cloud__badges">
+        {techStack.map((t) => <TechBadge label={t.name} />)}
+      </div>
+    </div>
+  </Section>
+
+  <!-- LAVORI -->
+  <Section
+    id="lavori"
+    eyebrow="Portfolio"
+    title="Lavori realizzati"
+    lead="Una selezione di progetti e dei risultati ottenuti, con le tecnologie impiegate."
+  >
+    <WorkList items={caseStudies} />
+  </Section>
+
+  <!-- TEAM -->
+  <Section
+    id="team"
+    variant="alt"
+    eyebrow="Chi siamo"
+    title="Un team con tutte le competenze"
+    lead="Frontend, backend, design e SEO sotto lo stesso tetto: un unico interlocutore per l'intero progetto."
+  >
+    <div class="grid grid--4 stagger">
+      {team.map((member) => (
+        <div class="reveal-item" data-reveal><TeamMember member={member} /></div>
+      ))}
+    </div>
+  </Section>
+
+  <!-- CONTATTI (form completo in S4) -->
+  <Section id="contatti" variant="ink" align="center"
+    eyebrow="Iniziamo"
+    title="Hai un progetto in mente?"
+    lead="Raccontaci la tua idea: ti rispondiamo con un primo riscontro concreto."
+  >
+    <div class="contact-cta" data-reveal="scale">
+      <Button href={`mailto:${site.email}`} variant="primary">{cta.label}</Button>
+      <p class="contact-cta__note">Il form di contatto integrato arriverà con lo Sprint 4.</p>
+    </div>
+  </Section>
+</BaseLayout>
+
+<style>
+  /* Griglie riutilizzabili, responsive */
+  .grid { display: grid; gap: var(--sp-5); }
+  .grid--4 { grid-template-columns: repeat(4, 1fr); }
+  .grid--3 { grid-template-columns: repeat(3, 1fr); }
+  .reveal-item { display: flex; }
+  .reveal-item > * { width: 100%; }
+  @media (max-width: 1024px) {
+    .grid--4 { grid-template-columns: repeat(2, 1fr); }
+    .grid--3 { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 600px) {
+    .grid--4, .grid--3 { grid-template-columns: 1fr; }
+  }
+
+  .approach { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-6); margin-bottom: var(--sp-7); }
+  .approach__col h3 { margin-bottom: var(--sp-3); }
+  @media (max-width: 720px) { .approach { grid-template-columns: 1fr; } }
+
+  .tech-cloud {
+    padding: var(--sp-6);
+    border-radius: var(--radius-lg);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+  }
+  .tech-cloud__title { margin-bottom: var(--sp-4); }
+  .tech-cloud__badges { display: flex; flex-wrap: wrap; gap: var(--sp-3); }
+
+  .contact-cta { display: grid; gap: var(--sp-4); justify-items: center; }
+  .contact-cta__note { color: var(--c-slate-400); font-size: var(--fs-sm); }
+</style>

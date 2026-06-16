@@ -1,0 +1,77 @@
+---
+import Logo from './Logo.astro';
+import { site, mainNav } from '../data/site';
+const year = new Date().getFullYear();
+---
+
+<footer class="footer section--ink">
+  <div class="container footer__top">
+    <div class="footer__brand">
+      <Logo variant="light" />
+      <p class="footer__desc">{site.description}</p>
+    </div>
+
+    <nav class="footer__nav" aria-label="Navigazione footer">
+      <h2 class="footer__heading">Naviga</h2>
+      <ul role="list">
+        {mainNav.map((item) => (
+          <li><a href={item.href}>{item.label}</a></li>
+        ))}
+      </ul>
+    </nav>
+
+    <div class="footer__contact">
+      <h2 class="footer__heading">Contatti</h2>
+      <a href={`mailto:${site.email}`} class="footer__email">{site.email}</a>
+    </div>
+  </div>
+
+  <div class="container footer__bottom">
+    <p>© {year} {site.legalName}. Tutti i diritti riservati.</p>
+    <p class="footer__made">{site.tagline}</p>
+  </div>
+</footer>
+
+<style>
+  .footer { padding-block: var(--sp-8) var(--sp-6); }
+  .footer__top {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 1fr;
+    gap: var(--sp-7);
+    padding-bottom: var(--sp-7);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .footer__desc {
+    margin-top: var(--sp-4);
+    color: var(--c-slate-400);
+    font-size: var(--fs-sm);
+    max-width: 42ch;
+  }
+  .footer__heading {
+    font-size: var(--fs-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--c-accent);
+    margin-bottom: var(--sp-4);
+  }
+  .footer__nav ul { display: flex; flex-direction: column; gap: var(--sp-2); }
+  .footer__nav a, .footer__email {
+    color: var(--c-slate-400);
+    font-size: var(--fs-sm);
+    transition: color var(--dur-fast) var(--ease);
+  }
+  .footer__nav a:hover, .footer__email:hover { color: #fff; }
+  .footer__bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--sp-3);
+    padding-top: var(--sp-5);
+    color: var(--c-slate-500);
+    font-size: var(--fs-xs);
+  }
+  @media (max-width: 720px) {
+    .footer__top { grid-template-columns: 1fr; gap: var(--sp-6); }
+  }
+</style>

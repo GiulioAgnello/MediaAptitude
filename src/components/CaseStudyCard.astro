@@ -1,0 +1,58 @@
+---
+import TechBadge from './TechBadge.astro';
+import type { CaseStudy } from '../data/content';
+interface Props { item: CaseStudy; }
+const { item } = Astro.props;
+---
+
+<article class="case">
+  <div class="case__head">
+    <span class="case__category">{item.category}</span>
+    <span class="case__client">{item.client}</span>
+  </div>
+  <h3 class="case__title">{item.title}</h3>
+  <p class="case__result">{item.result}</p>
+  <div class="case__tech">
+    {item.tech.map((t) => <TechBadge label={t} />)}
+  </div>
+</article>
+
+<style>
+  .case {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+    padding: var(--sp-6);
+    border-radius: var(--radius-lg);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    position: relative;
+    overflow: hidden;
+    transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+  }
+  .case::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 4px;
+    background: linear-gradient(180deg, var(--c-brand), var(--c-accent));
+  }
+  .case:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+  .case__head { display: flex; justify-content: space-between; align-items: center; gap: var(--sp-3); }
+  .case__category {
+    font-family: var(--font-heading);
+    font-weight: var(--fw-semibold);
+    font-size: var(--fs-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--c-brand);
+  }
+  .case__client { font-size: var(--fs-xs); color: var(--c-slate-400); }
+  .case__result {
+    font-family: var(--font-heading);
+    font-weight: var(--fw-semibold);
+    color: var(--c-text);
+    font-size: var(--fs-md);
+  }
+  .case__tech { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-top: var(--sp-2); }
+</style>

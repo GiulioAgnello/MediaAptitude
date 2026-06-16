@@ -1,0 +1,73 @@
+---
+/**
+ * Sezione manifesto "negazione" (ispirata al pattern di Keyformat).
+ * Ogni punto: frase barrata (ciò che NON facciamo) -> verità evidenziata.
+ * Reveal allo scroll via data-reveal (CSS-first, zero JS).
+ */
+import { manifesto } from '../data/content';
+---
+
+<ol class="manifesto stagger" role="list">
+  {manifesto.map((point) => (
+    <li class="manifesto__item" data-reveal>
+      <p class="manifesto__strike"><s>{point.strike}</s></p>
+      <p class="manifesto__truth">{point.truth}</p>
+    </li>
+  ))}
+</ol>
+
+<style>
+  .manifesto { display: grid; gap: var(--sp-7); max-width: 980px; }
+  .manifesto__item {
+    display: grid;
+    gap: var(--sp-2);
+    padding-bottom: var(--sp-6);
+    border-bottom: 1px solid var(--c-border);
+  }
+  .manifesto__item:last-child { border-bottom: none; padding-bottom: 0; }
+
+  .manifesto__strike {
+    font-family: var(--font-heading);
+    font-weight: var(--fw-medium);
+    font-size: var(--fs-lg);
+    color: var(--c-slate-400);
+  }
+  .manifesto__strike s {
+    text-decoration: none;
+    position: relative;
+  }
+  /* Barratura disegnata: parte da 0 e si completa quando l'elemento entra. */
+  .manifesto__strike s::after {
+    content: '';
+    position: absolute;
+    left: 0; top: 55%;
+    width: 100%; height: 2px;
+    background: var(--c-slate-400);
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  .manifesto__truth {
+    font-family: var(--font-heading);
+    font-weight: var(--fw-bold);
+    font-size: var(--fs-xl);
+    line-height: var(--lh-snug);
+    color: var(--c-ink-900);
+    letter-spacing: -0.01em;
+  }
+
+  /* Animazione della barratura legata allo scroll (progressive enhancement). */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .manifesto__strike s::after {
+        animation: strike-grow both linear;
+        animation-timeline: view();
+        animation-range: entry 8% cover 28%;
+      }
+      @keyframes strike-grow { to { transform: scaleX(1); } }
+    }
+  }
+  /* Senza scroll-timeline: la barratura resta visibile per non perdere il senso. */
+  @supports not (animation-timeline: view()) {
+    .manifesto__strike s::after { transform: scaleX(1); }
+  }
+</style>

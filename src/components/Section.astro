@@ -1,0 +1,36 @@
+---
+/**
+ * Wrapper di sezione standard: gestisce padding, sfondo, ancora (id),
+ * e l'intestazione (eyebrow + titolo + lead). Tiene il ritmo coerente
+ * su tutto il sito.
+ */
+interface Props {
+  id?: string;
+  eyebrow?: string;
+  title?: string;
+  lead?: string;
+  variant?: 'default' | 'alt' | 'ink';
+  align?: 'left' | 'center';
+  class?: string;
+}
+const { id, eyebrow, title, lead, variant = 'default', align = 'left', class: extra } = Astro.props;
+const variantClass = variant === 'alt' ? 'section--alt' : variant === 'ink' ? 'section--ink' : '';
+---
+
+<section id={id} class:list={['section', variantClass, extra]}>
+  <div class="container">
+    {(eyebrow || title || lead) && (
+      <header class:list={['section-head', `is-${align}`]}>
+        {eyebrow && <span class="eyebrow">{eyebrow}</span>}
+        {title && <h2>{title}</h2>}
+        {lead && <p class="lead">{lead}</p>}
+      </header>
+    )}
+    <slot />
+  </div>
+</section>
+
+<style>
+  .section-head { max-width: 60ch; margin-bottom: var(--sp-7); display: grid; gap: var(--sp-3); }
+  .section-head.is-center { margin-inline: auto; text-align: center; justify-items: center; }
+</style>

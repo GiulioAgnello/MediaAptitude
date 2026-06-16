@@ -1,0 +1,23 @@
+---
+interface Props { label: string; }
+const { label } = Astro.props;
+---
+<span class="tech-badge">{label}</span>
+
+<style>
+  .tech-badge {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--font-heading);
+    font-weight: var(--fw-semibold);
+    font-size: var(--fs-sm);
+    letter-spacing: 0.01em;
+    padding: 0.4rem 0.9rem;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--c-border);
+    background: var(--c-surface);
+    color: var(--c-text);
+    transition: border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+  }
+  .tech-badge:hover { border-color: var(--c-brand); color: var(--c-brand); }
+</style>

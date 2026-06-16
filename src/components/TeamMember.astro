@@ -1,0 +1,48 @@
+---
+import type { TeamMember } from '../data/content';
+interface Props { member: TeamMember; }
+const { member } = Astro.props;
+---
+
+<article class="member">
+  <div class="member__avatar" aria-hidden="true">{member.initials}</div>
+  <h3 class="member__name">{member.name}</h3>
+  <p class="member__role">{member.role}</p>
+  <ul class="member__skills" role="list">
+    {member.skills.map((s) => <li>{s}</li>)}
+  </ul>
+</article>
+
+<style>
+  .member {
+    text-align: center;
+    padding: var(--sp-6) var(--sp-4);
+    border-radius: var(--radius-lg);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+  }
+  .member:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+  .member__avatar {
+    width: 72px; height: 72px;
+    margin: 0 auto var(--sp-4);
+    display: grid; place-items: center;
+    border-radius: var(--radius-full);
+    background: linear-gradient(135deg, var(--c-brand), var(--c-accent));
+    color: #fff;
+    font-family: var(--font-heading);
+    font-weight: var(--fw-bold);
+    font-size: 1.4rem;
+    letter-spacing: 0.02em;
+  }
+  .member__name { font-size: var(--fs-lg); }
+  .member__role { color: var(--c-brand); font-size: var(--fs-sm); font-weight: var(--fw-medium); margin-bottom: var(--sp-3); }
+  .member__skills { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sp-2); }
+  .member__skills li {
+    font-size: var(--fs-xs);
+    color: var(--c-text-muted);
+    padding: 0.2rem 0.6rem;
+    border-radius: var(--radius-full);
+    background: var(--c-bg-alt);
+  }
+</style>

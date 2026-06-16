@@ -1,0 +1,175 @@
+---
+/**
+ * Portfolio in formato lista con anteprima in hover (pattern Keyformat).
+ * - Desktop (hover + pointer fine): un'unica anteprima fluttuante segue il cursore.
+ * - Mobile / no-hover: ogni riga mostra una thumbnail inline.
+ * - Senza JS: le righe restano leggibili e cliccabili (solo niente preview fluttuante).
+ * I "preview" sono placeholder a gradiente: in S3 diventeranno immagini reali da WP.
+ */
+import type { CaseStudy } from '../data/content';
+interface Props { items: CaseStudy[]; }
+const { items } = Astro.props;
+
+// Coppie di colori per i placeholder, in ciclo.
+const gradients = [
+  'linear-gradient(135deg, #2d5bff, #00d4c7)',
+  'linear-gradient(135deg, #1e3fcc, #2d5bff)',
+  'linear-gradient(135deg, #00d4c7, #2d5bff)',
+  'linear-gradient(135deg, #161b26, #2d5bff)',
+];
+---
+
+<div class="worklist" data-worklist>
+  <ul class="worklist__rows stagger" role="list">
+    {items.map((item, i) => {
+      const g = gradients[i % gradients.length];
+      return (
+        <li class="worklist__item" data-reveal>
+          <div
+            class="worklist__row"
+            data-work-row
+            data-title={item.title}
+            data-gradient={g}
+          >
+            <span class="worklist__thumb" style={`background:${g}`} aria-hidden="true"></span>
+            <span class="worklist__main">
+              <span class="worklist__title">{item.title}</span>
+              <span class="worklist__meta">{item.category} · {item.result}</span>
+            </span>
+            <span class="worklist__cat">{item.category}</span>
+            <span class="worklist__arrow" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
+            </span>
+          </div>
+        </li>
+      );
+    })}
+  </ul>
+
+  <!-- Anteprima fluttuante (popolata dal JS solo su desktop con hover) -->
+  <div class="worklist__preview" data-worklist-preview aria-hidden="true">
+    <span class="worklist__preview-title" data-preview-title></span>
+  </div>
+</div>
+
+<style>
+  .worklist__rows { display: grid; }
+  .worklist__item { border-bottom: 1px solid var(--c-border); }
+  .worklist__item:first-child { border-top: 1px solid var(--c-border); }
+
+  .worklist__row {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    align-items: center;
+    gap: var(--sp-4);
+    padding: var(--sp-5) var(--sp-2);
+    cursor: pointer;
+    transition: padding var(--dur) var(--ease), background var(--dur) var(--ease);
+  }
+  .worklist__row:hover { padding-inline: var(--sp-4); background: var(--c-bg-alt); }
+
+  /* Thumbnail inline: visibile solo dove non c'è hover (mobile/touch) */
+  .worklist__thumb {
+    width: 56px; height: 40px;
+    border-radius: var(--radius-sm);
+    display: none;
+    flex: none;
+  }
+
+  .worklist__main { display: grid; gap: 2px; min-width: 0; }
+  .worklist__title {
+    font-family: var(--font-heading);
+    font-weight: var(--fw-bold);
+    font-size: clamp(1.25rem, 1rem + 1.4vw, 2rem);
+    line-height: var(--lh-snug);
+    color: var(--c-ink-900);
+    transition: color var(--dur) var(--ease), transform var(--dur) var(--ease);
+  }
+  .worklist__row:hover .worklist__title { color: var(--c-brand); }
+  .worklist__meta { display: none; font-size: var(--fs-sm); color: var(--c-text-muted); }
+
+  .worklist__cat {
+    font-family: var(--font-heading);
+    font-weight: var(--fw-semibold);
+    font-size: var(--fs-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--c-text-muted);
+    white-space: nowrap;
+  }
+  .worklist__arrow {
+    color: var(--c-slate-400);
+    transform: translateX(-6px);
+    opacity: 0;
+    transition: transform var(--dur) var(--ease), opacity var(--dur) var(--ease), color var(--dur) var(--ease);
+  }
+  .worklist__row:hover .worklist__arrow { opacity: 1; transform: translateX(0); color: var(--c-brand); }
+
+  /* Anteprima fluttuante */
+  .worklist__preview {
+    position: fixed;
+    top: 0; left: 0;
+    width: 320px;
+    aspect-ratio: 4 / 3;
+    border-radius: var(--radius-md);
+    background: var(--g, var(--c-brand));
+    box-shadow: var(--shadow-lg);
+    pointer-events: none;
+    z-index: var(--z-overlay);
+    opacity: 0;
+    transform: translate(calc(var(--x, 0px) - 50%), calc(var(--y, 0px) - 50%)) scale(0.9);
+    transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+    display: grid;
+    align-items: end;
+    padding: var(--sp-4);
+    overflow: hidden;
+  }
+  .worklist__preview[data-active] { opacity: 1; transform: translate(calc(var(--x, 0px) - 50%), calc(var(--y, 0px) - 50%)) scale(1); }
+  .worklist__preview-title {
+    font-family: var(--font-heading);
+    font-weight: var(--fw-bold);
+    color: #fff;
+    font-size: var(--fs-md);
+    text-shadow: 0 1px 8px rgba(0,0,0,0.25);
+  }
+
+  /* Touch / niente hover: mostra le thumb inline, nascondi l'anteprima fluttuante */
+  @media (hover: none), (pointer: coarse) {
+    .worklist__thumb { display: block; }
+    .worklist__meta { display: block; }
+    .worklist__cat, .worklist__arrow { display: none; }
+    .worklist__preview { display: none; }
+  }
+  @media (max-width: 600px) {
+    .worklist__row { grid-template-columns: auto 1fr; gap: var(--sp-3); }
+  }
+</style>
+
+<script>
+  // Isola JS minima: posiziona l'anteprima sul cursore. Solo desktop con hover.
+  const root = document.querySelector('[data-worklist]');
+  const preview = document.querySelector('[data-worklist-preview]') as HTMLElement | null;
+  const fine = window.matchMedia('(hover: hover) and (pointer: fine)');
+
+  if (root && preview && fine.matches) {
+    const titleEl = preview.querySelector('[data-preview-title]') as HTMLElement | null;
+    const rows = root.querySelectorAll<HTMLElement>('[data-work-row]');
+
+    root.addEventListener('mousemove', (e) => {
+      const ev = e as MouseEvent;
+      preview.style.setProperty('--x', ev.clientX + 'px');
+      preview.style.setProperty('--y', ev.clientY + 'px');
+    });
+
+    rows.forEach((row) => {
+      row.addEventListener('mouseenter', () => {
+        if (row.dataset.gradient) preview.style.setProperty('--g', row.dataset.gradient);
+        if (titleEl) titleEl.textContent = row.dataset.title ?? '';
+        preview.setAttribute('data-active', '');
+      });
+      row.addEventListener('mouseleave', () => preview.removeAttribute('data-active'));
+    });
+  }
+</script>
