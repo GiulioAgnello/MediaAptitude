@@ -43,7 +43,7 @@ import { mainNav, cta } from '../data/site';
     position: sticky;
     top: 0;
     z-index: var(--z-header);
-    background-color: color-mix(in srgb, var(--c-surface) 88%, transparent);
+    background-color: color-mix(in srgb, var(--c-bg) 72%, transparent);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid transparent;
     transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
@@ -89,7 +89,7 @@ import { mainNav, cta } from '../data/site';
   }
   .burger span {
     width: 24px; height: 2px;
-    background: var(--c-ink-900);
+    background: var(--c-text);
     border-radius: 2px;
     transition: transform var(--dur) var(--ease), opacity var(--dur-fast) var(--ease);
   }
@@ -99,7 +99,8 @@ import { mainNav, cta } from '../data/site';
 
   .mobile-menu {
     border-top: 1px solid var(--c-border);
-    background: var(--c-surface);
+    background: color-mix(in srgb, var(--c-bg) 92%, transparent);
+    backdrop-filter: blur(12px);
     padding: var(--sp-4) var(--container-pad) var(--sp-6);
   }
   .mobile-menu ul { display: flex; flex-direction: column; gap: var(--sp-1); }

@@ -9,28 +9,29 @@
      Stile pulito / serio / innovativo.
      Base chiara + accento elettrico, sezioni "ink" scure per contrasto. */
 
-  /* Neutri (testo, superfici, linee) */
-  --c-ink-900: #0d1117;   /* heading forti, sezioni scure */
-  --c-ink-800: #161b26;
-  --c-ink-700: #1f2733;
-  --c-slate-600: #475569; /* testo secondario */
-  --c-slate-500: #64748b;
-  --c-slate-400: #94a3b8;
-  --c-line: #e2e8f0;      /* bordi, divider */
-  --c-surface: #ffffff;   /* sfondo base */
-  --c-surface-alt: #f6f8fb; /* sezioni alternate */
+  /* Neutri scuri (superfici, testo, linee) — tema dark ispirato al riferimento */
+  --c-ink-900: #050509;   /* superfici extra-scure / sezioni "ink" */
+  --c-ink-800: #0b0b12;
+  --c-ink-700: #14141f;
+  --c-slate-600: #8b909c; /* testo secondario chiaro */
+  --c-slate-500: #6b7280;
+  --c-slate-400: #9aa0ad;
+  --c-line: rgba(255, 255, 255, 0.08); /* bordi, divider tenui */
+  --c-surface: rgba(255, 255, 255, 0.035); /* card "glass" su fondo scuro */
+  --c-surface-alt: rgba(255, 255, 255, 0.022); /* sezioni alternate */
 
-  /* Accenti brand */
-  --c-brand: #2d5bff;       /* primario — blu elettrico */
-  --c-brand-dark: #1e3fcc;
-  --c-brand-soft: #e8edff;  /* sfondi tenui, badge */
-  --c-accent: #00d4c7;      /* secondario — teal innovativo */
-  --c-accent-soft: #d9fbf8;
+  /* Accenti brand (dal riferimento: blu → cyan → indaco) */
+  --c-brand: #3b82f6;       /* primario — blu */
+  --c-brand-dark: #2563eb;
+  --c-brand-soft: rgba(59, 130, 246, 0.12); /* chip/badge, glow tenui */
+  --c-accent: #06b6d4;      /* secondario — cyan */
+  --c-accent-soft: rgba(6, 182, 212, 0.12);
+  --c-indigo: #818cf8;      /* terzo accento — indaco */
 
   /* Semantici */
-  --c-text: var(--c-ink-900);
-  --c-text-muted: var(--c-slate-600);
-  --c-bg: var(--c-surface);
+  --c-text: #f3f4f7;
+  --c-text-muted: #a4a8b3;
+  --c-bg: #08080c;          /* sfondo pagina near-black */
   --c-bg-alt: var(--c-surface-alt);
   --c-border: var(--c-line);
 
@@ -84,10 +85,10 @@
   --radius-full: 999px;
 
   /* ---------- OMBRE ---------- */
-  --shadow-sm: 0 1px 2px rgba(13, 17, 23, 0.04), 0 1px 3px rgba(13, 17, 23, 0.06);
-  --shadow-md: 0 4px 6px rgba(13, 17, 23, 0.04), 0 10px 24px rgba(13, 17, 23, 0.08);
-  --shadow-lg: 0 12px 24px rgba(13, 17, 23, 0.08), 0 24px 48px rgba(13, 17, 23, 0.10);
-  --shadow-brand: 0 8px 24px rgba(45, 91, 255, 0.28);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4), 0 12px 28px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 16px 32px rgba(0, 0, 0, 0.5), 0 28px 56px rgba(0, 0, 0, 0.55);
+  --shadow-brand: 0 8px 28px rgba(59, 130, 246, 0.35);
 
   /* ---------- MOTION ---------- */
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
@@ -111,6 +112,7 @@ html {
 }
 
 body {
+  position: relative;
   font-family: var(--font-body);
   font-size: var(--fs-base);
   line-height: var(--lh-normal);
@@ -118,6 +120,32 @@ body {
   background-color: var(--c-bg);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+/* ---------- SFONDO GLOBALE (glow + griglia) ----------
+   Due layer fissi dietro al contenuto: glow radiali soffusi e una griglia
+   blu sottile. CSS puro, pointer-events:none, nessun impatto su animazioni/SEO. */
+body::before,
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+body::before {
+  background:
+    radial-gradient(55% 45% at 12% 0%, rgba(59, 130, 246, 0.14) 0%, transparent 70%),
+    radial-gradient(50% 45% at 88% 8%, rgba(6, 182, 212, 0.10) 0%, transparent 70%),
+    radial-gradient(60% 60% at 50% 105%, rgba(129, 140, 248, 0.07) 0%, transparent 60%);
+}
+body::after {
+  background-image:
+    linear-gradient(rgba(59, 130, 246, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59, 130, 246, 0.045) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: radial-gradient(circle at 50% 22%, #000 0%, transparent 78%);
+  mask-image: radial-gradient(circle at 50% 22%, #000 0%, transparent 78%);
 }
 
 img, picture, svg, video { display: block; max-width: 100%; height: auto; }
@@ -134,7 +162,7 @@ h1, h2, h3, h4 {
   font-weight: var(--fw-bold);
   line-height: var(--lh-tight);
   letter-spacing: -0.01em;
-  color: var(--c-ink-900);
+  color: var(--c-text);
   text-wrap: balance;
 }
 

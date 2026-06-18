@@ -19,10 +19,11 @@ const { member } = Astro.props;
     padding: var(--sp-6) var(--sp-4);
     border-radius: var(--radius-lg);
     background: var(--c-surface);
+    backdrop-filter: blur(8px);
     border: 1px solid var(--c-border);
-    transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+    transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease);
   }
-  .member:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+  .member:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: color-mix(in srgb, var(--c-brand) 45%, transparent); }
   .member__avatar {
     width: 72px; height: 72px;
     margin: 0 auto var(--sp-4);
