@@ -105,17 +105,19 @@ abstract class PostType
     protected function registerMeta(): void
     {
         foreach ($this->fields() as $name => $config) {
-            $isList = ($config['type'] ?? 'text') === 'list';
+            $type    = $config['type'] ?? 'text';
+            $isList  = $type === 'list';
+            $isImage = $type === 'image';
 
             register_post_meta($this->key(), self::META_PREFIX . $name, [
-                'type'              => $isList ? 'array' : 'string',
+                'type'              => $isList ? 'array' : ($isImage ? 'integer' : 'string'),
                 'single'            => true,
                 'show_in_rest'      => $isList
                     ? ['schema' => ['type' => 'array', 'items' => ['type' => 'string']]]
                     : true,
                 'sanitize_callback' => $isList
                     ? [self::class, 'sanitizeList']
-                    : 'sanitize_textarea_field',
+                    : ($isImage ? 'absint' : 'sanitize_textarea_field'),
                 'auth_callback'     => static fn (): bool => current_user_can('edit_posts'),
             ]);
         }
@@ -168,6 +170,32 @@ abstract class PostType
         $value = $this->meta($postId, $name);
 
         return is_array($value) ? array_values($value) : [];
+    }
+
+    /**
+     * Helper: legge un meta immagine (ID allegato) e lo risolve in oggetto media.
+     * Ritorna null se non impostato o allegato mancante.
+     *
+     * @return array{url:string,width:int,height:int,alt:string}|null
+     */
+    protected function metaImage(int $postId, string $name, string $size = 'large'): ?array
+    {
+        $attId = (int) $this->meta($postId, $name);
+        if ($attId <= 0) {
+            return null;
+        }
+
+        $src = wp_get_attachment_image_src($attId, $size);
+        if (!is_array($src) || empty($src[0])) {
+            return null;
+        }
+
+        return [
+            'url'    => (string) $src[0],
+            'width'  => (int) $src[1],
+            'height' => (int) $src[2],
+            'alt'    => trim((string) get_post_meta($attId, '_wp_attachment_image_alt', true)),
+        ];
     }
 
     /** Restituisce la meta key completa (prefisso incluso). */

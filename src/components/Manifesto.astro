@@ -60,9 +60,12 @@ import { manifesto } from '../data/content';
   }
 
   /* ---- Modalità sequenza (attivata da GSAP) ---- */
+  /* Full-bleed: la sequenza esce dal container e occupa tutto lo schermo. */
   .mf.is-seq .mf__stage {
     position: relative;
     height: 100vh;
+    width: 100vw;
+    margin-inline: calc(50% - 50vw);
     display: block;
     max-width: none;
   }
@@ -71,13 +74,20 @@ import { manifesto } from '../data/content';
     inset: 0;
     display: grid;
     align-content: center;
-    gap: var(--sp-4);
-    max-width: 18ch;
+    justify-items: center;
+    text-align: center;
+    gap: var(--sp-5);
+    max-width: none;
+    padding-inline: var(--container-pad);
     padding-bottom: 0;
     border-bottom: none;
   }
-  .mf.is-seq .mf__strike { font-size: clamp(1.25rem, 1rem + 1.2vw, 1.75rem); }
-  .mf.is-seq .mf__truth { font-size: clamp(2rem, 1.2rem + 3.5vw, 4rem); max-width: 18ch; }
+  .mf.is-seq .mf__strike { font-size: clamp(1.35rem, 1rem + 1.6vw, 2rem); }
+  .mf.is-seq .mf__truth {
+    font-size: clamp(2.3rem, 1.4rem + 4.5vw, 5rem);
+    max-width: 22ch;
+    margin-inline: auto;
+  }
 </style>
 
 <script>
@@ -98,7 +108,7 @@ import { manifesto } from '../data/content';
         // Stato iniziale: tutte nascoste tranne la prima.
         items.forEach((it, i) => {
           const line = it.querySelector('.mf__line');
-          gsap.set(it, { opacity: i === 0 ? 1 : 0, y: i === 0 ? 0 : 60 });
+          gsap.set(it, { opacity: i === 0 ? 1 : 0, y: i === 0 ? 0 : 40 });
           if (line) gsap.set(line, { scaleX: i === 0 ? 1 : 0 });
         });
 
@@ -106,7 +116,7 @@ import { manifesto } from '../data/content';
           scrollTrigger: {
             trigger: wrap,
             start: 'top top',
-            end: () => '+=' + items.length * window.innerHeight,
+            end: () => '+=' + (items.length + 1) * window.innerHeight,
             pin: stage,
             scrub: true,
             anticipatePin: 1,
@@ -116,15 +126,18 @@ import { manifesto } from '../data/content';
 
         items.forEach((it, i) => {
           const line = it.querySelector('.mf__line');
+          // Entrata netta (la prima frase è già visibile).
           if (i === 0) {
-            if (line) tl.to(line, { scaleX: 1, duration: 0.4 });
+            if (line) tl.to(line, { scaleX: 1, duration: 0.35 });
           } else {
-            tl.to(it, { opacity: 1, y: 0, duration: 1 });
-            if (line) tl.to(line, { scaleX: 1, duration: 0.4 }, '<0.2');
+            tl.to(it, { opacity: 1, y: 0, duration: 0.45, ease: 'power3.out' });
+            if (line) tl.to(line, { scaleX: 1, duration: 0.3 }, '<0.05');
           }
-          // Esce (tranne l'ultima), poi entra la successiva.
+          // Tenuta: la frase resta ferma e leggibile per un tratto di scroll.
+          tl.to(it, { opacity: 1, duration: 1.6 });
+          // Uscita netta (tranne l'ultima).
           if (i < items.length - 1) {
-            tl.to(it, { opacity: 0, y: -60, duration: 1 }, '+=0.6');
+            tl.to(it, { opacity: 0, y: -40, duration: 0.45, ease: 'power3.in' });
           }
         });
 

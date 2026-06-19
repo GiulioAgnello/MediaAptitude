@@ -5,7 +5,10 @@
  * - Con GSAP (desktop): la sezione si "pinna" e lo scroll verticale traina il track
  *   in orizzontale (scrub) con parallax per profondità.
  * GSAP è caricato on-demand (dynamic import) solo quando la sezione si avvicina.
- * Le card sono mockup placeholder a gradiente: in S3 -> screenshot reali da WP.
+ *
+ * Ogni lavoro è una COPPIA desktop (frame browser) + mobile (frame telefono),
+ * mostrati insieme per comunicare il responsive. Le immagini arrivano dalla REST
+ * (imageDesktop / imageMobile); se assenti si ricade su un mockup a gradiente.
  */
 import type { CaseStudy } from '../data/content';
 interface Props { items: CaseStudy[]; }
@@ -20,14 +23,14 @@ const gradients = [
   'linear-gradient(135deg, #06b6d4, #0d9488)',
 ];
 
-// Scatter "artistico": tipo dispositivo, dimensione, profondità (parallax), offset Y, rotazione.
+// Scatter "artistico" per coppia: profondità (parallax), offset Y, rotazione.
 const layout = [
-  { type: 'browser', size: 'lg', depth: 1.0, ty: -50, rot: -3 },
-  { type: 'phone',   size: 'sm', depth: 2.4, ty: 70,  rot: 4 },
-  { type: 'browser', size: 'md', depth: 1.6, ty: 20,  rot: 2 },
-  { type: 'phone',   size: 'sm', depth: 0.8, ty: -90, rot: -5 },
-  { type: 'browser', size: 'lg', depth: 2.0, ty: 50,  rot: 3 },
-  { type: 'browser', size: 'md', depth: 1.2, ty: -20, rot: -2 },
+  { depth: 1.0, ty: -40, rot: -2 },
+  { depth: 1.8, ty: 50,  rot: 2 },
+  { depth: 1.3, ty: 10,  rot: -1 },
+  { depth: 2.0, ty: -60, rot: 3 },
+  { depth: 1.1, ty: 40,  rot: -3 },
+  { depth: 1.5, ty: -10, rot: 2 },
 ];
 const lay = (i: number) => layout[i % layout.length];
 ---
@@ -45,24 +48,67 @@ const lay = (i: number) => layout[i % layout.length];
       {items.map((item, i) => {
         const l = lay(i);
         const g = gradients[i % gradients.length];
+        // Il cluster è cliccabile verso il lavoro online quando `url` è presente.
+        const Tag = item.url ? 'a' : 'article';
+        const linkProps = item.url
+          ? {
+              href: item.url,
+              target: '_blank',
+              rel: 'noopener',
+              'aria-label': `${item.title} — apri il sito (nuova scheda)`,
+            }
+          : {};
         return (
-          <article
-            class:list={['device', `device--${l.type}`, `is-${l.size}`, 'collage__cell']}
+          <Tag
+            class:list={['work', 'collage__cell', { 'is-link': item.url }]}
             data-depth={l.depth}
             style={`--ty:${l.ty}px; --rot:${l.rot}deg`}
+            {...linkProps}
           >
-            <div class="device__frame">
-              {l.type === 'browser' && (
-                <span class="device__bar" aria-hidden="true"><i></i><i></i><i></i></span>
-              )}
-              <span class="device__screen" style={`background:${g}`}></span>
+            <div class="work__devices">
+              <div class="device device--browser is-lg">
+                <div class="device__frame">
+                  <span class="device__bar" aria-hidden="true"><i></i><i></i><i></i></span>
+                  {item.imageDesktop ? (
+                    <img
+                      class="device__screen"
+                      src={item.imageDesktop.url}
+                      width={item.imageDesktop.width}
+                      height={item.imageDesktop.height}
+                      alt={item.imageDesktop.alt || `${item.title} — versione desktop`}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  ) : (
+                    <span class="device__screen device__screen--ph" style={`background:${g}`}></span>
+                  )}
+                </div>
+              </div>
+              <div class="device device--phone is-sm">
+                <div class="device__frame">
+                  {item.imageMobile ? (
+                    <img
+                      class="device__screen"
+                      src={item.imageMobile.url}
+                      width={item.imageMobile.width}
+                      height={item.imageMobile.height}
+                      alt={item.imageMobile.alt || `${item.title} — versione mobile`}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  ) : (
+                    <span class="device__screen device__screen--ph" style={`background:${g}`}></span>
+                  )}
+                </div>
+              </div>
             </div>
             <div class="device__caption">
               <span class="device__cat">{item.category}</span>
               <span class="device__title">{item.title}</span>
               <span class="device__result">{item.result}</span>
+              {item.url && <span class="device__link">Visita il sito <span aria-hidden="true">↗</span></span>}
             </div>
-          </article>
+          </Tag>
         );
       })}
 
@@ -108,8 +154,12 @@ const lay = (i: number) => layout[i % layout.length];
     max-width: 14ch;
   }
 
+  /* Cluster lavoro: coppia di dispositivi + caption */
+  .work { flex: none; display: grid; gap: var(--sp-4); }
+  .work__devices { position: relative; display: inline-block; margin-bottom: 22px; }
+
   /* Card dispositivo */
-  .device { flex: none; display: grid; gap: var(--sp-3); }
+  .device { display: grid; }
   .device__frame {
     border-radius: var(--radius-md);
     background: #fff;
@@ -119,17 +169,24 @@ const lay = (i: number) => layout[i % layout.length];
   }
   .device__bar { display: flex; gap: 6px; padding: 4px 4px 10px; }
   .device__bar i { width: 9px; height: 9px; border-radius: 50%; background: #d7dde6; }
-  .device__screen { display: block; border-radius: 8px; width: 100%; }
+  .device__screen { display: block; border-radius: 8px; width: 100%; object-fit: cover; }
+  img.device__screen { height: auto; }
 
   .device--browser .device__screen { aspect-ratio: 16 / 10; }
   .device--phone .device__frame { border-radius: 28px; padding: 12px; }
   .device--phone .device__screen { aspect-ratio: 9 / 18; border-radius: 18px; }
 
-  .device.is-lg { width: clamp(280px, 34vw, 440px); }
-  .device.is-md { width: clamp(240px, 26vw, 340px); }
-  .device.is-sm { width: clamp(150px, 18vw, 210px); }
+  /* Il browser è la base; il telefono si sovrappone in basso a destra. */
+  .work__devices .device--browser { width: clamp(280px, 34vw, 440px); }
+  .work__devices .device--phone {
+    position: absolute;
+    right: clamp(-40px, -2vw, -20px);
+    bottom: -22px;
+    width: clamp(108px, 13vw, 150px);
+    z-index: 2;
+  }
 
-  .device__caption { display: grid; gap: 2px; max-width: 30ch; }
+  .device__caption { display: grid; gap: 2px; max-width: 30ch; margin-top: var(--sp-4); }
   .device__cat {
     font-family: var(--font-heading);
     font-weight: var(--fw-semibold);
@@ -140,6 +197,21 @@ const lay = (i: number) => layout[i % layout.length];
   }
   .device__title { font-family: var(--font-heading); font-weight: var(--fw-bold); font-size: var(--fs-md); color: #fff; }
   .device__result { font-size: var(--fs-sm); color: var(--c-slate-400); }
+  .device__link {
+    margin-top: 4px;
+    font-family: var(--font-heading);
+    font-weight: var(--fw-semibold);
+    font-size: var(--fs-sm);
+    color: var(--c-accent);
+  }
+
+  /* Cluster-link: eredita il colore, niente sottolineatura, micro-interazione. */
+  a.work { color: inherit; text-decoration: none; cursor: pointer; }
+  a.work.is-link { transition: transform var(--dur-fast) var(--ease); }
+  a.work .device__frame { transition: box-shadow var(--dur-fast) var(--ease); }
+  a.work.is-link:hover .device--browser .device__frame { box-shadow: 0 0 0 2px var(--c-accent), var(--shadow-lg); }
+  a.work.is-link:hover .device__link { text-decoration: underline; }
+  a.work.is-link:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 6px; border-radius: var(--radius-md); }
 
   /* ---- Modalità pinned (attivata da GSAP) ---- */
   .collage.is-pinned .collage__inner { height: 100vh; }
@@ -148,11 +220,12 @@ const lay = (i: number) => layout[i % layout.length];
     justify-content: flex-start;
     will-change: transform;
   }
-  .collage.is-pinned .device { transform: translateY(var(--ty)) rotate(var(--rot)); }
+  .collage.is-pinned .work { transform: translateY(var(--ty)) rotate(var(--rot)); }
 
   @media (max-width: 860px) {
-    .collage__track { gap: var(--sp-6); }
-    .device.is-lg, .device.is-md, .device.is-sm { width: min(80vw, 360px); }
+    .collage__track { gap: var(--sp-7); }
+    .work__devices .device--browser { width: min(78vw, 360px); }
+    .work__devices .device--phone { width: min(26vw, 124px); }
   }
 </style>
 

@@ -1,0 +1,100 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/Section.astro';
+import TeamMember from '../components/TeamMember.astro';
+import TechBadge from '../components/TechBadge.astro';
+import { values, techStack } from '../data/content';
+import { getTeam } from '../lib/api';
+
+// Team dalla REST WP a build-time (fallback ai mock se WP è offline).
+const team = await getTeam();
+---
+
+<BaseLayout
+  path="/chi-siamo"
+  title="Chi siamo"
+  description="Chi è Media Aptitude: un team di frontend, backend, design e SEO sotto lo stesso tetto. I nostri valori e lo stack tecnologico che usiamo."
+>
+  <!-- INTRO -->
+  <Section
+    eyebrow="Chi siamo"
+    title="Un unico studio, tutte le competenze digitali"
+    lead="Frontend, backend, design e SEO lavorano insieme dall'inizio: un solo interlocutore, una sola responsabilità sul risultato."
+  />
+
+  <!-- TEAM -->
+  <Section
+    id="team"
+    variant="alt"
+    eyebrow="Le persone"
+    title="Il team"
+    lead="Profili complementari che coprono l'intero ciclo di vita del prodotto digitale."
+  >
+    <div class="grid grid--4 stagger">
+      {team.map((member) => (
+        <div class="reveal-item" data-reveal><TeamMember member={member} /></div>
+      ))}
+    </div>
+  </Section>
+
+  <!-- VALORI -->
+  <Section
+    eyebrow="Come lavoriamo"
+    title="I nostri valori"
+    lead="Principi non negoziabili che guidano ogni progetto, dal preventivo al post-lancio."
+  >
+    <div class="grid grid--4 stagger">
+      {values.map((value) => (
+        <article class="value reveal-item" data-reveal>
+          <h3 class="value__title">{value.title}</h3>
+          <p class="value__desc">{value.description}</p>
+        </article>
+      ))}
+    </div>
+  </Section>
+
+  <!-- STACK -->
+  <Section
+    variant="alt"
+    eyebrow="Tecnologie"
+    title="Lo stack che usiamo"
+    lead="Strumenti moderni e best practice consolidate: la scelta segue sempre l'obiettivo del progetto."
+  >
+    <div class="tech-cloud" data-reveal="scale">
+      <div class="tech-cloud__badges">
+        {techStack.map((t) => <TechBadge label={t.name} />)}
+      </div>
+    </div>
+  </Section>
+</BaseLayout>
+
+<style>
+  .grid { display: grid; gap: var(--sp-5); }
+  .grid--4 { grid-template-columns: repeat(4, 1fr); }
+  .reveal-item { display: flex; }
+  .reveal-item > * { width: 100%; }
+  @media (max-width: 1024px) { .grid--4 { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 600px) { .grid--4 { grid-template-columns: 1fr; } }
+
+  .value {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+    padding: var(--sp-6) var(--sp-5);
+    border-radius: var(--radius-lg);
+    background: var(--c-surface);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--c-border);
+  }
+  .value__title { font-size: var(--fs-lg); }
+  .value__desc { color: var(--c-text-muted); font-size: var(--fs-sm); }
+
+  .tech-cloud {
+    padding: var(--sp-6);
+    border-radius: var(--radius-lg);
+    background: var(--c-surface);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--c-border);
+  }
+  .tech-cloud__badges { display: flex; flex-wrap: wrap; gap: var(--sp-3); }
+</style>

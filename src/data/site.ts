@@ -25,11 +25,11 @@ export const mainNav: NavItem[] = [
   { label: 'Servizi', href: '/#servizi' },
   { label: 'Approccio', href: '/#approccio' },
   { label: 'Lavori', href: '/#lavori' },
-  { label: 'Team', href: '/#team' },
-  { label: 'Contatti', href: '/#contatti' },
+  { label: 'Chi siamo', href: '/chi-siamo' },
+  { label: 'Contatti', href: '/contatti' },
 ];
 
 export const cta = {
   label: 'Richiedi informazioni',
-  href: '/#contatti',
+  href: '/contatti',
 } as const;

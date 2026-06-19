@@ -10,7 +10,7 @@ if (!defined('ABSPATH')) {
 
 /**
  * CPT Membro del team. Shape JSON (uguale a content.ts → TeamMember):
- *   { name, role, skills[], initials }
+ *   { name, role, skills[], initials, photo?: {url,width,height,alt} }
  *
  * Nota: qui il titolo del post È il nome della persona (campo "name"),
  * quindi non esponiamo lo slug.
@@ -49,6 +49,11 @@ final class TeamMember extends PostType
                 'label' => 'Competenze (una per riga)',
                 'type'  => 'list',
             ],
+            'photo' => [
+                'label' => 'Foto',
+                'type'  => 'image',
+                'help'  => 'Ritratto del membro. Quadrato consigliato. Se vuoto, si mostrano le iniziali.',
+            ],
         ];
     }
 
@@ -64,6 +69,7 @@ final class TeamMember extends PostType
             'role'     => $this->metaString($post->ID, 'role'),
             'skills'   => $this->metaList($post->ID, 'skills'),
             'initials' => $this->metaString($post->ID, 'initials'),
+            'photo'    => $this->metaImage($post->ID, 'photo', 'medium_large'),
         ];
     }
 }

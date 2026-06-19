@@ -1,0 +1,142 @@
+---
+/**
+ * Form di contatto. Sito statico (SSG) → l'invio gira lato BROWSER verso
+ * l'endpoint WordPress POST /lead (richiede CORS abilitato sul plugin).
+ *
+ * La base URL della REST è una env non-PUBLIC (non arriva al client): la
+ * risolvo qui a build-time e la passo allo script via data-attribute.
+ * Anti-spam: campo honeypot `company`, nascosto agli utenti reali.
+ */
+import { apiBase } from '../lib/api';
+
+interface Props {
+  /** Origine del lead, salvata su WP (es. "contatti"). */
+  source?: string;
+}
+const { source = 'contatti' } = Astro.props;
+const base = apiBase();
+---
+
+<form class="cform" data-contact-form data-api={base} data-source={source} novalidate>
+  <div class="cform__row">
+    <label class="cform__field">
+      <span class="cform__label">Nome e cognome</span>
+      <input type="text" name="name" autocomplete="name" required />
+    </label>
+    <label class="cform__field">
+      <span class="cform__label">Email</span>
+      <input type="email" name="email" autocomplete="email" required />
+    </label>
+  </div>
+
+  <label class="cform__field">
+    <span class="cform__label">Messaggio</span>
+    <textarea name="message" rows="5" required placeholder="Raccontaci la tua idea o la tua esigenza."></textarea>
+  </label>
+
+  {/* Honeypot anti-bot: invisibile agli utenti, deve restare vuoto. */}
+  <div class="cform__hp" aria-hidden="true">
+    <label>Azienda
+      <input type="text" name="company" tabindex="-1" autocomplete="off" />
+    </label>
+  </div>
+
+  <div class="cform__actions">
+    <button type="submit" class="btn btn--primary" data-submit>Invia richiesta</button>
+    <p class="cform__status" data-status role="status" aria-live="polite"></p>
+  </div>
+</form>
+
+<style>
+  .cform { display: grid; gap: var(--sp-5); max-width: 640px; }
+  .cform__row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-5); }
+  @media (max-width: 600px) { .cform__row { grid-template-columns: 1fr; } }
+
+  .cform__field { display: grid; gap: var(--sp-2); }
+  .cform__label {
+    font-family: var(--font-heading);
+    font-weight: var(--fw-semibold);
+    font-size: var(--fs-sm);
+    color: var(--c-text);
+  }
+  .cform input,
+  .cform textarea {
+    width: 100%;
+    font: inherit;
+    color: var(--c-text);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-md);
+    padding: 0.75rem 0.9rem;
+    transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+  }
+  .cform textarea { resize: vertical; min-height: 120px; }
+  .cform input:focus,
+  .cform textarea:focus {
+    outline: none;
+    border-color: var(--c-brand);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--c-brand) 25%, transparent);
+  }
+  .cform [aria-invalid='true'] { border-color: #f87171; }
+
+  /* Honeypot fuori dal flusso visivo ma raggiungibile dai bot. */
+  .cform__hp {
+    position: absolute;
+    left: -9999px;
+    width: 1px; height: 1px;
+    overflow: hidden;
+  }
+
+  .cform__actions { display: flex; align-items: center; gap: var(--sp-4); flex-wrap: wrap; }
+  .cform__status { font-size: var(--fs-sm); margin: 0; }
+  .cform__status[data-state='ok'] { color: var(--c-accent); }
+  .cform__status[data-state='error'] { color: #f87171; }
+  .cform button[disabled] { opacity: 0.6; pointer-events: none; }
+</style>
+
+<script>
+  import { postLead } from '../lib/api';
+
+  const form = document.querySelector<HTMLFormElement>('[data-contact-form]');
+  if (form) {
+    const base = form.dataset.api || '';
+    const source = form.dataset.source || '';
+    const btn = form.querySelector<HTMLButtonElement>('[data-submit]');
+    const status = form.querySelector<HTMLElement>('[data-status]');
+
+    const setStatus = (msg: string, state: '' | 'ok' | 'error') => {
+      if (!status) return;
+      status.textContent = msg;
+      if (state) status.dataset.state = state;
+      else delete status.dataset.state;
+    };
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const data = new FormData(form);
+      const name = String(data.get('name') || '').trim();
+      const email = String(data.get('email') || '').trim();
+      const message = String(data.get('message') || '').trim();
+      const company = String(data.get('company') || '');
+
+      if (!name || !email || !message) {
+        setStatus('Compila nome, email e messaggio.', 'error');
+        return;
+      }
+
+      btn?.setAttribute('disabled', '');
+      setStatus('Invio in corso…', '');
+
+      const res = await postLead({ name, email, message, source, company }, base);
+
+      if (res.ok) {
+        form.reset();
+        setStatus('Grazie! Ti ricontatteremo a breve.', 'ok');
+      } else {
+        setStatus(res.error || 'Invio non riuscito. Riprova.', 'error');
+      }
+      btn?.removeAttribute('disabled');
+    });
+  }
+</script>

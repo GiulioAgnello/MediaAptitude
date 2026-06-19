@@ -5,6 +5,14 @@
  * non dovranno cambiare.
  */
 
+/** Immagine risolta dalla REST WP: URL + dimensioni (per evitare layout shift). */
+export interface MediaImage {
+  url: string;
+  width: number;
+  height: number;
+  alt?: string;
+}
+
 export interface Service {
   slug: string;
   title: string;
@@ -25,6 +33,12 @@ export interface CaseStudy {
   category: string;
   result: string;
   tech: string[];
+  /** Link al sito/lavoro già online. Se assente, la card non è cliccabile. */
+  url?: string;
+  /** Screenshot desktop (frame browser nel collage). */
+  imageDesktop?: MediaImage | null;
+  /** Screenshot mobile (frame telefono nel collage). */
+  imageMobile?: MediaImage | null;
 }
 
 export interface TeamMember {
@@ -32,6 +46,8 @@ export interface TeamMember {
   role: string;
   skills: string[];
   initials: string;
+  /** Ritratto. Se assente, si mostrano le iniziali. */
+  photo?: MediaImage | null;
 }
 
 export interface ManifestoPoint {
@@ -39,6 +55,11 @@ export interface ManifestoPoint {
   strike: string;
   /** Ciò che facciamo davvero (evidenziato). */
   truth: string;
+}
+
+export interface Value {
+  title: string;
+  description: string;
 }
 
 /** Sezione manifesto "negazione": racconta il posizionamento per contrasto. */
@@ -62,6 +83,30 @@ export const manifesto: ManifestoPoint[] = [
   {
     strike: "Non sacrifichiamo la velocità per l'effetto.",
     truth: 'Design accattivante e performance vivono insieme, sempre.',
+  },
+];
+
+/** Valori aziendali, mostrati nella pagina "Chi siamo". Contenuto editoriale statico. */
+export const values: Value[] = [
+  {
+    title: 'Qualità senza compromessi',
+    description:
+      'Ogni dettaglio conta: codice pulito, performance e accessibilità non sono extra, ma il nostro standard minimo.',
+  },
+  {
+    title: 'Trasparenza',
+    description:
+      'Tempi, scelte tecniche e costi sempre chiari. Niente sorprese: sai cosa stiamo costruendo e perché.',
+  },
+  {
+    title: 'Partnership a lungo termine',
+    description:
+      'Non spariamo dopo il lancio. Restiamo al tuo fianco per far crescere il prodotto nel tempo.',
+  },
+  {
+    title: 'Misurabilità',
+    description:
+      "Definiamo obiettivi concreti e li misuriamo: conversioni, velocità, posizionamento. I risultati prima delle opinioni.",
   },
 ];
 

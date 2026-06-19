@@ -5,7 +5,7 @@ const year = new Date().getFullYear();
 ---
 
 <footer class="footer section--ink">
-  <div class="container footer__top">
+  <div class="footer__top">
     <div class="footer__brand">
       <Logo variant="light" />
       <p class="footer__desc">{site.description}</p>
@@ -26,14 +26,14 @@ const year = new Date().getFullYear();
     </div>
   </div>
 
-  <div class="container footer__bottom">
+  <div class="footer__bottom">
     <p>© {year} {site.legalName}. Tutti i diritti riservati.</p>
     <p class="footer__made">{site.tagline}</p>
   </div>
 </footer>
 
 <style>
-  .footer { padding-block: var(--sp-8) var(--sp-6); }
+  .footer { padding-block: var(--sp-8) var(--sp-6); padding-inline: var(--container-pad); }
   .footer__top {
     display: grid;
     grid-template-columns: 1.6fr 1fr 1fr;

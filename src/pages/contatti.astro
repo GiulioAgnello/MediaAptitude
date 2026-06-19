@@ -1,0 +1,72 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/Section.astro';
+import ContactForm from '../components/ContactForm.astro';
+import { site } from '../data/site';
+---
+
+<BaseLayout
+  path="/contatti"
+  title="Contatti"
+  description="Parla con Media Aptitude del tuo progetto digitale. Compila il form: ti rispondiamo con un primo riscontro concreto."
+>
+  <Section
+    eyebrow="Iniziamo"
+    title="Parlaci del tuo progetto"
+    lead="Raccontaci l'idea o l'esigenza: ti rispondiamo con un primo riscontro concreto, senza impegno."
+  >
+    <div class="contact">
+      <div class="contact__form" data-reveal>
+        <ContactForm source="contatti" />
+      </div>
+
+      <aside class="contact__aside" data-reveal>
+        <h2 class="contact__aside-title">Preferisci scriverci?</h2>
+        <p class="contact__aside-lead">Trovi tutto qui sotto. Rispondiamo in genere entro un giorno lavorativo.</p>
+        <ul class="contact__list" role="list">
+          <li>
+            <span class="contact__k">Email</span>
+            <a class="contact__v" href={`mailto:${site.email}`}>{site.email}</a>
+          </li>
+          <li>
+            <span class="contact__k">Cosa facciamo</span>
+            <span class="contact__v">Presenza online, UX/UI, gestionali, e-commerce</span>
+          </li>
+        </ul>
+      </aside>
+    </div>
+  </Section>
+</BaseLayout>
+
+<style>
+  .contact {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: var(--sp-7);
+    align-items: start;
+  }
+  @media (max-width: 860px) { .contact { grid-template-columns: 1fr; } }
+
+  .contact__aside {
+    padding: var(--sp-6);
+    border-radius: var(--radius-lg);
+    background: var(--c-surface);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--c-border);
+  }
+  .contact__aside-title { font-size: var(--fs-lg); margin-bottom: var(--sp-3); }
+  .contact__aside-lead { color: var(--c-text-muted); font-size: var(--fs-sm); margin-bottom: var(--sp-5); }
+  .contact__list { display: grid; gap: var(--sp-4); }
+  .contact__k {
+    display: block;
+    font-family: var(--font-heading);
+    font-weight: var(--fw-semibold);
+    font-size: var(--fs-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--c-accent);
+    margin-bottom: 2px;
+  }
+  .contact__v { color: var(--c-text); font-size: var(--fs-sm); }
+  a.contact__v:hover { color: var(--c-brand); }
+</style>

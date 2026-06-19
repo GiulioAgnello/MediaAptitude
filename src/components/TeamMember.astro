@@ -5,7 +5,19 @@ const { member } = Astro.props;
 ---
 
 <article class="member">
-  <div class="member__avatar" aria-hidden="true">{member.initials}</div>
+  {member.photo ? (
+    <img
+      class="member__photo"
+      src={member.photo.url}
+      width={member.photo.width}
+      height={member.photo.height}
+      alt={member.photo.alt || member.name}
+      loading="lazy"
+      decoding="async"
+    />
+  ) : (
+    <div class="member__avatar" aria-hidden="true">{member.initials}</div>
+  )}
   <h3 class="member__name">{member.name}</h3>
   <p class="member__role">{member.role}</p>
   <ul class="member__skills" role="list">
@@ -35,6 +47,14 @@ const { member } = Astro.props;
     font-weight: var(--fw-bold);
     font-size: 1.4rem;
     letter-spacing: 0.02em;
+  }
+  .member__photo {
+    width: 92px; height: 92px;
+    margin: 0 auto var(--sp-4);
+    display: block;
+    object-fit: cover;
+    border-radius: var(--radius-full);
+    border: 2px solid color-mix(in srgb, var(--c-brand) 35%, transparent);
   }
   .member__name { font-size: var(--fs-lg); }
   .member__role { color: var(--c-brand); font-size: var(--fs-sm); font-weight: var(--fw-medium); margin-bottom: var(--sp-3); }

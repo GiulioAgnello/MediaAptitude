@@ -41,6 +41,42 @@ final class RestController
     public function register(): void
     {
         add_action('rest_api_init', [$this, 'registerRoutes']);
+        add_action('rest_api_init', [$this, 'enableCors'], 15);
+    }
+
+    /**
+     * Abilita CORS sui nostri endpoint. Serve perché il form di contatto
+     * (sito statico Astro) fa il POST /lead dal BROWSER, cross-origin.
+     * I GET sono consumati a build-time e non ne avrebbero bisogno, ma lo
+     * scope è comunque limitato al namespace del plugin.
+     */
+    public function enableCors(): void
+    {
+        add_filter('rest_pre_serve_request', [$this, 'sendCorsHeaders'], 10, 3);
+    }
+
+    /**
+     * Invia gli header CORS solo per le route del nostro namespace.
+     * Origine consentita configurabile via filtro `ma_core_cors_origin`
+     * (default '*': l'endpoint è pubblico e senza credenziali/cookie).
+     *
+     * @param mixed             $served
+     * @param mixed             $result
+     * @param \WP_REST_Request  $request
+     * @return mixed
+     */
+    public function sendCorsHeaders($served, $result, $request)
+    {
+        $route = $request instanceof \WP_REST_Request ? (string) $request->get_route() : '';
+        if (strpos($route, '/' . MA_CORE_REST_NS) === 0) {
+            $origin = (string) apply_filters('ma_core_cors_origin', '*');
+            header('Access-Control-Allow-Origin: ' . $origin);
+            header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+            header('Access-Control-Allow-Headers: Content-Type');
+            header('Vary: Origin');
+        }
+
+        return $served;
     }
 
     public function registerRoutes(): void
