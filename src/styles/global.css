@@ -38,6 +38,8 @@
   /* ---------- TIPOGRAFIA ---------- */
   --font-heading: 'Rajdhani', system-ui, sans-serif;
   --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  /* Manoscritto: usato per accenti come le frasi barrate del manifesto. */
+  --font-hand: 'Caveat', 'Segoe Script', cursive;
 
   /* Scala tipografica fluida (clamp: min, preferito vw, max) */
   --fs-xs: 0.8125rem;   /* 13px */
