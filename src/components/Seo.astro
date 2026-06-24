@@ -1,10 +1,11 @@
 ---
 /**
  * Componente SEO centralizzato.
- * Genera title, meta description, canonical, Open Graph e Twitter card.
- * In S4 aggiungeremo qui anche i dati strutturati schema.org.
+ * Genera title, meta description, canonical, Open Graph, Twitter card
+ * e i dati strutturati schema.org (JSON-LD) per i rich results.
  */
 import { site } from '../data/site';
+import type { WpSeo } from '../lib/seo';
 
 interface Props {
   title?: string;
@@ -14,6 +15,13 @@ interface Props {
   image?: string;
   /** Se true aggiunge noindex (utile per pagine tecniche/grazie). */
   noindex?: boolean;
+  /**
+   * Schemi JSON-LD specifici della pagina (es. BreadcrumbList).
+   * Vengono aggiunti a Organization + WebSite già presenti site-wide.
+   */
+  schema?: Record<string, unknown> | Record<string, unknown>[];
+  /** Meta SEO da WordPress (Yoast): se presenti, vincono sui default. */
+  wpSeo?: WpSeo | null;
 }
 
 const {
@@ -22,29 +30,78 @@ const {
   path = '/',
   image = site.ogImage,
   noindex = false,
+  schema,
+  wpSeo = null,
 } = Astro.props;
 
-const fullTitle = title ? `${title} — ${site.name}` : `${site.name} — ${site.tagline}`;
+// I valori di WP (se presenti) hanno la precedenza sui default statici.
+const fullTitle =
+  wpSeo?.title ??
+  (title ? `${title} — ${site.name}` : `${site.name} — ${site.tagline}`);
+const metaDescription = wpSeo?.description ?? description;
+const isNoindex = wpSeo?.noindex ?? noindex;
 const canonical = new URL(path, site.url).href;
-const ogImageUrl = new URL(image, site.url).href;
+const ogImageUrl = new URL(wpSeo?.ogImage ?? image, site.url).href;
+
+// --- Dati strutturati site-wide ----------------------------------------
+// @id stabili: permettono ad altri schemi di "puntare" a questi nodi
+// (es. una pagina che dichiara publisher = la nostra Organization).
+const orgId = `${site.url}/#organization`;
+const siteId = `${site.url}/#website`;
+
+const organizationSchema = {
+  '@type': 'Organization',
+  '@id': orgId,
+  name: site.legalName,
+  url: site.url,
+  email: site.email,
+  description: site.description,
+  logo: {
+    '@type': 'ImageObject',
+    url: new URL('/logo.png', site.url).href,
+  },
+  // sameAs: profili ufficiali (social). Vuoto finché non li forniamo.
+  sameAs: [] as string[],
+};
+
+const websiteSchema = {
+  '@type': 'WebSite',
+  '@id': siteId,
+  url: site.url,
+  name: site.name,
+  inLanguage: site.locale,
+  publisher: { '@id': orgId },
+};
+
+// @graph: array di nodi collegati tra loro tramite @id. È il modo
+// raccomandato da Google per dichiarare più entità in un solo blocco.
+const pageSchemas = schema ? (Array.isArray(schema) ? schema : [schema]) : [];
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [organizationSchema, websiteSchema, ...pageSchemas],
+};
 ---
 
 <title>{fullTitle}</title>
-<meta name="description" content={description} />
+<meta name="description" content={metaDescription} />
 <link rel="canonical" href={canonical} />
-{noindex && <meta name="robots" content="noindex, nofollow" />}
+{isNoindex && <meta name="robots" content="noindex, nofollow" />}
 
 <!-- Open Graph -->
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content={site.name} />
 <meta property="og:locale" content={site.locale} />
 <meta property="og:title" content={fullTitle} />
-<meta property="og:description" content={description} />
+<meta property="og:description" content={metaDescription} />
 <meta property="og:url" content={canonical} />
 <meta property="og:image" content={ogImageUrl} />
 
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content={fullTitle} />
-<meta name="twitter:description" content={description} />
+<meta name="twitter:description" content={metaDescription} />
 <meta name="twitter:image" content={ogImageUrl} />
+
+<!-- Dati strutturati (schema.org / JSON-LD).
+     set:html evita che Astro faccia escape delle virgolette del JSON. -->
+<script type="application/ld+json" set:html={JSON.stringify(jsonLd)}></script>

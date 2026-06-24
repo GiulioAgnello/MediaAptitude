@@ -5,15 +5,24 @@ import TeamMember from '../components/TeamMember.astro';
 import TechBadge from '../components/TechBadge.astro';
 import { values, techStack } from '../data/content';
 import { getTeam } from '../lib/api';
+import { site } from '../data/site';
+import { breadcrumb } from '../lib/seo';
 
 // Team dalla REST WP a build-time (fallback ai mock se WP è offline).
 const team = await getTeam();
+
+// Breadcrumb per i rich results: Home › Chi siamo
+const schema = breadcrumb([
+  { name: 'Home', path: '/' },
+  { name: 'Chi siamo', path: '/chi-siamo' },
+], site.url);
 ---
 
 <BaseLayout
   path="/chi-siamo"
   title="Chi siamo"
   description="Chi è Media Aptitude: un team di frontend, backend, design e SEO sotto lo stesso tetto. I nostri valori e lo stack tecnologico che usiamo."
+  schema={schema}
 >
   <!-- INTRO -->
   <Section

@@ -1,0 +1,7 @@
+# robots.txt — Media Aptitude
+# Consente a tutti i crawler di indicizzare l'intero sito.
+User-agent: *
+Allow: /
+
+# Sitemap generata da @astrojs/sitemap a build-time.
+Sitemap: https://www.mediaaptitude.it/sitemap-index.xml

@@ -3,12 +3,20 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Section from '../components/Section.astro';
 import ContactForm from '../components/ContactForm.astro';
 import { site } from '../data/site';
+import { breadcrumb } from '../lib/seo';
+
+// Breadcrumb per i rich results: Home › Contatti
+const schema = breadcrumb([
+  { name: 'Home', path: '/' },
+  { name: 'Contatti', path: '/contatti' },
+], site.url);
 ---
 
 <BaseLayout
   path="/contatti"
   title="Contatti"
   description="Parla con Media Aptitude del tuo progetto digitale. Compila il form: ti rispondiamo con un primo riscontro concreto."
+  schema={schema}
 >
   <Section
     eyebrow="Iniziamo"

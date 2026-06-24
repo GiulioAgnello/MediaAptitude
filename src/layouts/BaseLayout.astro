@@ -1,18 +1,37 @@
 ---
+// Font self-hosted (@fontsource): solo i pesi usati e solo il subset latino
+// (copre l'italiano à è é ì ò ù). Vite li impacchetta con hash + cache lunga;
+// @font-face usa font-display: swap.
+import '@fontsource/inter/latin-400.css';
+import '@fontsource/inter/latin-500.css';
+import '@fontsource/inter/latin-600.css';
+import '@fontsource/inter/latin-700.css';
+import '@fontsource/rajdhani/latin-500.css';
+import '@fontsource/rajdhani/latin-600.css';
+import '@fontsource/rajdhani/latin-700.css';
+import '@fontsource/caveat/latin-600.css';
 import '../styles/global.css';
 import Seo from '../components/Seo.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { site } from '../data/site';
+import { getSeo } from '../lib/api';
+import { parseYoast } from '../lib/seo';
 
 interface Props {
   title?: string;
   description?: string;
   path?: string;
   noindex?: boolean;
+  /** Schemi JSON-LD specifici della pagina (vedi Seo.astro). */
+  schema?: Record<string, unknown> | Record<string, unknown>[];
 }
 
-const { title, description, path, noindex } = Astro.props;
+const { title, description, path = '/', noindex, schema } = Astro.props;
+
+// SEO da WordPress (Yoast) per questo path, a build-time.
+// Se WP è offline o non ha dati, parseYoast torna null → restano i default.
+const wpSeo = parseYoast(await getSeo(path));
 ---
 
 <!doctype html>
@@ -23,17 +42,10 @@ const { title, description, path, noindex } = Astro.props;
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
 
-    <!-- Font: Rajdhani (heading) + Inter (body).
-         preconnect riduce la latenza; display=swap evita testo invisibile (CWV).
-         In S4 valuteremo il self-hosting dei font per azzerare il blocco di rete. -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Inter:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap"
-      rel="stylesheet"
-    />
+    {/* Font self-hosted via @fontsource (import nel frontmatter).
+        Nessuna connessione esterna a Google: meglio per latenza e privacy. */}
 
-    <Seo title={title} description={description} path={path} noindex={noindex} />
+    <Seo title={title} description={description} path={path} noindex={noindex} schema={schema} wpSeo={wpSeo} />
 
     {/* Reveal allo scroll: fallback per browser senza animation-timeline nativo.
         Su Chrome/Edge esce subito (usa la via CSS pura). Aggiunge .io-reveal
