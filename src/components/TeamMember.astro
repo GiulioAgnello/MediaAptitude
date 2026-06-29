@@ -5,56 +5,89 @@ const { member } = Astro.props;
 ---
 
 <article class="member">
-  {member.photo ? (
-    <img
-      class="member__photo"
-      src={member.photo.url}
-      width={member.photo.width}
-      height={member.photo.height}
-      alt={member.photo.alt || member.name}
-      loading="lazy"
-      decoding="async"
-    />
-  ) : (
-    <div class="member__avatar" aria-hidden="true">{member.initials}</div>
-  )}
-  <h3 class="member__name">{member.name}</h3>
-  <p class="member__role">{member.role}</p>
-  <ul class="member__skills" role="list">
-    {member.skills.map((s) => <li>{s}</li>)}
-  </ul>
+  <div class="member__media" aria-hidden={member.photo ? undefined : 'true'}>
+    {member.photo ? (
+      <img
+        class="member__photo"
+        src={member.photo.url}
+        width={member.photo.width}
+        height={member.photo.height}
+        alt={member.photo.alt || member.name}
+        loading="lazy"
+        decoding="async"
+      />
+    ) : (
+      <div class="member__avatar">{member.initials}</div>
+    )}
+  </div>
+  <div class="member__body">
+    <h3 class="member__name">{member.name}</h3>
+    <p class="member__role">{member.role}</p>
+    <ul class="member__skills" role="list">
+      {member.skills.map((s) => <li>{s}</li>)}
+    </ul>
+  </div>
 </article>
 
 <style>
   .member {
-    text-align: center;
-    padding: var(--sp-6) var(--sp-4);
+    position: relative;
     border-radius: var(--radius-lg);
     background: var(--c-surface);
     backdrop-filter: blur(8px);
     border: 1px solid var(--c-border);
+    overflow: hidden; /* foto a filo dei bordi arrotondati */
     transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease);
   }
   .member:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: color-mix(in srgb, var(--c-brand) 45%, transparent); }
+
+  /* Foto quadrata a tutta larghezza della card. */
+  .member__media {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+  }
+  .member__photo,
   .member__avatar {
-    width: 72px; height: 72px;
-    margin: 0 auto var(--sp-4);
+    width: 100%; height: 100%;
+    display: block;
+    object-fit: cover;
+    transition: transform var(--dur) var(--ease);
+  }
+  .member:hover .member__photo,
+  .member:hover .member__avatar { transform: scale(1.05); }
+
+  /* Sfumatura: la foto sfuma verso il fondo della card per fondersi col testo. */
+  .member__media::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      to bottom,
+      transparent 45%,
+      color-mix(in srgb, var(--c-bg) 55%, transparent) 78%,
+      var(--c-bg) 100%
+    );
+  }
+
+  .member__avatar {
     display: grid; place-items: center;
-    border-radius: var(--radius-full);
-    background: linear-gradient(135deg, var(--c-brand), var(--c-accent));
+    background: linear-gradient(135deg, var(--c-brand), var(--c-accent) 55%, var(--c-indigo));
     color: #fff;
     font-family: var(--font-heading);
     font-weight: var(--fw-bold);
-    font-size: 1.4rem;
+    font-size: clamp(3rem, 8vw, 4.5rem);
     letter-spacing: 0.02em;
   }
-  .member__photo {
-    width: 92px; height: 92px;
-    margin: 0 auto var(--sp-4);
-    display: block;
-    object-fit: cover;
-    border-radius: var(--radius-full);
-    border: 2px solid color-mix(in srgb, var(--c-brand) 35%, transparent);
+
+  /* Contenuto sotto la foto, leggermente sovrapposto alla sfumatura. */
+  .member__body {
+    position: relative;
+    text-align: center;
+    padding: 0 var(--sp-5) var(--sp-5);
+    margin-top: calc(var(--sp-6) * -1); /* risale dentro la sfumatura */
   }
   .member__name { font-size: var(--fs-lg); }
   .member__role { color: var(--c-brand); font-size: var(--fs-sm); font-weight: var(--fw-medium); margin-bottom: var(--sp-3); }
@@ -64,6 +97,7 @@ const { member } = Astro.props;
     color: var(--c-text-muted);
     padding: 0.2rem 0.6rem;
     border-radius: var(--radius-full);
-    background: var(--c-bg-alt);
+    background: color-mix(in srgb, var(--c-bg) 55%, var(--c-surface));
+    border: 1px solid var(--c-border);
   }
 </style>

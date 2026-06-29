@@ -6,23 +6,24 @@ import { cta } from '../data/site';
 <section class="hero">
   <div class="hero__bg" aria-hidden="true"></div>
   <div class="container hero__inner">
-    <span class="eyebrow">Studio IT consociato</span>
+    <span class="eyebrow">Agenzia digitale a Lecce e nel Salento</span>
     <h1 class="hero__title">
-      Costruiamo prodotti digitali<br />
-      <span class="hero__accent">veloci, curati e che convertono.</span>
+      Aiutiamo le imprese di Lecce e del Salento a<br />
+      <span class="hero__accent">trovare nuovi clienti grazie al digitale</span>
     </h1>
     <p class="hero__lead lead">
-      Presenza online, UX/UI, gestionali ed e-commerce. Uniamo tecnologie
-      innovative e best practice consolidate per progetti solidi e pronti a crescere.
+      Siti web, e-commerce, web application su misura, SEO e campagne pubblicitarie:
+      progettiamo strumenti digitali veloci e orientati ai risultati, pensati per far
+      crescere la tua attività sul territorio e online.
     </p>
     <div class="hero__actions">
       <Button href={cta.href} variant="primary">{cta.label}</Button>
       <Button href="/#lavori" variant="ghost">Guarda i nostri lavori</Button>
     </div>
     <ul class="hero__stats" role="list">
-      <li><strong>4</strong><span>Aree di competenza</span></li>
-      <li><strong>SEO-first</strong><span>Approccio integrato</span></li>
-      <li><strong>Headless</strong><span>Architettura moderna</span></li>
+      <li><strong>7</strong><span>Aree di competenza</span></li>
+      <li><strong>SEO-first</strong><span>Posizionamento su Google</span></li>
+      <li><strong>Lecce & Salento</strong><span>Vicini al tuo business</span></li>
     </ul>
   </div>
 </section>
@@ -37,8 +38,10 @@ import { cta } from '../data/site';
       radial-gradient(50% 50% at 0% 100%, var(--c-accent-soft) 0%, transparent 55%);
     z-index: -1;
   }
-  .hero__inner { display: grid; gap: var(--sp-5); max-width: 1800px; }
-  .hero__title { font-size: var(--fs-3xl); }
+  .hero__inner { display: grid; gap: var(--sp-5); max-width: 1800px; min-width: 0; }
+  /* Gli item della griglia non devono sforare oltre il viewport (default min-width:auto). */
+  .hero__inner > * { min-width: 0; }
+  .hero__title { font-size: var(--fs-3xl); overflow-wrap: break-word; }
   .hero__accent {
     background: linear-gradient(120deg, var(--c-brand), var(--c-accent));
     -webkit-background-clip: text;
@@ -49,13 +52,13 @@ import { cta } from '../data/site';
   .hero__actions { display: flex; flex-wrap: wrap; gap: var(--sp-3); margin-top: var(--sp-2); }
   .hero__stats {
     display: flex;
-    justify-content: center;
-    gap: var(--sp-7);
+    flex-wrap: wrap;
+    gap: var(--sp-5) var(--sp-7);
     margin-top: var(--sp-6);
     padding-top: var(--sp-6);
     border-top: 1px solid var(--c-border);
   }
-  .hero__stats li { display: grid; gap: 2px; }
+  .hero__stats li { display: grid; gap: 2px; min-width: 0; }
   .hero__stats strong {
     font-family: var(--font-heading);
     font-weight: var(--fw-bold);
@@ -63,6 +66,19 @@ import { cta } from '../data/site';
     color: var(--c-text);
   }
   .hero__stats span { font-size: var(--fs-sm); color: var(--c-text-muted); }
+
+  /* MOBILE: titolo più contenuto e stats su griglia, niente overflow orizzontale. */
+  @media (max-width: 600px) {
+    .hero { padding-block: clamp(2.5rem, 2rem + 6vw, 4rem); }
+    .hero__title { font-size: var(--fs-2xl); }
+    .hero__title br { display: none; }
+    .hero__actions { gap: var(--sp-2); }
+    .hero__stats {
+      gap: var(--sp-4) var(--sp-5);
+      justify-content: flex-start;
+    }
+    .hero__stats li { flex: 1 1 auto; }
+  }
 
   /* Entrance on-load, in sequenza. Solo CSS, niente JS. */
   @media (prefers-reduced-motion: no-preference) {

@@ -18,7 +18,13 @@ export interface Service {
   title: string;
   summary: string;
   bullets: string[];
-  icon: 'web' | 'ux' | 'erp' | 'ecommerce';
+  icon: 'web' | 'app' | 'ecommerce' | 'seo' | 'ads' | 'crm' | 'training';
+}
+
+/** Settore di mercato servito, per la fascia "Soluzioni per settori specifici". */
+export interface Sector {
+  label: string;
+  description: string;
 }
 
 export interface Tech {
@@ -112,37 +118,106 @@ export const values: Value[] = [
 
 export const services: Service[] = [
   {
-    slug: 'presenza-online',
-    title: 'Presenza online',
+    slug: 'siti-web',
+    title: 'Realizzazione siti web professionali',
     summary:
-      'Siti istituzionali e landing veloci e indicizzabili, costruiti per convertire e per posizionarsi sui motori di ricerca.',
-    bullets: ['Siti vetrina e corporate', 'Landing page ad alta conversione', 'SEO tecnica e contenutistica', 'Performance e Core Web Vitals'],
+      'Progettiamo siti web moderni, veloci e ottimizzati per trasformare i visitatori in clienti, partendo da identità aziendale, esperienza utente e obiettivi di business.',
+    bullets: [
+      'Siti aziendali e corporate',
+      'Landing page ad alta conversione',
+      'Performance e Core Web Vitals',
+      'Ottimizzati per aziende, professionisti e studi tecnici',
+    ],
     icon: 'web',
   },
   {
-    slug: 'ux-ui',
-    title: 'UX/UI Design',
+    slug: 'web-application',
+    title: 'Web application e software su misura',
     summary:
-      'Progettiamo interfacce chiare e desiderabili: dalla ricerca utente al design system, fino al prototipo navigabile.',
-    bullets: ['User research e wireframing', 'Design system riutilizzabili', 'Prototipi interattivi', 'Accessibilità (WCAG)'],
-    icon: 'ux',
-  },
-  {
-    slug: 'gestionali',
-    title: 'Gestionali su misura',
-    summary:
-      'Applicativi e gestionali web che digitalizzano i processi aziendali, integrandosi con i sistemi che già usate.',
-    bullets: ['Web app e portali interni', 'Automazione dei processi', 'Integrazioni e API', 'Dashboard e reportistica'],
-    icon: 'erp',
+      'Sviluppiamo web application e piattaforme digitali costruite intorno ai processi della tua azienda, per migliorare l’organizzazione, automatizzare le attività ripetitive e aumentare la produttività.',
+    bullets: [
+      'Portali riservati per clienti e fornitori',
+      'Gestione ordini, preventivi e documenti',
+      'Dashboard e reportistica personalizzata',
+      'Integrazioni con ERP, CRM ed e-commerce',
+    ],
+    icon: 'app',
   },
   {
     slug: 'ecommerce',
-    title: 'E-commerce',
+    title: 'E-commerce e vendita online',
     summary:
-      'Negozi online scalabili e ottimizzati per la vendita, dal catalogo al checkout, con attenzione a SEO e analytics.',
-    bullets: ['Store performanti e scalabili', 'Checkout ottimizzato', 'Integrazione pagamenti e logistica', 'SEO prodotto e tracking'],
+      'Realizziamo negozi online orientati alle performance, integrando pagamenti, gestione cataloghi, marketing automation e strategie di crescita per aumentare le vendite.',
+    bullets: [
+      'Store performanti e scalabili',
+      'Integrazione sistemi di pagamento',
+      'Gestione cataloghi e logistica',
+      'Marketing automation e crescita',
+    ],
     icon: 'ecommerce',
   },
+  {
+    slug: 'seo',
+    title: 'SEO e posizionamento su Google',
+    summary:
+      'Aiutiamo le aziende a essere trovate su Google dalle persone che stanno già cercando i loro prodotti o servizi, con strategie SEO orientate ai risultati.',
+    bullets: [
+      'Analisi di mercato e competitor',
+      'Ricerca e strategia parole chiave',
+      'SEO tecnica e on-page',
+      'Posizionamento locale (Lecce e Salento)',
+    ],
+    icon: 'seo',
+  },
+  {
+    slug: 'advertising',
+    title: 'Google Ads e Meta Ads',
+    summary:
+      'Creiamo campagne pubblicitarie su Google, Facebook e Instagram per intercettare nuovi clienti nel momento in cui cercano un servizio o mostrano interesse verso un prodotto.',
+    bullets: [
+      'Campagne Google Search e Display',
+      'Advertising su Facebook e Instagram',
+      'Targeting e ottimizzazione budget',
+      'Monitoraggio conversioni e ROI',
+    ],
+    icon: 'ads',
+  },
+  {
+    slug: 'crm-automazioni',
+    title: 'CRM e automazioni',
+    summary:
+      'Automatizziamo la gestione dei contatti e dei processi commerciali integrando form, campagne pubblicitarie, email marketing e CRM: nessun lead perso e risposte più veloci.',
+    bullets: [
+      'Integrazione form, ads e CRM',
+      'Email marketing automatizzato',
+      'Nessun lead perso, risposta più rapida',
+      'Controllo delle opportunità commerciali',
+    ],
+    icon: 'crm',
+  },
+  {
+    slug: 'formazione-consulenza',
+    title: 'Formazione e consulenza',
+    summary:
+      'Affianchiamo aziende, enti e professionisti con percorsi di formazione e consulenza per trasferire competenze concrete e immediatamente applicabili.',
+    bullets: [
+      'Digital Marketing e SEO',
+      'Copywriting e Social Media Marketing',
+      'Cybersecurity e Design Thinking',
+      'E-commerce',
+    ],
+    icon: 'training',
+  },
+];
+
+/** Settori serviti — fascia "Soluzioni per settori specifici" (long-tail SEO). */
+export const sectors: Sector[] = [
+  { label: 'Edilizia e impiantistica', description: 'Siti e gestionali per imprese edili e installatori.' },
+  { label: 'Industria e manifattura', description: 'Piattaforme digitali e automazioni per la produzione.' },
+  { label: 'Turismo e hospitality', description: 'Presenza online e prenotazioni per strutture ricettive.' },
+  { label: 'Immobiliare', description: 'Portali annunci e gestione lead per agenzie.' },
+  { label: 'Enti di formazione', description: 'Portali corsi, aree riservate e iscrizioni online.' },
+  { label: 'Commercio ed e-commerce', description: 'Negozi online e vendita multicanale.' },
 ];
 
 export const techStack: Tech[] = [

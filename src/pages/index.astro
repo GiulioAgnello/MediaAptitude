@@ -7,7 +7,7 @@ import TechBadge from '../components/TechBadge.astro';
 import CollageWork from '../components/CollageWork.astro';
 import Manifesto from '../components/Manifesto.astro';
 import Button from '../components/Button.astro';
-import { techStack } from '../data/content';
+import { techStack, sectors } from '../data/content';
 import { getServices, getCaseStudies } from '../lib/api';
 import { cta } from '../data/site';
 
@@ -30,10 +30,10 @@ const [services, caseStudies] = await Promise.all([
   <Section
     id="servizi"
     eyebrow="Cosa facciamo"
-    title="Quattro aree, un unico standard di qualità"
-    lead="Copriamo l'intero ciclo di vita del prodotto digitale, dalla strategia alla messa online."
+    title="Tutto il digitale che serve alla tua impresa"
+    lead="Dalla presenza online alle web application su misura, dalla SEO alle campagne pubblicitarie: un unico partner per trovare nuovi clienti e far crescere il tuo business."
   >
-    <div class="grid grid--4 stagger">
+    <div class="grid grid--3 stagger">
       {services.map((service) => (
         <div class="reveal-item" data-reveal><ServiceCard service={service} /></div>
       ))}
@@ -69,6 +69,24 @@ const [services, caseStudies] = await Promise.all([
 
   <!-- LAVORI (collage GSAP) -->
   <CollageWork items={caseStudies} />
+
+  <!-- SETTORI SPECIFICI -->
+  <Section
+    id="settori"
+    variant="alt"
+    eyebrow="Soluzioni per settori specifici"
+    title="Esperienza nei settori del territorio"
+    lead="Sviluppiamo strategie digitali personalizzate in base alle caratteristiche del settore e del territorio salentino."
+  >
+    <div class="sectors stagger">
+      {sectors.map((s) => (
+        <div class="sector-card" data-reveal>
+          <h3 class="sector-card__title">{s.label}</h3>
+          <p class="sector-card__desc">{s.description}</p>
+        </div>
+      ))}
+    </div>
+  </Section>
 
   <!-- CTA FINALE -> pagina contatti -->
   <Section variant="ink" align="center"
@@ -113,4 +131,23 @@ const [services, caseStudies] = await Promise.all([
 
   .contact-cta { display: grid; gap: var(--sp-4); justify-items: center; }
   .contact-cta__note { color: var(--c-slate-400); font-size: var(--fs-sm); }
+
+  /* Settori specifici */
+  .sectors { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-5); }
+  @media (max-width: 900px) { .sectors { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .sectors { grid-template-columns: 1fr; } }
+  .sector-card {
+    background: var(--c-surface);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-lg);
+    padding: var(--sp-5);
+    transition: transform var(--dur) var(--ease), border-color var(--dur) var(--ease);
+  }
+  .sector-card:hover {
+    transform: translateY(-3px);
+    border-color: color-mix(in srgb, var(--c-brand) 45%, transparent);
+  }
+  .sector-card__title { font-size: var(--fs-lg); margin-bottom: var(--sp-2); }
+  .sector-card__desc { color: var(--c-text-muted); font-size: var(--fs-sm); }
 </style>

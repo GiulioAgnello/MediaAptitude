@@ -49,6 +49,8 @@ const ogImageUrl = new URL(wpSeo?.ogImage ?? image, site.url).href;
 const orgId = `${site.url}/#organization`;
 const siteId = `${site.url}/#website`;
 
+const localId = `${site.url}/#localbusiness`;
+
 const organizationSchema = {
   '@type': 'Organization',
   '@id': orgId,
@@ -62,6 +64,26 @@ const organizationSchema = {
   },
   // sameAs: profili ufficiali (social). Vuoto finché non li forniamo.
   sameAs: [] as string[],
+};
+
+// LocalBusiness/ProfessionalService: leva SEO locale (Lecce e Salento).
+// areaServed dichiara a Google le aree geografiche servite.
+const localBusinessSchema = {
+  '@type': 'ProfessionalService',
+  '@id': localId,
+  name: site.name,
+  url: site.url,
+  email: site.email,
+  description: site.description,
+  image: new URL(site.ogImage, site.url).href,
+  parentOrganization: { '@id': orgId },
+  areaServed: site.areaServed.map((name) => ({ '@type': 'AdministrativeArea', name })),
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: 'Lecce',
+    addressRegion: 'Puglia',
+    addressCountry: 'IT',
+  },
 };
 
 const websiteSchema = {
@@ -78,7 +100,7 @@ const websiteSchema = {
 const pageSchemas = schema ? (Array.isArray(schema) ? schema : [schema]) : [];
 const jsonLd = {
   '@context': 'https://schema.org',
-  '@graph': [organizationSchema, websiteSchema, ...pageSchemas],
+  '@graph': [organizationSchema, localBusinessSchema, websiteSchema, ...pageSchemas],
 };
 ---
 

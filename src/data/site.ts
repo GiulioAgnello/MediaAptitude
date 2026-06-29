@@ -7,14 +7,16 @@
 export const site = {
   name: 'Media Aptitude',
   legalName: 'Media Aptitude',
-  tagline: 'Studio IT consociato',
+  tagline: 'Agenzia digitale a Lecce e nel Salento',
   // Descrizione di default usata per la SEO quando una pagina non ne fornisce una.
   description:
-    'Media Aptitude è uno studio IT consociato: presenza online, UX/UI design, gestionali ed e-commerce. Tecnologie innovative e best practice consolidate.',
+    'Agenzia digitale a Lecce e nel Salento: siti web, e-commerce, web application su misura, SEO, Google e Meta Ads. Aiutiamo le imprese a trovare nuovi clienti grazie al digitale.',
   url: 'https://www.mediaaptitude.it',
   locale: 'it_IT',
   lang: 'it',
   email: 'info@mediaaptitude.it',
+  // Aree geografiche servite (usate per la SEO locale e lo schema LocalBusiness).
+  areaServed: ['Lecce', 'Salento', 'Puglia'],
   // Default Open Graph image (da sostituire con asset reale in S4).
   ogImage: '/og-default.png',
 } as const;
