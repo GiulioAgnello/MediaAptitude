@@ -4,4 +4,4 @@ User-agent: *
 Allow: /
 
 # Sitemap generata da @astrojs/sitemap a build-time.
-Sitemap: https://www.mediaaptitude.it/sitemap-index.xml
+Sitemap: https://www.media-aptitude.it/sitemap-index.xml

@@ -11,10 +11,10 @@ export const site = {
   // Descrizione di default usata per la SEO quando una pagina non ne fornisce una.
   description:
     'Agenzia digitale a Lecce e nel Salento: siti web, e-commerce, web application su misura, SEO, Google e Meta Ads. Aiutiamo le imprese a trovare nuovi clienti grazie al digitale.',
-  url: 'https://www.mediaaptitude.it',
+  url: 'https://www.media-aptitude.it',
   locale: 'it_IT',
   lang: 'it',
-  email: 'info@mediaaptitude.it',
+  email: 'info@media-aptitude.it',
   // Aree geografiche servite (usate per la SEO locale e lo schema LocalBusiness).
   areaServed: ['Lecce', 'Salento', 'Puglia'],
   // Default Open Graph image (da sostituire con asset reale in S4).
