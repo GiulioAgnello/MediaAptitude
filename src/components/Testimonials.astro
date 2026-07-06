@@ -1,0 +1,62 @@
+---
+/**
+ * Testimonianze clienti. Con array vuoto la sezione non viene renderizzata:
+ * aggiungere recensioni reali in content.ts (testimonials) per attivarla.
+ */
+import Section from './Section.astro';
+import { testimonials } from '../data/content';
+---
+
+{testimonials.length > 0 && (
+  <Section
+    id="testimonianze"
+    eyebrow="Dicono di noi"
+    title="La fiducia dei clienti"
+    align="center"
+  >
+    <div class="quotes stagger">
+      {testimonials.map((t) => (
+        <figure class="card quotes__item" data-reveal>
+          <blockquote>
+            <p>“{t.quote}”</p>
+          </blockquote>
+          <figcaption>
+            {t.photo && (
+              <img src={t.photo.url} width="44" height="44" alt="" loading="lazy" />
+            )}
+            <span>
+              <strong>{t.author}</strong>
+              <small>{t.role}</small>
+            </span>
+          </figcaption>
+        </figure>
+      ))}
+    </div>
+  </Section>
+)}
+
+<style>
+  .quotes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--sp-5);
+  }
+  .quotes__item {
+    display: grid;
+    gap: var(--sp-5);
+    align-content: space-between;
+    padding: var(--sp-6);
+  }
+  .quotes__item blockquote p {
+    color: var(--c-text-secondary);
+    line-height: var(--lh-normal);
+  }
+  .quotes__item figcaption {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+  }
+  .quotes__item img { border-radius: 50%; object-fit: cover; }
+  .quotes__item figcaption span { display: grid; }
+  .quotes__item small { font-size: var(--fs-xs); color: var(--c-text-muted); }
+</style>

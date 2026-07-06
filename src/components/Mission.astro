@@ -1,0 +1,45 @@
+---
+/**
+ * Mission statement: testo grande a sinistra, orb a gradiente a destra
+ * (come la fascia "We help enterprises reimagine..." del riferimento).
+ */
+---
+
+<section class="mission section" aria-label="La nostra missione">
+  <div class="container mission__grid">
+    <p class="mission__text" data-reveal="blur">
+      Aiutiamo le imprese del territorio a crescere con siti web, e-commerce,
+      SEO e software su misura. <strong>Un unico partner</strong> per tutta la
+      tua presenza digitale: dalla strategia al codice, dal lancio ai risultati.
+    </p>
+    <div class="mission__orb orb" aria-hidden="true" data-reveal="scale"></div>
+  </div>
+</section>
+
+<style>
+  .mission__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    align-items: center;
+    gap: var(--sp-7);
+  }
+  .mission__text {
+    font-family: var(--font-heading);
+    font-size: var(--fs-xl);
+    font-weight: var(--fw-medium);
+    letter-spacing: -0.02em;
+    line-height: var(--lh-snug);
+    color: var(--c-text);
+    text-wrap: balance;
+  }
+  .mission__text strong { color: var(--c-text); }
+  .mission__orb {
+    width: min(100%, 320px);
+    aspect-ratio: 1;
+    justify-self: center;
+  }
+  @media (max-width: 820px) {
+    .mission__grid { grid-template-columns: 1fr; }
+    .mission__orb { width: 200px; }
+  }
+</style>

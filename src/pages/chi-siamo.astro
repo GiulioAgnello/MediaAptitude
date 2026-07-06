@@ -2,8 +2,8 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Section from '../components/Section.astro';
 import TeamMember from '../components/TeamMember.astro';
-import TechBadge from '../components/TechBadge.astro';
-import { values, techStack } from '../data/content';
+import Marquee from '../components/Marquee.astro';
+import { values } from '../data/content';
 import { getTeam } from '../lib/api';
 import { site } from '../data/site';
 import { breadcrumb } from '../lib/seo';
@@ -11,99 +11,109 @@ import { breadcrumb } from '../lib/seo';
 // Team dalla REST WP a build-time (fallback ai mock se WP è offline).
 const team = await getTeam();
 
-// Breadcrumb per i rich results: Home › Chi siamo
-const schema = breadcrumb([
-  { name: 'Home', path: '/' },
-  { name: 'Chi siamo', path: '/chi-siamo' },
-], site.url);
+const schema = breadcrumb(
+  [
+    { name: 'Home', path: '/' },
+    { name: 'Chi siamo', path: '/chi-siamo' },
+  ],
+  site.url
+);
 ---
 
 <BaseLayout
   path="/chi-siamo"
-  title="Chi siamo"
-  description="Chi è Media Aptitude: un team di frontend, backend, design e SEO sotto lo stesso tetto. I nostri valori e lo stack tecnologico che usiamo."
+  title="Chi siamo: il team della web agency di Lecce"
+  description="Il team di Media Aptitude: frontend, backend, design e SEO sotto lo stesso tetto, a Lecce. Le persone, i valori e le tecnologie dietro ogni progetto."
   schema={schema}
 >
-  <!-- INTRO -->
-  <Section
-    eyebrow="Chi siamo"
-    title="Un unico studio, tutte le competenze digitali"
-    lead="Frontend, backend, design e SEO lavorano insieme dall'inizio: un solo interlocutore, una sola responsabilità sul risultato."
-  />
+  <section class="intro">
+    <div class="container intro__inner">
+      <nav class="intro__crumbs" aria-label="Percorso">
+        <a href="/">Home</a>
+        <span aria-hidden="true">›</span>
+        <span aria-current="page">Chi siamo</span>
+      </nav>
+      <h1 data-enter>Le persone dietro i progetti</h1>
+      <p class="intro__lead" data-enter="2">
+        Siamo uno studio digitale di Lecce: frontend, backend, design e SEO
+        lavorano insieme dall'inizio. Un solo interlocutore, una sola
+        responsabilità sul risultato — e la faccia ce la mettiamo noi.
+      </p>
+    </div>
+  </section>
 
-  <!-- TEAM -->
   <Section
     id="team"
-    variant="alt"
-    eyebrow="Le persone"
-    title="Il team"
-    lead="Profili complementari che coprono l'intero ciclo di vita del prodotto digitale."
+    eyebrow="Il team"
+    title="Profili complementari, un unico obiettivo"
+    lead="Copriamo l'intero ciclo di vita del prodotto digitale, senza subappalti."
   >
-    <div class="grid grid--4 stagger">
+    <div class="team stagger">
       {team.map((member) => (
-        <div class="reveal-item" data-reveal><TeamMember member={member} /></div>
+        <div data-reveal><TeamMember member={member} /></div>
       ))}
     </div>
   </Section>
 
-  <!-- VALORI -->
   <Section
-    eyebrow="Come lavoriamo"
-    title="I nostri valori"
-    lead="Principi non negoziabili che guidano ogni progetto, dal preventivo al post-lancio."
+    eyebrow="I valori"
+    title="Principi non negoziabili"
+    lead="Guidano ogni progetto, dal preventivo al post-lancio."
   >
-    <div class="grid grid--4 stagger">
+    <div class="values stagger">
       {values.map((value) => (
-        <article class="value reveal-item" data-reveal>
-          <h3 class="value__title">{value.title}</h3>
-          <p class="value__desc">{value.description}</p>
+        <article class="card card--glow value" data-reveal>
+          <h3>{value.title}</h3>
+          <p>{value.description}</p>
         </article>
       ))}
     </div>
   </Section>
 
-  <!-- STACK -->
   <Section
-    variant="alt"
     eyebrow="Tecnologie"
     title="Lo stack che usiamo"
-    lead="Strumenti moderni e best practice consolidate: la scelta segue sempre l'obiettivo del progetto."
-  >
-    <div class="tech-cloud" data-reveal="scale">
-      <div class="tech-cloud__badges">
-        {techStack.map((t) => <TechBadge label={t.name} />)}
-      </div>
-    </div>
-  </Section>
+    lead="Strumenti moderni e best practice consolidate: la scelta segue sempre l'obiettivo."
+  />
+  <Marquee />
 </BaseLayout>
 
 <style>
-  .grid { display: grid; gap: var(--sp-5); }
-  .grid--4 { grid-template-columns: repeat(4, 1fr); }
-  .reveal-item { display: flex; }
-  .reveal-item > * { width: 100%; }
-  @media (max-width: 1024px) { .grid--4 { grid-template-columns: repeat(2, 1fr); } }
-  @media (max-width: 600px) { .grid--4 { grid-template-columns: 1fr; } }
+  .intro {
+    padding-top: clamp(7rem, 5rem + 7vw, 10rem);
+    background:
+      radial-gradient(45% 40% at 50% 12%, rgba(77, 141, 255, 0.13) 0%, transparent 70%),
+      radial-gradient(28% 22% at 34% 6%, rgba(255, 172, 10, 0.07) 0%, transparent 70%);
+  }
+  .intro__inner { display: grid; gap: var(--sp-5); max-width: 880px; }
+  .intro__crumbs { display: flex; gap: var(--sp-2); font-size: var(--fs-xs); }
+  .intro__crumbs a { transition: color var(--dur-fast) var(--ease); }
+  .intro__crumbs a:hover { color: var(--c-text); }
+  .intro__crumbs [aria-current] { color: var(--c-text-secondary); }
+  .intro__lead { font-size: var(--fs-md); max-width: 60ch; }
 
+  .team {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--sp-5);
+  }
+  .team > div { display: flex; }
+  .team > div > :global(*) { width: 100%; }
+
+  .values {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--sp-5);
+  }
   .value {
-    display: flex;
-    flex-direction: column;
+    display: grid;
     gap: var(--sp-3);
-    padding: var(--sp-6) var(--sp-5);
-    border-radius: var(--radius-lg);
-    background: var(--c-surface);
-    backdrop-filter: blur(8px);
-    border: 1px solid var(--c-border);
-  }
-  .value__title { font-size: var(--fs-lg); }
-  .value__desc { color: var(--c-text-muted); font-size: var(--fs-sm); }
-
-  .tech-cloud {
     padding: var(--sp-6);
-    border-radius: var(--radius-lg);
-    background: var(--c-surface);
-    backdrop-filter: blur(8px);
-    border: 1px solid var(--c-border);
+    align-content: start;
   }
-  .tech-cloud__badges { display: flex; flex-wrap: wrap; gap: var(--sp-3); }
+  .value p { font-size: var(--fs-sm); color: var(--c-text-secondary); }
+
+  @media (max-width: 1024px) { .team { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 720px) { .values { grid-template-columns: 1fr; } }
+  @media (max-width: 600px) { .team { grid-template-columns: 1fr; } }
 </style>

@@ -1,29 +1,33 @@
 ---
 /**
- * Wrapper di sezione standard: gestisce padding, sfondo, ancora (id),
- * e l'intestazione (eyebrow + titolo + lead). Tiene il ritmo coerente
- * su tutto il sito.
+ * Wrapper di sezione standard con intestazione stile Cosmoq:
+ * eyebrow sopra un divider, poi titolo a sinistra e lead a destra.
+ * align="center" per le intestazioni centrate (es. CTA, testimonianze).
  */
 interface Props {
   id?: string;
   eyebrow?: string;
   title?: string;
   lead?: string;
-  variant?: 'default' | 'alt' | 'ink';
-  align?: 'left' | 'center';
+  align?: 'split' | 'center';
   class?: string;
 }
-const { id, eyebrow, title, lead, variant = 'default', align = 'left', class: extra } = Astro.props;
-const variantClass = variant === 'alt' ? 'section--alt' : variant === 'ink' ? 'section--ink' : '';
+const { id, eyebrow, title, lead, align = 'split', class: extra } = Astro.props;
 ---
 
-<section id={id} class:list={['section', variantClass, extra]}>
+<section id={id} class:list={['section', extra]}>
   <div class="container">
     {(eyebrow || title || lead) && (
       <header class:list={['section-head', `is-${align}`]}>
-        {eyebrow && <span class="eyebrow">{eyebrow}</span>}
-        {title && <h2>{title}</h2>}
-        {lead && <p class="lead">{lead}</p>}
+        {eyebrow && (
+          <div class="section-head__top">
+            <span class="eyebrow">{eyebrow}</span>
+          </div>
+        )}
+        <div class="section-head__row">
+          {title && <h2 data-reveal>{title}</h2>}
+          {lead && <p class="lead" data-reveal>{lead}</p>}
+        </div>
       </header>
     )}
     <slot />
@@ -31,6 +35,32 @@ const variantClass = variant === 'alt' ? 'section--alt' : variant === 'ink' ? 's
 </section>
 
 <style>
-  .section-head { max-width: 60ch; margin-bottom: var(--sp-7); display: grid; gap: var(--sp-3); }
-  .section-head.is-center { margin-inline: auto; text-align: center; justify-items: center; }
+  .section-head { margin-bottom: var(--sp-7); }
+
+  .section-head__top {
+    padding-bottom: var(--sp-3);
+    border-bottom: 1px solid var(--c-line);
+    margin-bottom: var(--sp-6);
+  }
+
+  .is-split .section-head__row {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    gap: var(--sp-6);
+    align-items: end;
+  }
+  .is-split .lead { max-width: 34ch; justify-self: end; text-align: right; }
+
+  .is-center .section-head__row {
+    display: grid;
+    justify-items: center;
+    gap: var(--sp-3);
+    text-align: center;
+  }
+  .is-center .lead { max-width: 52ch; }
+
+  @media (max-width: 760px) {
+    .is-split .section-head__row { grid-template-columns: 1fr; align-items: start; }
+    .is-split .lead { justify-self: start; text-align: left; }
+  }
 </style>

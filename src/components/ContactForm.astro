@@ -42,7 +42,7 @@ const base = apiBase();
   </div>
 
   <div class="cform__actions">
-    <button type="submit" class="btn btn--primary" data-submit>Invia richiesta</button>
+    <button type="submit" class="cform__submit" data-submit>Invia richiesta</button>
     <p class="cform__status" data-status role="status" aria-live="polite"></p>
   </div>
 </form>
@@ -54,8 +54,7 @@ const base = apiBase();
 
   .cform__field { display: grid; gap: var(--sp-2); }
   .cform__label {
-    font-family: var(--font-heading);
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-medium);
     font-size: var(--fs-sm);
     color: var(--c-text);
   }
@@ -65,7 +64,7 @@ const base = apiBase();
     font: inherit;
     color: var(--c-text);
     background: var(--c-surface);
-    border: 1px solid var(--c-border);
+    border: 1px solid var(--c-line);
     border-radius: var(--radius-md);
     padding: 0.75rem 0.9rem;
     transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
@@ -74,10 +73,34 @@ const base = apiBase();
   .cform input:focus,
   .cform textarea:focus {
     outline: none;
-    border-color: var(--c-brand);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--c-brand) 25%, transparent);
+    border-color: var(--c-blue);
+    box-shadow: 0 0 0 3px var(--c-blue-soft);
   }
   .cform [aria-invalid='true'] { border-color: #f87171; }
+
+  /* Submit: stessa pillola con bordo-glow gradiente del bottone primario */
+  .cform__submit {
+    justify-self: start;
+    padding: 0.8rem 1.6rem;
+    font-weight: var(--fw-medium);
+    font-size: var(--fs-sm);
+    color: var(--c-text);
+    border: 1px solid transparent;
+    border-radius: var(--radius-full);
+    background:
+      linear-gradient(#060608, #060608) padding-box,
+      linear-gradient(100deg, var(--c-amber), rgba(255, 255, 255, 0.25), var(--c-blue)) border-box;
+    box-shadow:
+      -6px 0 18px -6px rgba(255, 172, 10, 0.45),
+      6px 0 18px -6px rgba(77, 141, 255, 0.5);
+    transition: transform var(--dur-fast) var(--ease), box-shadow var(--dur) var(--ease);
+  }
+  .cform__submit:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      -8px 0 26px -6px rgba(255, 172, 10, 0.6),
+      8px 0 26px -6px rgba(77, 141, 255, 0.65);
+  }
 
   /* Honeypot fuori dal flusso visivo ma raggiungibile dai bot. */
   .cform__hp {
@@ -89,7 +112,7 @@ const base = apiBase();
 
   .cform__actions { display: flex; align-items: center; gap: var(--sp-4); flex-wrap: wrap; }
   .cform__status { font-size: var(--fs-sm); margin: 0; }
-  .cform__status[data-state='ok'] { color: var(--c-accent); }
+  .cform__status[data-state='ok'] { color: var(--c-blue); }
   .cform__status[data-state='error'] { color: #f87171; }
   .cform button[disabled] { opacity: 0.6; pointer-events: none; }
 </style>

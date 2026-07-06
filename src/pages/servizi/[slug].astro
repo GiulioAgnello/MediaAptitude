@@ -1,0 +1,166 @@
+---
+/**
+ * Pagina servizio: una per gruppo (serviceGroups), generata staticamente.
+ * SEO: title/description dedicati, BreadcrumbList, Service e FAQPage in JSON-LD,
+ * internal linking verso gli altri gruppi e la home.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Section from '../../components/Section.astro';
+import Icon from '../../components/Icon.astro';
+import Button from '../../components/Button.astro';
+import Faq from '../../components/Faq.astro';
+import { serviceGroups, services } from '../../data/content';
+import { breadcrumb, faqPage } from '../../lib/seo';
+import { site, cta } from '../../data/site';
+
+export function getStaticPaths() {
+  return serviceGroups.map((group) => ({ params: { slug: group.slug }, props: { group } }));
+}
+
+const { group } = Astro.props;
+const path = `/servizi/${group.slug}`;
+
+const bySlug = new Map(services.map((s) => [s.slug, s]));
+const items = group.serviceSlugs.map((slug) => bySlug.get(slug)!).filter(Boolean);
+const others = serviceGroups.filter((g) => g.slug !== group.slug);
+
+const schema = [
+  breadcrumb(
+    [
+      { name: 'Home', path: '/' },
+      { name: group.label, path },
+    ],
+    site.url
+  ),
+  {
+    '@type': 'Service',
+    name: group.title,
+    description: group.seo.description,
+    provider: { '@id': `${site.url}/#localbusiness` },
+    areaServed: site.areaServed.map((name) => ({ '@type': 'AdministrativeArea', name })),
+  },
+  faqPage(group.faqs),
+];
+---
+
+<BaseLayout title={group.seo.title} description={group.seo.description} path={path} schema={schema}>
+  <section class="intro">
+    <div class="container intro__inner">
+      <nav class="intro__crumbs" aria-label="Percorso">
+        <a href="/">Home</a>
+        <span aria-hidden="true">›</span>
+        <a href="/#servizi">Servizi</a>
+        <span aria-hidden="true">›</span>
+        <span aria-current="page">{group.label}</span>
+      </nav>
+
+      <h1 data-enter>{group.seo.h1}</h1>
+      <p class="intro__lead" data-enter="2">{group.seo.intro}</p>
+
+      <div class="intro__actions" data-enter="3">
+        <Button href={cta.href} variant="primary">{cta.label}</Button>
+        <Button href="#dettaglio" variant="secondary">Cosa comprende</Button>
+      </div>
+    </div>
+  </section>
+
+  <Section
+    id="dettaglio"
+    eyebrow={group.label}
+    title="Cosa comprende il servizio"
+    lead={group.description}
+  >
+    <div class="detail stagger">
+      {items.map((s) => (
+        <article class="card card--glow detail__card" data-reveal>
+          <span class="detail__icon"><Icon name={s.icon} /></span>
+          <h3>{s.title}</h3>
+          <p>{s.summary}</p>
+          <ul class="detail__points" role="list">
+            {s.bullets.map((b) => (
+              <li>{b}</li>
+            ))}
+          </ul>
+        </article>
+      ))}
+    </div>
+  </Section>
+
+  <Faq items={group.faqs} />
+
+  <Section eyebrow="Esplora" title="Gli altri servizi" lead="Un unico partner per tutta la presenza digitale.">
+    <div class="others stagger">
+      {others.map((g) => (
+        <a class="card others__card" href={`/servizi/${g.slug}`} data-reveal>
+          <span class="detail__icon"><Icon name={g.icon} /></span>
+          <h3>{g.title}</h3>
+          <p>{g.description}</p>
+          <span class="others__more">Scopri di più <span aria-hidden="true">→</span></span>
+        </a>
+      ))}
+    </div>
+  </Section>
+</BaseLayout>
+
+<style>
+  .intro {
+    padding-top: clamp(7rem, 5rem + 7vw, 10rem);
+    background:
+      radial-gradient(45% 40% at 50% 12%, rgba(77, 141, 255, 0.13) 0%, transparent 70%),
+      radial-gradient(28% 22% at 34% 6%, rgba(255, 172, 10, 0.07) 0%, transparent 70%);
+  }
+  .intro__inner { display: grid; gap: var(--sp-5); max-width: 880px; }
+
+  .intro__crumbs {
+    display: flex;
+    gap: var(--sp-2);
+    font-size: var(--fs-xs);
+  }
+  .intro__crumbs a { transition: color var(--dur-fast) var(--ease); }
+  .intro__crumbs a:hover { color: var(--c-text); }
+  .intro__crumbs [aria-current] { color: var(--c-text-secondary); }
+
+  .intro__lead { font-size: var(--fs-md); max-width: 64ch; }
+  .intro__actions { display: flex; gap: var(--sp-3); flex-wrap: wrap; }
+
+  .detail { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--sp-5); }
+  .detail__card { display: grid; gap: var(--sp-3); padding: var(--sp-6); align-content: start; }
+  .detail__card p { font-size: var(--fs-sm); color: var(--c-text-secondary); }
+
+  .detail__icon {
+    display: inline-grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border: 1px solid var(--c-line);
+    border-radius: var(--radius-md);
+    background: var(--c-surface-2);
+    color: var(--c-blue);
+  }
+  .detail__icon :global(svg) { width: 24px; height: 24px; }
+
+  .detail__points { display: grid; gap: var(--sp-2); }
+  .detail__points li {
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-2);
+    font-size: var(--fs-sm);
+  }
+  .detail__points li::before {
+    content: '✓';
+    color: var(--c-blue);
+    font-weight: var(--fw-semibold);
+  }
+
+  .others { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--sp-5); }
+  .others__card {
+    display: grid;
+    gap: var(--sp-3);
+    padding: var(--sp-6);
+    align-content: start;
+    transition: transform var(--dur) var(--ease), border-color var(--dur) var(--ease);
+  }
+  .others__card:hover { transform: translateY(-4px); border-color: var(--c-line-strong); }
+  .others__card p { font-size: var(--fs-sm); color: var(--c-text-secondary); }
+  .others__more { font-weight: var(--fw-medium); color: var(--c-blue); font-size: var(--fs-sm); }
+</style>

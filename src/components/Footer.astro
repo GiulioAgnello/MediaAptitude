@@ -1,18 +1,26 @@
 ---
 import Logo from './Logo.astro';
-import { site, mainNav } from '../data/site';
+import Button from './Button.astro';
+import { site, mainNav, cta } from '../data/site';
 const year = new Date().getFullYear();
 ---
 
-<footer class="footer section--ink">
-  <div class="footer__top">
+<footer class="footer">
+  {/* CTA band finale (stile Cosmoq: titolo grande + bottone glow) */}
+  <div class="footer__cta container" data-reveal>
+    <h2>Il futuro digitale della tua impresa inizia qui</h2>
+    <p class="lead">Raccontaci il progetto: ti rispondiamo entro un giorno lavorativo.</p>
+    <Button href={cta.href} variant="primary">{cta.label}</Button>
+  </div>
+
+  <div class="footer__main container">
     <div class="footer__brand">
       <Logo variant="light" />
       <p class="footer__desc">{site.description}</p>
     </div>
 
     <nav class="footer__nav" aria-label="Navigazione footer">
-      <h2 class="footer__heading">Naviga</h2>
+      <h3 class="footer__heading">Naviga</h3>
       <ul role="list">
         {mainNav.map((item) => (
           <li><a href={item.href}>{item.label}</a></li>
@@ -21,57 +29,77 @@ const year = new Date().getFullYear();
     </nav>
 
     <div class="footer__contact">
-      <h2 class="footer__heading">Contatti</h2>
-      <a href={`mailto:${site.email}`} class="footer__email">{site.email}</a>
+      <h3 class="footer__heading">Contatti</h3>
+      <a href={`mailto:${site.email}`} class="footer__link">{site.email}</a>
+      <p class="footer__area">{site.areaServed.join(' · ')}</p>
     </div>
   </div>
 
-  <div class="footer__bottom">
+  <div class="footer__bottom container">
     <p>© {year} {site.legalName}. Tutti i diritti riservati.</p>
-    <p class="footer__made">{site.tagline}</p>
+    <p>{site.tagline}</p>
   </div>
 </footer>
 
 <style>
-  .footer { padding-block: var(--sp-8) var(--sp-6); padding-inline: var(--container-pad); }
-  .footer__top {
+  .footer {
+    border-top: 1px solid var(--c-line);
+    background:
+      radial-gradient(60% 50% at 50% 115%, rgba(77, 141, 255, 0.12) 0%, transparent 70%),
+      radial-gradient(40% 40% at 15% 110%, rgba(255, 172, 10, 0.08) 0%, transparent 70%);
+  }
+
+  .footer__cta {
+    display: grid;
+    justify-items: center;
+    gap: var(--sp-4);
+    text-align: center;
+    padding-block: var(--section-py);
+  }
+  .footer__cta h2 { max-width: 18ch; }
+  .footer__cta .lead { max-width: 44ch; }
+
+  .footer__main {
     display: grid;
     grid-template-columns: 1.6fr 1fr 1fr;
     gap: var(--sp-7);
-    padding-bottom: var(--sp-7);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-block: var(--sp-7);
+    border-top: 1px solid var(--c-line);
   }
   .footer__desc {
     margin-top: var(--sp-4);
-    color: var(--c-slate-400);
     font-size: var(--fs-sm);
     max-width: 42ch;
   }
   .footer__heading {
-    font-size: var(--fs-sm);
+    font-family: var(--font-body);
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-medium);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--c-accent);
+    letter-spacing: 0.14em;
+    color: var(--c-text-secondary);
     margin-bottom: var(--sp-4);
   }
   .footer__nav ul { display: flex; flex-direction: column; gap: var(--sp-2); }
-  .footer__nav a, .footer__email {
-    color: var(--c-slate-400);
+  .footer__nav a, .footer__link {
     font-size: var(--fs-sm);
     transition: color var(--dur-fast) var(--ease);
   }
-  .footer__nav a:hover, .footer__email:hover { color: #fff; }
+  .footer__nav a:hover, .footer__link:hover { color: var(--c-text); }
+  .footer__area { margin-top: var(--sp-3); font-size: var(--fs-xs); }
+
   .footer__bottom {
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
     gap: var(--sp-3);
-    padding-top: var(--sp-5);
-    color: var(--c-slate-500);
+    padding-block: var(--sp-5);
+    border-top: 1px solid var(--c-line);
     font-size: var(--fs-xs);
   }
+
   @media (max-width: 720px) {
-    .footer__top { grid-template-columns: 1fr; gap: var(--sp-6); }
+    .footer__main { grid-template-columns: 1fr; gap: var(--sp-6); }
   }
 </style>

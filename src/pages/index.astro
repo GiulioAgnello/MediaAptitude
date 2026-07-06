@@ -1,153 +1,72 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Hero from '../components/Hero.astro';
+import Marquee from '../components/Marquee.astro';
+import Mission from '../components/Mission.astro';
+import FeatureBento from '../components/FeatureBento.astro';
+import ServiceTabs from '../components/ServiceTabs.astro';
+import Steps from '../components/Steps.astro';
+import WorkGrid from '../components/WorkGrid.astro';
+import Testimonials from '../components/Testimonials.astro';
+import Faq from '../components/Faq.astro';
 import Section from '../components/Section.astro';
-import ServiceCard from '../components/ServiceCard.astro';
-import TechBadge from '../components/TechBadge.astro';
-import CollageWork from '../components/CollageWork.astro';
-import Manifesto from '../components/Manifesto.astro';
-import Button from '../components/Button.astro';
-import { techStack, sectors } from '../data/content';
-import { getServices, getCaseStudies } from '../lib/api';
-import { cta } from '../data/site';
+import { sectors, faqs } from '../data/content';
+import { faqPage } from '../lib/seo';
+import { getCaseStudies } from '../lib/api';
 
 // Contenuti dalla REST WP a build-time (fallback automatico ai mock se WP è offline).
-const [services, caseStudies] = await Promise.all([
-  getServices(),
-  getCaseStudies(),
-]);
+const caseStudies = await getCaseStudies();
 ---
 
-<BaseLayout path="/">
+<BaseLayout path="/" schema={faqPage(faqs)}>
   <Hero />
+  <Marquee />
+  <Mission />
+  <FeatureBento />
+  <ServiceTabs />
+  <Steps />
+  <WorkGrid items={caseStudies} />
+  <Testimonials />
 
-  <!-- MANIFESTO / POSIZIONAMENTO -->
-  
-    <Manifesto />
- 
-
-  <!-- SERVIZI -->
-  <Section
-    id="servizi"
-    eyebrow="Cosa facciamo"
-    title="Tutto il digitale che serve alla tua impresa"
-    lead="Dalla presenza online alle web application su misura, dalla SEO alle campagne pubblicitarie: un unico partner per trovare nuovi clienti e far crescere il tuo business."
-  >
-    <div class="grid grid--3 stagger">
-      {services.map((service) => (
-        <div class="reveal-item" data-reveal><ServiceCard service={service} /></div>
-      ))}
-    </div>
-  </Section>
-
-  <!-- APPROCCIO / TECNOLOGIE -->
-  <Section
-    id="approccio"
-    variant="alt"
-    eyebrow="Il nostro approccio"
-    title="Innovazione dove serve, solidità sempre"
-    lead="Adottiamo strumenti moderni come architetture headless e React, ma poggiamo su best practice consolidate: codice manutenibile, performance e SEO non sono optional."
-  >
-    <div class="approach stagger">
-      <div class="approach__col" data-reveal>
-        <h3>Tecnologie innovative</h3>
-        <p class="lead">Architetture headless, frontend componibili e build statiche per siti rapidissimi e indicizzabili.</p>
-      </div>
-      <div class="approach__col" data-reveal>
-        <h3>Best practice consolidate</h3>
-        <p class="lead">Codice pulito e documentato, componenti riutilizzabili, accessibilità e standard SEO applicati su ogni pagina.</p>
-      </div>
-    </div>
-
-    <div class="tech-cloud" data-reveal="scale">
-      <h4 class="tech-cloud__title">Stack che usiamo</h4>
-      <div class="tech-cloud__badges">
-        {techStack.map((t) => <TechBadge label={t.name} />)}
-      </div>
-    </div>
-  </Section>
-
-  <!-- LAVORI (collage GSAP) -->
-  <CollageWork items={caseStudies} />
-
-  <!-- SETTORI SPECIFICI -->
+  <!-- SETTORI (long-tail SEO locale) -->
   <Section
     id="settori"
-    variant="alt"
-    eyebrow="Soluzioni per settori specifici"
+    eyebrow="Settori"
     title="Esperienza nei settori del territorio"
-    lead="Sviluppiamo strategie digitali personalizzate in base alle caratteristiche del settore e del territorio salentino."
+    lead="Strategie digitali costruite sulle caratteristiche di ogni mercato."
   >
     <div class="sectors stagger">
       {sectors.map((s) => (
-        <div class="sector-card" data-reveal>
-          <h3 class="sector-card__title">{s.label}</h3>
-          <p class="sector-card__desc">{s.description}</p>
-        </div>
+        <article class="card sector" data-reveal>
+          <h3>{s.label}</h3>
+          <p>{s.description}</p>
+        </article>
       ))}
     </div>
   </Section>
 
-  <!-- CTA FINALE -> pagina contatti -->
-  <Section variant="ink" align="center"
-    eyebrow="Iniziamo"
-    title="Hai un progetto in mente?"
-    lead="Raccontaci la tua idea: ti rispondiamo con un primo riscontro concreto, senza impegno."
-  >
-    <div class="contact-cta" data-reveal="scale">
-      <Button href={cta.href} variant="primary">{cta.label}</Button>
-    </div>
-  </Section>
+  <Faq items={faqs} />
 </BaseLayout>
 
 <style>
-  /* Griglie riutilizzabili, responsive */
-  .grid { display: grid; gap: var(--sp-5); }
-  .grid--4 { grid-template-columns: repeat(4, 1fr); }
-  .grid--3 { grid-template-columns: repeat(3, 1fr); }
-  .reveal-item { display: flex; }
-  .reveal-item > * { width: 100%; }
-  @media (max-width: 1024px) {
-    .grid--4 { grid-template-columns: repeat(2, 1fr); }
-    .grid--3 { grid-template-columns: repeat(2, 1fr); }
+  .sectors {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--sp-5);
   }
-  @media (max-width: 600px) {
-    .grid--4, .grid--3 { grid-template-columns: 1fr; }
-  }
-
-  .approach { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-6); margin-bottom: var(--sp-7); }
-  .approach__col h3 { margin-bottom: var(--sp-3); }
-  @media (max-width: 720px) { .approach { grid-template-columns: 1fr; } }
-
-  .tech-cloud {
-    padding: var(--sp-6);
-    border-radius: var(--radius-lg);
-    background: var(--c-surface);
-    backdrop-filter: blur(8px);
-    border: 1px solid var(--c-border);
-  }
-  .tech-cloud__title { margin-bottom: var(--sp-4); }
-  .tech-cloud__badges { display: flex; flex-wrap: wrap; gap: var(--sp-3); }
-
-  .contact-cta { display: grid; gap: var(--sp-4); justify-items: center; }
-  .contact-cta__note { color: var(--c-slate-400); font-size: var(--fs-sm); }
-
-  /* Settori specifici */
-  .sectors { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-5); }
-  @media (max-width: 900px) { .sectors { grid-template-columns: repeat(2, 1fr); } }
-  @media (max-width: 560px) { .sectors { grid-template-columns: 1fr; } }
-  .sector-card {
-    background: var(--c-surface);
-    backdrop-filter: blur(8px);
-    border: 1px solid var(--c-border);
-    border-radius: var(--radius-lg);
+  .sector {
     padding: var(--sp-5);
+    display: grid;
+    gap: var(--sp-2);
     transition: transform var(--dur) var(--ease), border-color var(--dur) var(--ease);
   }
-  .sector-card:hover {
+  .sector:hover {
     transform: translateY(-3px);
-    border-color: color-mix(in srgb, var(--c-brand) 45%, transparent);
+    border-color: var(--c-line-strong);
   }
-  .sector-card__title { font-size: var(--fs-lg); margin-bottom: var(--sp-2); }
-  .sector-card__desc { color: var(--c-text-muted); font-size: var(--fs-sm); }
+  .sector h3 { font-size: var(--fs-lg); }
+  .sector p { font-size: var(--fs-sm); }
+
+  @media (max-width: 900px) { .sectors { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .sectors { grid-template-columns: 1fr; } }
 </style>

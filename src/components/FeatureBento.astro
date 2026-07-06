@@ -1,0 +1,53 @@
+---
+/**
+ * Bento "Cosa ci distingue": griglia 2x2 di card con glow gradiente
+ * (come "What sets COSMOQ apart"). Dati da content.ts (differentiators).
+ */
+import Section from './Section.astro';
+import { differentiators } from '../data/content';
+---
+
+<Section
+  id="perche-noi"
+  eyebrow="Cosa ci distingue"
+  title="Un partner tecnico, non un fornitore di template"
+  lead="Più veloci, più curati e più vicini di una web agency generalista."
+>
+  <div class="bento stagger">
+    {differentiators.map((d) => (
+      <article class:list={['card', 'card--glow', 'bento__card', `is-${d.tone}`]} data-reveal>
+        <h3>{d.title}</h3>
+        <p>{d.description}</p>
+      </article>
+    ))}
+  </div>
+</Section>
+
+<style>
+  .bento {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--sp-5);
+  }
+  .bento__card {
+    display: grid;
+    align-content: end;
+    gap: var(--sp-3);
+    min-height: 260px;
+    padding: var(--sp-6);
+    transition: transform var(--dur) var(--ease), border-color var(--dur) var(--ease);
+  }
+  .bento__card:hover {
+    transform: translateY(-4px);
+    border-color: var(--c-line-strong);
+  }
+  .bento__card p { font-size: var(--fs-sm); color: var(--c-text-secondary); }
+
+  /* Direzione del glow per varietà visiva tra le card */
+  .is-amber.card--glow::before { transform: rotate(180deg); }
+
+  @media (max-width: 720px) {
+    .bento { grid-template-columns: 1fr; }
+    .bento__card { min-height: 200px; }
+  }
+</style>

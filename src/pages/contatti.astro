@@ -5,40 +5,63 @@ import ContactForm from '../components/ContactForm.astro';
 import { site } from '../data/site';
 import { breadcrumb } from '../lib/seo';
 
-// Breadcrumb per i rich results: Home › Contatti
-const schema = breadcrumb([
-  { name: 'Home', path: '/' },
-  { name: 'Contatti', path: '/contatti' },
-], site.url);
+const schema = [
+  breadcrumb(
+    [
+      { name: 'Home', path: '/' },
+      { name: 'Contatti', path: '/contatti' },
+    ],
+    site.url
+  ),
+  {
+    '@type': 'ContactPage',
+    name: 'Contatti — Media Aptitude',
+    url: new URL('/contatti', site.url).href,
+  },
+];
 ---
 
 <BaseLayout
   path="/contatti"
-  title="Contatti"
-  description="Parla con Media Aptitude del tuo progetto digitale. Compila il form: ti rispondiamo con un primo riscontro concreto."
+  title="Contatti: parla con la web agency di Lecce"
+  description="Contatta Media Aptitude per siti web, e-commerce, SEO e software su misura a Lecce e nel Salento. Ti rispondiamo entro un giorno lavorativo."
   schema={schema}
 >
-  <Section
-    eyebrow="Iniziamo"
-    title="Parlaci del tuo progetto"
-    lead="Raccontaci l'idea o l'esigenza: ti rispondiamo con un primo riscontro concreto, senza impegno."
-  >
+  <section class="intro">
+    <div class="container intro__inner">
+      <nav class="intro__crumbs" aria-label="Percorso">
+        <a href="/">Home</a>
+        <span aria-hidden="true">›</span>
+        <span aria-current="page">Contatti</span>
+      </nav>
+      <h1 data-enter>Parlaci del tuo progetto</h1>
+      <p class="intro__lead" data-enter="2">
+        Raccontaci l'idea o l'esigenza: ti rispondiamo con un primo riscontro
+        concreto entro un giorno lavorativo, senza impegno.
+      </p>
+    </div>
+  </section>
+
+  <Section>
     <div class="contact">
-      <div class="contact__form" data-reveal>
+      <div class="card contact__form" data-reveal>
         <ContactForm source="contatti" />
       </div>
 
-      <aside class="contact__aside" data-reveal>
-        <h2 class="contact__aside-title">Preferisci scriverci?</h2>
-        <p class="contact__aside-lead">Trovi tutto qui sotto. Rispondiamo in genere entro un giorno lavorativo.</p>
+      <aside class="card card--glow contact__aside" data-reveal>
+        <h2>Preferisci scriverci?</h2>
         <ul class="contact__list" role="list">
           <li>
             <span class="contact__k">Email</span>
             <a class="contact__v" href={`mailto:${site.email}`}>{site.email}</a>
           </li>
           <li>
+            <span class="contact__k">Dove operiamo</span>
+            <span class="contact__v">{site.areaServed.join(' · ')}</span>
+          </li>
+          <li>
             <span class="contact__k">Cosa facciamo</span>
-            <span class="contact__v">Presenza online, UX/UI, gestionali, e-commerce</span>
+            <span class="contact__v">Siti web, e-commerce, SEO & Ads, software su misura</span>
           </li>
         </ul>
       </aside>
@@ -47,34 +70,42 @@ const schema = breadcrumb([
 </BaseLayout>
 
 <style>
+  .intro {
+    padding-top: clamp(7rem, 5rem + 7vw, 10rem);
+    background:
+      radial-gradient(45% 40% at 50% 12%, rgba(77, 141, 255, 0.13) 0%, transparent 70%),
+      radial-gradient(28% 22% at 34% 6%, rgba(255, 172, 10, 0.07) 0%, transparent 70%);
+  }
+  .intro__inner { display: grid; gap: var(--sp-5); max-width: 880px; }
+  .intro__crumbs { display: flex; gap: var(--sp-2); font-size: var(--fs-xs); }
+  .intro__crumbs a { transition: color var(--dur-fast) var(--ease); }
+  .intro__crumbs a:hover { color: var(--c-text); }
+  .intro__crumbs [aria-current] { color: var(--c-text-secondary); }
+  .intro__lead { font-size: var(--fs-md); max-width: 60ch; }
+
   .contact {
     display: grid;
-    grid-template-columns: 1.4fr 1fr;
-    gap: var(--sp-7);
+    grid-template-columns: 1.5fr 1fr;
+    gap: var(--sp-5);
     align-items: start;
   }
-  @media (max-width: 860px) { .contact { grid-template-columns: 1fr; } }
+  .contact__form { padding: var(--sp-6); overflow: visible; }
+  .contact__aside { padding: var(--sp-6); display: grid; gap: var(--sp-5); align-content: start; }
+  .contact__aside h2 { font-size: var(--fs-lg); }
 
-  .contact__aside {
-    padding: var(--sp-6);
-    border-radius: var(--radius-lg);
-    background: var(--c-surface);
-    backdrop-filter: blur(8px);
-    border: 1px solid var(--c-border);
-  }
-  .contact__aside-title { font-size: var(--fs-lg); margin-bottom: var(--sp-3); }
-  .contact__aside-lead { color: var(--c-text-muted); font-size: var(--fs-sm); margin-bottom: var(--sp-5); }
   .contact__list { display: grid; gap: var(--sp-4); }
   .contact__k {
     display: block;
-    font-family: var(--font-heading);
-    font-weight: var(--fw-semibold);
     font-size: var(--fs-xs);
+    font-weight: var(--fw-medium);
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--c-accent);
+    letter-spacing: 0.12em;
+    color: var(--c-text-muted);
     margin-bottom: 2px;
   }
-  .contact__v { color: var(--c-text); font-size: var(--fs-sm); }
-  a.contact__v:hover { color: var(--c-brand); }
+  .contact__v { color: var(--c-text-secondary); font-size: var(--fs-sm); }
+  a.contact__v { transition: color var(--dur-fast) var(--ease); }
+  a.contact__v:hover { color: var(--c-blue); }
+
+  @media (max-width: 860px) { .contact { grid-template-columns: 1fr; } }
 </style>

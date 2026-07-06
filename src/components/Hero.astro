@@ -1,96 +1,94 @@
 ---
+/**
+ * Hero home: badge, h1 con entrata blur-in, lead, CTA e foto grande
+ * incorniciata con glow gradiente (stile riferimento).
+ * La foto è un placeholder: sostituire /img/home-team.jpg con lo scatto reale.
+ */
 import Button from './Button.astro';
 import { cta } from '../data/site';
 ---
 
 <section class="hero">
-  <div class="hero__bg" aria-hidden="true"></div>
   <div class="container hero__inner">
-    <span class="eyebrow">Agenzia digitale a Lecce e nel Salento</span>
-    <h1 class="hero__title">
-      Aiutiamo le imprese di Lecce e del Salento a<br />
-      <span class="hero__accent">trovare nuovi clienti grazie al digitale</span>
+    <p class="hero__badge" data-enter>Agenzia digitale a Lecce e nel Salento</p>
+
+    <h1 data-enter="2">
+      Il digitale che porta clienti alle imprese del Salento
     </h1>
-    <p class="hero__lead lead">
-      Siti web, e-commerce, web application su misura, SEO e campagne pubblicitarie:
-      progettiamo strumenti digitali veloci e orientati ai risultati, pensati per far
-      crescere la tua attività sul territorio e online.
+
+    <p class="hero__lead" data-enter="3">
+      Siti web, e-commerce, SEO e software su misura per aziende e professionisti
+      di Lecce e provincia. Progetti veloci, curati e costruiti per farti trovare.
     </p>
-    <div class="hero__actions">
+
+    <div class="hero__actions" data-enter="4">
       <Button href={cta.href} variant="primary">{cta.label}</Button>
-      <Button href="/#lavori" variant="ghost">Guarda i nostri lavori</Button>
+      <Button href="/#servizi" variant="secondary">Scopri i servizi</Button>
     </div>
-    <ul class="hero__stats" role="list">
-      <li><strong>7</strong><span>Aree di competenza</span></li>
-      <li><strong>SEO-first</strong><span>Posizionamento su Google</span></li>
-      <li><strong>Lecce & Salento</strong><span>Vicini al tuo business</span></li>
-    </ul>
+
+    <figure class="hero__media" data-enter="4">
+      <img
+        src="/img/home-team.jpg"
+        alt="Il team di Media Aptitude al lavoro nello studio di Lecce"
+        width="1600"
+        height="900"
+        fetchpriority="high"
+      />
+    </figure>
   </div>
 </section>
 
 <style>
-  .hero { position: relative; overflow: hidden; padding-block: clamp(4rem, 3rem + 8vw, 9rem); }
-  .hero__bg {
-    position: absolute;
-    inset: 0;
+  .hero {
+    position: relative;
+    padding-top: clamp(8rem, 6rem + 8vw, 12rem);
+    text-align: center;
+    /* alone soffuso dietro al titolo, come il cielo del riferimento */
     background:
-      radial-gradient(60% 60% at 80% 0%, var(--c-brand-soft) 0%, transparent 60%),
-      radial-gradient(50% 50% at 0% 100%, var(--c-accent-soft) 0%, transparent 55%);
-    z-index: -1;
+      radial-gradient(50% 38% at 50% 18%, rgba(77, 141, 255, 0.14) 0%, transparent 70%),
+      radial-gradient(30% 24% at 38% 10%, rgba(255, 172, 10, 0.07) 0%, transparent 70%);
   }
-  .hero__inner { display: grid; gap: var(--sp-5); max-width: 1800px; min-width: 0; }
-  /* Gli item della griglia non devono sforare oltre il viewport (default min-width:auto). */
-  .hero__inner > * { min-width: 0; }
-  .hero__title { font-size: var(--fs-3xl); overflow-wrap: break-word; }
-  .hero__accent {
-    background: linear-gradient(120deg, var(--c-brand), var(--c-accent));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+  .hero__inner {
+    display: grid;
+    justify-items: center;
+    gap: var(--sp-5);
   }
-  .hero__lead { max-width: 56ch; }
-  .hero__actions { display: flex; flex-wrap: wrap; gap: var(--sp-3); margin-top: var(--sp-2); }
-  .hero__stats {
+
+  .hero__badge {
+    padding: 0.4rem 1rem;
+    font-size: var(--fs-xs);
+    color: var(--c-text-secondary);
+    background: var(--c-surface);
+    border: 1px solid var(--c-line);
+    border-radius: var(--radius-full);
+    backdrop-filter: blur(8px);
+  }
+
+  h1 { max-width: 17ch; }
+
+  .hero__lead {
+    max-width: 52ch;
+    font-size: var(--fs-md);
+  }
+
+  .hero__actions {
     display: flex;
+    gap: var(--sp-3);
     flex-wrap: wrap;
-    gap: var(--sp-5) var(--sp-7);
-    margin-top: var(--sp-6);
-    padding-top: var(--sp-6);
-    border-top: 1px solid var(--c-border);
-  }
-  .hero__stats li { display: grid; gap: 2px; min-width: 0; }
-  .hero__stats strong {
-    font-family: var(--font-heading);
-    font-weight: var(--fw-bold);
-    font-size: var(--fs-xl);
-    color: var(--c-text);
-  }
-  .hero__stats span { font-size: var(--fs-sm); color: var(--c-text-muted); }
-
-  /* MOBILE: titolo più contenuto e stats su griglia, niente overflow orizzontale. */
-  @media (max-width: 600px) {
-    .hero { padding-block: clamp(2.5rem, 2rem + 6vw, 4rem); }
-    .hero__title { font-size: var(--fs-2xl); }
-    .hero__title br { display: none; }
-    .hero__actions { gap: var(--sp-2); }
-    .hero__stats {
-      gap: var(--sp-4) var(--sp-5);
-      justify-content: flex-start;
-    }
-    .hero__stats li { flex: 1 1 auto; }
+    justify-content: center;
   }
 
-  /* Entrance on-load, in sequenza. Solo CSS, niente JS. */
-  @media (prefers-reduced-motion: no-preference) {
-    .hero__inner > * { animation: hero-in 0.7s var(--ease) both; }
-    .hero__inner > *:nth-child(1) { animation-delay: 0.05s; }
-    .hero__inner > *:nth-child(2) { animation-delay: 0.15s; }
-    .hero__inner > *:nth-child(3) { animation-delay: 0.25s; }
-    .hero__inner > *:nth-child(4) { animation-delay: 0.35s; }
-    .hero__inner > *:nth-child(5) { animation-delay: 0.45s; }
-    @keyframes hero-in {
-      from { opacity: 0; transform: translateY(22px); }
-      to { opacity: 1; transform: none; }
-    }
+  /* Cornice foto: bordo translucido, radius grande, glow ambra/blu ai lati */
+  .hero__media {
+    margin-top: var(--sp-7);
+    width: min(100%, 1080px);
+    border: 1px solid var(--c-line);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow:
+      var(--shadow-lg),
+      -40px -10px 120px -60px rgba(255, 172, 10, 0.5),
+      40px -10px 120px -60px rgba(77, 141, 255, 0.55);
   }
+  .hero__media img { width: 100%; }
 </style>

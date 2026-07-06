@@ -1,0 +1,92 @@
+---
+/**
+ * Griglia lavori: card con screenshot (o fallback gradiente) e risultato.
+ * Se il case study ha `url`, la card è un link al sito online.
+ */
+import Section from './Section.astro';
+import type { CaseStudy } from '../data/content';
+
+interface Props { items: CaseStudy[]; }
+const { items } = Astro.props;
+---
+
+<Section
+  id="lavori"
+  eyebrow="Lavori"
+  title="Progetti che portano risultati"
+  lead="Ogni progetto nasce da un obiettivo di business e si misura sui numeri."
+>
+  <div class="work stagger">
+    {items.map((item) => {
+      const Tag = item.url ? 'a' : 'article';
+      return (
+        <Tag
+          class:list={['card', 'work__card', { 'is-link': !!item.url }]}
+          href={item.url}
+          target={item.url ? '_blank' : undefined}
+          rel={item.url ? 'noopener' : undefined}
+          data-reveal
+        >
+          <figure class="work__media">
+            {item.imageDesktop ? (
+              <img
+                src={item.imageDesktop.url}
+                width={item.imageDesktop.width}
+                height={item.imageDesktop.height}
+                alt={item.imageDesktop.alt ?? `Screenshot del progetto ${item.title}`}
+                loading="lazy"
+              />
+            ) : (
+              <div class="work__placeholder" aria-hidden="true"></div>
+            )}
+          </figure>
+          <div class="work__body">
+            <p class="work__meta">{item.category} · {item.client}</p>
+            <h3>{item.title}</h3>
+            <p class="work__result">{item.result}</p>
+            {item.url && <span class="work__visit">Visita il sito <span aria-hidden="true">↗</span></span>}
+          </div>
+        </Tag>
+      );
+    })}
+  </div>
+</Section>
+
+<style>
+  .work {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--sp-5);
+  }
+  .work__card {
+    display: grid;
+    transition: transform var(--dur) var(--ease), border-color var(--dur) var(--ease);
+  }
+  .work__card.is-link:hover {
+    transform: translateY(-4px);
+    border-color: var(--c-line-strong);
+  }
+
+  .work__media { aspect-ratio: 16 / 10; overflow: hidden; }
+  .work__media img { width: 100%; height: 100%; object-fit: cover; }
+  .work__placeholder {
+    height: 100%;
+    background:
+      radial-gradient(60% 80% at 20% 100%, rgba(255, 172, 10, 0.2) 0%, transparent 70%),
+      radial-gradient(70% 90% at 85% 0%, rgba(77, 141, 255, 0.24) 0%, transparent 70%),
+      var(--c-surface-2);
+  }
+
+  .work__body { display: grid; gap: var(--sp-2); padding: var(--sp-5); }
+  .work__body h3 { font-size: var(--fs-lg); }
+  .work__meta {
+    font-size: var(--fs-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .work__result { font-size: var(--fs-sm); color: var(--c-text-secondary); }
+  .work__visit { font-size: var(--fs-sm); color: var(--c-blue); }
+
+  @media (max-width: 980px) { .work { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 600px) { .work { grid-template-columns: 1fr; } }
+</style>

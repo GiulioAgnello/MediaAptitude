@@ -1,0 +1,72 @@
+---
+/**
+ * Metodo di lavoro in 3 fasi numerate (stile "3 Steps to Kickstart").
+ * Dati da content.ts (steps).
+ */
+import Section from './Section.astro';
+import { steps } from '../data/content';
+---
+
+<Section
+  id="metodo"
+  eyebrow="Come lavoriamo"
+  title="Dal primo incontro ai risultati, in tre fasi"
+  lead="Un metodo chiaro: sai sempre cosa stiamo facendo, perché e con quali obiettivi."
+>
+  <ol class="steps" role="list">
+    {steps.map((step, i) => (
+      <li class="card steps__item" data-reveal>
+        <span class="steps__num" aria-hidden="true">{String(i + 1).padStart(2, '0')}.</span>
+        <div class="steps__body">
+          <h3>{step.title}</h3>
+          <p>{step.description}</p>
+          <ul class="steps__points" role="list">
+            {step.points.map((point) => (
+              <li>{point}</li>
+            ))}
+          </ul>
+        </div>
+      </li>
+    ))}
+  </ol>
+</Section>
+
+<style>
+  .steps { display: grid; gap: var(--sp-5); }
+  .steps__item {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--sp-6);
+    padding: var(--sp-6) var(--sp-7);
+  }
+  .steps__num {
+    font-family: var(--font-heading);
+    font-size: var(--fs-xl);
+    font-weight: var(--fw-medium);
+    letter-spacing: var(--ls-heading);
+    background: var(--grad-signature);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    line-height: var(--lh-tight);
+  }
+  .steps__body { display: grid; gap: var(--sp-3); max-width: 60ch; }
+  .steps__body p { color: var(--c-text-secondary); }
+
+  .steps__points { display: grid; gap: var(--sp-2); }
+  .steps__points li {
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-2);
+    font-size: var(--fs-sm);
+  }
+  .steps__points li::before {
+    content: '✓';
+    color: var(--c-blue);
+    font-weight: var(--fw-semibold);
+  }
+
+  @media (max-width: 640px) {
+    .steps__item { grid-template-columns: 1fr; gap: var(--sp-3); padding: var(--sp-5); }
+  }
+</style>

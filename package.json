@@ -11,9 +11,8 @@
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.0",
-    "@fontsource/caveat": "^5.2.0",
     "@fontsource/inter": "^5.2.0",
-    "@fontsource/rajdhani": "^5.2.0",
+    "@fontsource/inter-tight": "^5.2.0",
     "astro": "^6.4.7",
     "gsap": "^3.13.0"
   }

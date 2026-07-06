@@ -1,0 +1,137 @@
+---
+/**
+ * Articolo del blog: contenuto HTML renderizzato da WordPress.
+ * SEO: title/description da Yoast del post (fallback a titolo/estratto),
+ * schema Article + BreadcrumbList, date published/modified.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getPosts } from '../../lib/api';
+import { site } from '../../data/site';
+import { breadcrumb, parseYoast } from '../../lib/seo';
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return posts.map((post) => ({ params: { slug: post.slug }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const path = `/blog/${post.slug}`;
+
+const yoast = parseYoast(post.yoast);
+const title = yoast?.title ?? post.title;
+const description = yoast?.description ?? post.excerpt;
+
+const schema = [
+  breadcrumb(
+    [
+      { name: 'Home', path: '/' },
+      { name: 'Blog', path: '/blog' },
+      { name: post.title, path },
+    ],
+    site.url
+  ),
+  {
+    '@type': 'Article',
+    headline: post.title,
+    description,
+    datePublished: post.published,
+    dateModified: post.modified,
+    mainEntityOfPage: new URL(path, site.url).href,
+    ...(post.image && { image: post.image.url }),
+    author: { '@id': `${site.url}/#organization` },
+    publisher: { '@id': `${site.url}/#organization` },
+  },
+];
+
+const dateFmt = new Intl.DateTimeFormat('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
+---
+
+<BaseLayout title={title} description={description} path={path} schema={schema}>
+  <article class="article">
+    <header class="article__head container">
+      <nav class="article__crumbs" aria-label="Percorso">
+        <a href="/">Home</a>
+        <span aria-hidden="true">›</span>
+        <a href="/blog">Blog</a>
+      </nav>
+      <h1 data-enter>{post.title}</h1>
+      <time datetime={post.published} data-enter="2">
+        {dateFmt.format(new Date(post.published))}
+      </time>
+    </header>
+
+    {post.image && (
+      <figure class="article__cover container">
+        <img
+          src={post.image.url}
+          width={post.image.width}
+          height={post.image.height}
+          alt={post.image.alt ?? ''}
+          fetchpriority="high"
+        />
+      </figure>
+    )}
+
+    <div class="prose container" set:html={post.contentHtml} />
+
+    <footer class="article__foot container">
+      <a class="article__back" href="/blog">← Tutti gli articoli</a>
+    </footer>
+  </article>
+</BaseLayout>
+
+<style>
+  .article { padding-top: clamp(7rem, 5rem + 7vw, 10rem); }
+
+  .article__head,
+  .article__cover,
+  .prose,
+  .article__foot { max-width: 780px; }
+
+  .article__head { display: grid; gap: var(--sp-4); margin-bottom: var(--sp-6); }
+  .article__crumbs { display: flex; gap: var(--sp-2); font-size: var(--fs-xs); }
+  .article__crumbs a { transition: color var(--dur-fast) var(--ease); }
+  .article__crumbs a:hover { color: var(--c-text); }
+  .article__head h1 { font-size: var(--fs-2xl); }
+  .article__head time { font-size: var(--fs-sm); }
+
+  .article__cover { margin-bottom: var(--sp-6); }
+  .article__cover img {
+    width: 100%;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--c-line);
+  }
+
+  /* Tipografia del contenuto WP (HTML non scoped → :global) */
+  .prose { display: grid; gap: var(--sp-4); }
+  .prose :global(h2), .prose :global(h3) { margin-top: var(--sp-4); }
+  .prose :global(p) { color: var(--c-text-secondary); line-height: var(--lh-normal); }
+  .prose :global(a) { color: var(--c-blue); text-decoration: underline; text-underline-offset: 3px; }
+  .prose :global(ul), .prose :global(ol) { padding-left: 1.2em; color: var(--c-text-secondary); display: grid; gap: var(--sp-2); }
+  .prose :global(img) { border-radius: var(--radius-md); border: 1px solid var(--c-line); }
+  .prose :global(blockquote) {
+    margin: 0;
+    padding: var(--sp-4) var(--sp-5);
+    border-left: 3px solid var(--c-blue);
+    background: var(--c-surface);
+    border-radius: var(--radius-sm);
+    color: var(--c-text-secondary);
+  }
+  .prose :global(pre) {
+    padding: var(--sp-4);
+    background: var(--c-surface);
+    border: 1px solid var(--c-line);
+    border-radius: var(--radius-md);
+    overflow-x: auto;
+    font-size: var(--fs-sm);
+  }
+  .prose :global(figcaption) { font-size: var(--fs-xs); text-align: center; margin-top: var(--sp-2); }
+
+  .article__foot { padding-block: var(--sp-7); }
+  .article__back {
+    font-weight: var(--fw-medium);
+    color: var(--c-text-secondary);
+    transition: color var(--dur-fast) var(--ease);
+  }
+  .article__back:hover { color: var(--c-blue); }
+</style>

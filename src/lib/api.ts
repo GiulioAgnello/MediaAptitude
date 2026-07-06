@@ -14,7 +14,7 @@ import {
   caseStudies as mockCaseStudies,
   team as mockTeam,
 } from '../data/content';
-import type { Service, CaseStudy, TeamMember } from '../data/content';
+import type { Service, CaseStudy, TeamMember, MediaImage } from '../data/content';
 
 /** Base URL della REST custom. Override via .env (WP_API_URL). */
 const API_BASE = (
@@ -26,11 +26,14 @@ const TIMEOUT_MS = 8000;
 
 /**
  * Esegue la GET su un endpoint e ritorna il JSON tipizzato.
+ * Accetta path relativi alla REST custom oppure URL assoluti (REST core).
  * In caso di errore (rete, HTTP non 2xx, timeout, payload vuoto) ritorna
  * il fallback fornito e logga un avviso, senza propagare l'eccezione.
  */
 async function fetchApi<T>(endpoint: string, fallback: T): Promise<T> {
-  const url = `${API_BASE}/${endpoint.replace(/^\//, '')}`;
+  const url = /^https?:\/\//.test(endpoint)
+    ? endpoint
+    : `${API_BASE}/${endpoint.replace(/^\//, '')}`;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
@@ -78,6 +81,83 @@ export const getSeo = (path = '/') =>
     `seo?path=${encodeURIComponent(path)}`,
     null
   );
+
+/* ------------------------------------------------------------------ */
+/* Blog: post nativi WordPress (endpoint core /wp/v2, non il namespace custom) */
+
+/** Post del blog, normalizzato dalla REST core di WP. */
+export interface BlogPost {
+  slug: string;
+  /** Titolo in plain text (entità HTML risolte). */
+  title: string;
+  /** Estratto in plain text, senza markup. */
+  excerpt: string;
+  /** Contenuto dell'articolo, HTML renderizzato da WP. */
+  contentHtml: string;
+  /** Date ISO 8601 (con timezone) per schema Article e <time>. */
+  published: string;
+  modified: string;
+  image?: MediaImage | null;
+  /** yoast_head_json del post, se presente (da passare a parseYoast). */
+  yoast?: Record<string, unknown> | null;
+}
+
+/** Radice della REST core (/wp-json), derivata dalla base del namespace custom. */
+const WP_ROOT = API_BASE.replace(/\/mediaaptitude\/v1$/, '');
+
+/** Risolve le entità HTML più comuni nei titoli WP (plain text, no DOM in build). */
+function decodeEntities(html: string): string {
+  return html
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#0?39;/g, "'")
+    .replace(/&#821[67];/g, (m) => (m === '&#8216;' ? '‘' : '’'))
+    .replace(/&nbsp;/g, ' ');
+}
+
+/** Converte l'HTML di un excerpt WP in plain text compatto. */
+function stripHtml(html: string): string {
+  return decodeEntities(html.replace(/<[^>]*>/g, '')).replace(/\s+/g, ' ').trim();
+}
+
+/** Estrae la featured image dal payload _embedded, se disponibile. */
+function featuredImage(raw: any): MediaImage | null {
+  const media = raw?._embedded?.['wp:featuredmedia']?.[0];
+  if (!media?.source_url) return null;
+  return {
+    url: media.source_url,
+    width: media.media_details?.width ?? 1200,
+    height: media.media_details?.height ?? 675,
+    alt: media.alt_text || undefined,
+  };
+}
+
+/**
+ * Post pubblicati, dal più recente. Fallback: lista vuota (il blog parte
+ * senza articoli e /blog mostra l'empty state; la build non si rompe).
+ */
+export async function getPosts(): Promise<BlogPost[]> {
+  const raw = await fetchApi<any[]>(
+    `${WP_ROOT}/wp/v2/posts?status=publish&per_page=100&_embed=wp:featuredmedia`,
+    []
+  );
+  if (!Array.isArray(raw)) return [];
+
+  return raw
+    .filter((p) => p?.slug && p?.title?.rendered)
+    .map((p) => ({
+      slug: p.slug,
+      title: decodeEntities(String(p.title.rendered)),
+      excerpt: stripHtml(String(p.excerpt?.rendered ?? '')),
+      contentHtml: String(p.content?.rendered ?? ''),
+      published: String(p.date_gmt ? `${p.date_gmt}Z` : p.date),
+      modified: String(p.modified_gmt ? `${p.modified_gmt}Z` : p.modified),
+      image: featuredImage(p),
+      yoast: p.yoast_head_json ?? null,
+    }));
+}
 
 /** Payload del form di contatto. `company` è l'honeypot anti-bot (resta vuoto). */
 export interface LeadPayload {

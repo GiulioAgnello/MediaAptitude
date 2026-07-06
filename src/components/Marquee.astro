@@ -1,0 +1,39 @@
+---
+/**
+ * Striscia a scorrimento infinito con lo stack tecnologico.
+ * Il contenuto è duplicato (aria-hidden sul clone) per il loop CSS senza JS.
+ */
+import { techStack } from '../data/content';
+const names = techStack.map((t) => t.name);
+---
+
+<div class="marquee" role="presentation">
+  <div class="marquee__track">
+    {[false, true].map((clone) => (
+      <ul class="marquee__group" role="list" aria-hidden={clone || undefined}>
+        {names.map((name) => (
+          <li class="marquee__item">{name}</li>
+        ))}
+      </ul>
+    ))}
+  </div>
+</div>
+
+<style>
+  .marquee { padding-block: var(--sp-6); }
+  .marquee__group {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-8);
+    padding-right: var(--sp-8); /* mantiene il gap nel punto di giunzione del loop */
+  }
+  .marquee__item {
+    font-family: var(--font-heading);
+    font-size: var(--fs-lg);
+    font-weight: var(--fw-medium);
+    letter-spacing: var(--ls-heading);
+    color: var(--c-text-muted);
+    opacity: 0.55;
+    white-space: nowrap;
+  }
+</style>

@@ -1,0 +1,148 @@
+---
+/**
+ * Sezione servizi in home (stile "All-in-one" del riferimento):
+ * indice sticky a sinistra, card grandi impilate a destra.
+ * Ogni card = un gruppo di servizi con chips e link alla pagina dedicata.
+ */
+import Section from './Section.astro';
+import Icon from './Icon.astro';
+import { serviceGroups, services } from '../data/content';
+
+const bySlug = new Map(services.map((s) => [s.slug, s]));
+const groups = serviceGroups.map((g) => ({
+  ...g,
+  items: g.serviceSlugs.map((slug) => bySlug.get(slug)!).filter(Boolean),
+}));
+---
+
+<Section
+  id="servizi"
+  eyebrow="Cosa facciamo"
+  title="Tutto il digitale che serve alla tua impresa"
+  lead="Un unico partner: presenza online, visibilità su Google e strumenti su misura."
+>
+  <div class="services">
+    <nav class="services__index" aria-label="Indice servizi">
+      <ul role="list">
+        {groups.map((g, i) => (
+          <li>
+            <a href={`#gruppo-${g.slug}`} class="services__tab" data-tab={g.slug} aria-current={i === 0 ? 'true' : undefined}>
+              <Icon name={g.icon} />
+              {g.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    <div class="services__cards">
+      {groups.map((g) => (
+        <article id={`gruppo-${g.slug}`} class="card services__card" data-group={g.slug}>
+          <div class="services__body">
+            <h3>{g.title}</h3>
+            <p>{g.description}</p>
+            <ul class="services__chips" role="list">
+              {g.items.map((s) => (
+                <li class="pill"><Icon name={s.icon} />{s.title}</li>
+              ))}
+            </ul>
+            <a class="services__more" href={`/servizi/${g.slug}`}>
+              Scopri di più <span aria-hidden="true">→</span>
+            </a>
+          </div>
+          <div class="services__glow" aria-hidden="true"></div>
+        </article>
+      ))}
+    </div>
+  </div>
+</Section>
+
+<style>
+  .services {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2.4fr);
+    gap: var(--sp-7);
+    align-items: start;
+  }
+
+  .services__index {
+    position: sticky;
+    top: 110px;
+  }
+  .services__index ul { display: grid; }
+  .services__tab {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    padding: var(--sp-4) var(--sp-3);
+    font-weight: var(--fw-medium);
+    color: var(--c-text-muted);
+    border-bottom: 1px solid var(--c-line);
+    transition: color var(--dur-fast) var(--ease);
+  }
+  .services__tab :global(svg) { width: 20px; height: 20px; }
+  .services__tab:hover { color: var(--c-text); }
+  .services__tab[aria-current='true'] { color: var(--c-text); border-bottom-color: var(--c-blue); }
+
+  .services__cards { display: grid; gap: var(--sp-5); }
+  .services__card {
+    position: relative;
+    padding: var(--sp-7);
+    scroll-margin-top: 120px;
+  }
+  .services__body {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: var(--sp-4);
+    max-width: 56ch;
+  }
+  .services__body p { color: var(--c-text-secondary); }
+  .services__chips { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+
+  .services__more {
+    justify-self: start;
+    font-weight: var(--fw-medium);
+    color: var(--c-text-secondary);
+    transition: color var(--dur-fast) var(--ease);
+  }
+  .services__more:hover { color: var(--c-blue); }
+
+  /* Alone gradiente nell'angolo della card */
+  .services__glow {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(45% 60% at 92% 10%, rgba(255, 172, 10, 0.16) 0%, transparent 70%),
+      radial-gradient(55% 70% at 100% 60%, rgba(77, 141, 255, 0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  @media (max-width: 900px) {
+    .services { grid-template-columns: 1fr; }
+    .services__index { display: none; }
+    .services__card { padding: var(--sp-5); }
+  }
+</style>
+
+<script>
+  // Evidenzia nell'indice il gruppo attualmente visibile.
+  const tabs = new Map(
+    [...document.querySelectorAll<HTMLAnchorElement>('[data-tab]')].map((el) => [el.dataset.tab!, el])
+  );
+  if (tabs.size) {
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          const slug = (e.target as HTMLElement).dataset.group!;
+          tabs.forEach((tab, key) =>
+            key === slug ? tab.setAttribute('aria-current', 'true') : tab.removeAttribute('aria-current')
+          );
+        }
+      },
+      { rootMargin: '-40% 0px -50% 0px' }
+    );
+    document.querySelectorAll('[data-group]').forEach((el) => io.observe(el));
+  }
+</script>

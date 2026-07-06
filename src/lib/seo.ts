@@ -29,6 +29,21 @@ export function breadcrumb(crumbs: Crumb[], baseUrl: string) {
 }
 
 /**
+ * Costruisce uno schema FAQPage dalle coppie domanda/risposta
+ * (idoneità ai rich result "FAQ" di Google).
+ */
+export function faqPage(items: { question: string; answer: string }[]) {
+  return {
+    '@type': 'FAQPage',
+    mainEntity: items.map((f) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  };
+}
+
+/**
  * Meta SEO normalizzati provenienti da WordPress (Yoast).
  * Tutti i campi sono opzionali: ciò che manca ricade sui default statici.
  */

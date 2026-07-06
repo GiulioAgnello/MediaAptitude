@@ -39,7 +39,7 @@ const { member } = Astro.props;
     overflow: hidden; /* foto a filo dei bordi arrotondati */
     transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease);
   }
-  .member:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: color-mix(in srgb, var(--c-brand) 45%, transparent); }
+  .member:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: var(--c-line-strong); }
 
   /* Foto quadrata a tutta larghezza della card. */
   .member__media {
@@ -74,12 +74,15 @@ const { member } = Astro.props;
 
   .member__avatar {
     display: grid; place-items: center;
-    background: linear-gradient(135deg, var(--c-brand), var(--c-accent) 55%, var(--c-indigo));
-    color: #fff;
+    background:
+      radial-gradient(70% 70% at 25% 30%, rgba(255, 172, 10, 0.55) 0%, transparent 65%),
+      radial-gradient(80% 80% at 75% 70%, rgba(77, 141, 255, 0.6) 0%, transparent 70%),
+      var(--c-surface-2);
+    color: var(--c-text);
     font-family: var(--font-heading);
-    font-weight: var(--fw-bold);
+    font-weight: var(--fw-semibold);
     font-size: clamp(3rem, 8vw, 4.5rem);
-    letter-spacing: 0.02em;
+    letter-spacing: var(--ls-heading);
   }
 
   /* Contenuto sotto la foto, leggermente sovrapposto alla sfumatura. */
@@ -90,7 +93,7 @@ const { member } = Astro.props;
     margin-top: calc(var(--sp-6) * -1); /* risale dentro la sfumatura */
   }
   .member__name { font-size: var(--fs-lg); }
-  .member__role { color: var(--c-brand); font-size: var(--fs-sm); font-weight: var(--fw-medium); margin-bottom: var(--sp-3); }
+  .member__role { color: var(--c-blue); font-size: var(--fs-sm); font-weight: var(--fw-medium); margin-bottom: var(--sp-3); }
   .member__skills { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sp-2); }
   .member__skills li {
     font-size: var(--fs-xs);

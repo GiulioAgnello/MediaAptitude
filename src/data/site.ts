@@ -4,6 +4,8 @@
  * un solo punto da modificare, niente valori sparsi nei componenti.
  */
 
+import { serviceGroups } from './content';
+
 export const site = {
   name: 'Media Aptitude',
   legalName: 'Media Aptitude',
@@ -21,12 +23,17 @@ export const site = {
   ogImage: '/og-default.png',
 } as const;
 
-export type NavItem = { label: string; href: string };
+export type NavItem = { label: string; href: string; children?: NavItem[] };
 
 export const mainNav: NavItem[] = [
-  { label: 'Servizi', href: '/#servizi' },
-  { label: 'Approccio', href: '/#approccio' },
+  {
+    label: 'Servizi',
+    href: '/#servizi',
+    children: serviceGroups.map((g) => ({ label: g.label, href: `/servizi/${g.slug}` })),
+  },
+  { label: 'Metodo', href: '/#metodo' },
   { label: 'Lavori', href: '/#lavori' },
+  { label: 'Blog', href: '/blog' },
   { label: 'Chi siamo', href: '/chi-siamo' },
   { label: 'Contatti', href: '/contatti' },
 ];
