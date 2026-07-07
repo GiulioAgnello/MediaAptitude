@@ -7,13 +7,13 @@ const year = new Date().getFullYear();
 
 <footer class="footer">
   {/* CTA band finale (stile Cosmoq: titolo grande + bottone glow) */}
-  <div class="footer__cta container" data-reveal>
+  <div class="footer__cta" data-reveal>
     <h2>Il futuro digitale della tua impresa inizia qui</h2>
     <p class="lead">Raccontaci il progetto: ti rispondiamo entro un giorno lavorativo.</p>
     <Button href={cta.href} variant="primary">{cta.label}</Button>
   </div>
 
-  <div class="footer__main container">
+  <div class="footer__main">
     <div class="footer__brand">
       <Logo variant="light" />
       <p class="footer__desc">{site.description}</p>
@@ -35,7 +35,7 @@ const year = new Date().getFullYear();
     </div>
   </div>
 
-  <div class="footer__bottom container">
+  <div class="footer__bottom">
     <p>© {year} {site.legalName}. Tutti i diritti riservati.</p>
     <p>{site.tagline}</p>
   </div>
@@ -49,12 +49,14 @@ const year = new Date().getFullYear();
       radial-gradient(40% 40% at 15% 110%, rgba(255, 172, 10, 0.08) 0%, transparent 70%);
   }
 
+  /* Full-bleed: bande a tutta larghezza, solo il padding laterale come respiro */
   .footer__cta {
     display: grid;
     justify-items: center;
     gap: var(--sp-4);
     text-align: center;
     padding-block: var(--section-py);
+    padding-inline: var(--container-pad);
   }
   .footer__cta h2 { max-width: 18ch; }
   .footer__cta .lead { max-width: 44ch; }
@@ -64,6 +66,7 @@ const year = new Date().getFullYear();
     grid-template-columns: 1.6fr 1fr 1fr;
     gap: var(--sp-7);
     padding-block: var(--sp-7);
+    padding-inline: var(--container-pad);
     border-top: 1px solid var(--c-line);
   }
   .footer__desc {
@@ -95,6 +98,7 @@ const year = new Date().getFullYear();
     flex-wrap: wrap;
     gap: var(--sp-3);
     padding-block: var(--sp-5);
+    padding-inline: var(--container-pad);
     border-top: 1px solid var(--c-line);
     font-size: var(--fs-xs);
   }

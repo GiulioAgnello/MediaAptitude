@@ -47,10 +47,10 @@ const Tag = href ? 'a' : 'button';
   /* Primario: doppio background border-box = bordo a gradiente ambra→blu,
      interno quasi nero. Il glow esterno arriva dalle due ombre colorate. */
   .btn--primary {
-    color: var(--c-text);
+    color: var(--c-pill-text);
     border: 1px solid transparent;
     background:
-      linear-gradient(#060608, #060608) padding-box,
+      linear-gradient(var(--c-pill-bg), var(--c-pill-bg)) padding-box,
       linear-gradient(100deg, var(--c-amber), rgba(255, 255, 255, 0.25), var(--c-blue)) border-box;
     box-shadow:
       -6px 0 18px -6px rgba(255, 172, 10, 0.45),

@@ -41,6 +41,19 @@ const wpSeo = parseYoast(await getSeo(path));
     {/* Font self-hosted via @fontsource (import nel frontmatter).
         Nessuna connessione esterna a Google: meglio per latenza e privacy. */}
 
+    {/* Tema: settato PRIMA del paint per evitare flash. Default dark (identità
+        brand); se l'utente ha già scelto, si legge da localStorage. */}
+    <script is:inline>
+      (function () {
+        try {
+          var t = localStorage.getItem('theme');
+          document.documentElement.setAttribute('data-theme', t === 'light' ? 'light' : 'dark');
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      })();
+    </script>
+
     <Seo title={title} description={description} path={path} noindex={noindex} schema={schema} wpSeo={wpSeo} />
 
     {/* Reveal allo scroll: fallback per browser senza animation-timeline nativo.
@@ -66,6 +79,7 @@ const wpSeo = parseYoast(await getSeo(path));
     </script>
   </head>
   <body>
+    <div class="aurora" aria-hidden="true"></div>
     <a href="#main" class="skip-link">Salta al contenuto</a>
     <Header />
     <main id="main">

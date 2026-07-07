@@ -28,6 +28,17 @@
   --glow-amber: radial-gradient(circle, rgba(255, 172, 10, 0.32) 0%, transparent 70%);
   --glow-blue: radial-gradient(circle, rgba(77, 141, 255, 0.32) 0%, transparent 70%);
 
+  /* Pill primaria (bottone scuro col bordo-glow): resta scura in ENTRAMBI i temi,
+     quindi il testo è sempre chiaro. Token dedicati per non usare valori hard-coded. */
+  --c-pill-bg: #060608;
+  --c-pill-text: #ffffff;
+
+  /* Aurora di sfondo (blob diffusi dietro ai contenuti). Colori accento + opacità
+     complessiva del layer: il tema chiaro la abbassa. */
+  --aurora-amber: rgba(255, 172, 10, 0.4);
+  --aurora-blue: rgba(77, 141, 255, 0.36);
+  --aurora-opacity: 1;
+
   /* Semantici retro-compatibili (usati da componenti esistenti) */
   --c-brand: var(--c-blue);
   --c-accent: var(--c-amber);
@@ -99,6 +110,42 @@
   /* ---------- Z-INDEX ---------- */
   --z-header: 100;
   --z-overlay: 200;
+
+  color-scheme: dark;
+}
+
+/* ============================================================
+   TEMA CHIARO — override dei SOLI token palette.
+   Attivo con <html data-theme="light">. Gli accenti ambra/blu
+   restano invariati (brand); cambiano sfondo, testo, superfici,
+   linee e ombre. Le glow accento hard-coded nei componenti sono
+   a bassa opacità e leggibili anche su chiaro.
+   ============================================================ */
+:root[data-theme='light'] {
+  --c-bg: #f6f8fc;                       /* off-white leggermente freddo */
+  --c-text: #0d1220;                     /* titoli, testo primario */
+  --c-text-secondary: #363d4f;           /* testo di supporto */
+  --c-text-muted: #586074;               /* body copy */
+
+  --c-amber-soft: rgba(255, 172, 10, 0.16);
+  --c-blue-soft: rgba(77, 141, 255, 0.16);
+
+  /* Superfici e linee: da bianco-translucido a nero-translucido */
+  --c-line: rgba(13, 18, 32, 0.1);
+  --c-line-strong: rgba(13, 18, 32, 0.16);
+  --c-surface: rgba(13, 18, 32, 0.025);
+  --c-surface-2: rgba(13, 18, 32, 0.05);
+
+  --shadow-sm: 0 1px 2px rgba(13, 18, 32, 0.08);
+  --shadow-md: 0 8px 24px rgba(13, 18, 32, 0.1);
+  --shadow-lg: 0 24px 64px rgba(13, 18, 32, 0.14);
+
+  /* Aurora su fondo chiaro: colori più intensi ma opacità layer ridotta per non "sporcare" */
+  --aurora-amber: rgba(255, 172, 10, 0.28);
+  --aurora-blue: rgba(77, 141, 255, 0.26);
+  --aurora-opacity: 0.8;
+
+  color-scheme: light;
 }
 
 /* ============================================================
@@ -123,6 +170,59 @@ body {
   background-color: var(--c-bg);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+/* ============================================================
+   AURORA — layer decorativo fisso dietro ai contenuti.
+   Due blob a gradiente (ambra + blu) molto sfocati e in drift lento,
+   alleggeriscono il fondo senza intaccare la leggibilità.
+   Fallback statico su prefers-reduced-motion.
+   ============================================================ */
+.aurora {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: var(--aurora-opacity);
+  transition: opacity var(--dur) var(--ease);
+}
+.aurora::before,
+.aurora::after {
+  content: '';
+  position: absolute;
+  width: 65vw;
+  height: 65vw;
+  max-width: 950px;
+  max-height: 950px;
+  border-radius: 50%;
+  filter: blur(90px);
+  will-change: transform;
+}
+.aurora::before {
+  top: -12vw;
+  left: -6vw;
+  background: radial-gradient(circle at center, var(--aurora-amber) 0%, transparent 70%);
+  animation: aurora-drift-1 26s var(--ease) infinite alternate;
+}
+.aurora::after {
+  bottom: -16vw;
+  right: -8vw;
+  background: radial-gradient(circle at center, var(--aurora-blue) 0%, transparent 70%);
+  animation: aurora-drift-2 32s var(--ease) infinite alternate;
+}
+@keyframes aurora-drift-1 {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to   { transform: translate3d(7vw, 5vw, 0) scale(1.15); }
+}
+@keyframes aurora-drift-2 {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to   { transform: translate3d(-6vw, -4vw, 0) scale(1.12); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aurora::before,
+  .aurora::after { animation: none; }
 }
 
 img, picture, svg, video { display: block; max-width: 100%; height: auto; }
