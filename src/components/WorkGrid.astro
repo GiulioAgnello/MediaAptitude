@@ -17,38 +17,29 @@ const { items } = Astro.props;
   lead="Ogni progetto nasce da un obiettivo di business e si misura sui numeri."
 >
   <div class="work stagger">
-    {items.map((item) => {
-      const Tag = item.url ? 'a' : 'article';
-      return (
-        <Tag
-          class:list={['card', 'work__card', { 'is-link': !!item.url }]}
-          href={item.url}
-          target={item.url ? '_blank' : undefined}
-          rel={item.url ? 'noopener' : undefined}
-          data-reveal
-        >
-          <figure class="work__media">
-            {item.imageDesktop ? (
-              <img
-                src={item.imageDesktop.url}
-                width={item.imageDesktop.width}
-                height={item.imageDesktop.height}
-                alt={item.imageDesktop.alt ?? `Screenshot del progetto ${item.title}`}
-                loading="lazy"
-              />
-            ) : (
-              <div class="work__placeholder" aria-hidden="true"></div>
-            )}
-          </figure>
-          <div class="work__body">
-            <p class="work__meta">{item.category} · {item.client}</p>
-            <h3>{item.title}</h3>
-            <p class="work__result">{item.result}</p>
-            {item.url && <span class="work__visit">Visita il sito <span aria-hidden="true">↗</span></span>}
-          </div>
-        </Tag>
-      );
-    })}
+    {items.map((item) => (
+      <a class="card work__card is-link" href={`/lavori/${item.slug}`} data-reveal>
+        <figure class="work__media">
+          {item.imageDesktop ? (
+            <img
+              src={item.imageDesktop.url}
+              width={item.imageDesktop.width}
+              height={item.imageDesktop.height}
+              alt={item.imageDesktop.alt ?? `Screenshot del progetto ${item.title}`}
+              loading="lazy"
+            />
+          ) : (
+            <div class="work__placeholder" aria-hidden="true"></div>
+          )}
+        </figure>
+        <div class="work__body">
+          <p class="work__meta">{item.category} · {item.client}</p>
+          <h3>{item.title}</h3>
+          <p class="work__result">{item.result}</p>
+          <span class="work__visit">Vedi il caso studio <span aria-hidden="true">→</span></span>
+        </div>
+      </a>
+    ))}
   </div>
 </Section>
 

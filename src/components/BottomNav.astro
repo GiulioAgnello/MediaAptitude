@@ -81,13 +81,20 @@ const items = [
   .bottomnav__link {
     display: grid;
     justify-items: center;
-    gap: 3px;
-    padding: 0.5rem 0.25rem;
-    border-radius: var(--radius-md);
+    gap: 2px;
+    padding: 0.3rem 0.25rem;
     color: var(--c-text-muted);
-    transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+    transition: color var(--dur-fast) var(--ease);
   }
-  .bottomnav__icon { display: grid; place-items: center; }
+  /* indicatore attivo TONDO dietro la sola icona */
+  .bottomnav__icon {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-full);
+    transition: background var(--dur-fast) var(--ease);
+  }
   .bottomnav__icon svg { width: 22px; height: 22px; }
   .bottomnav__label {
     font-size: 0.7rem;
@@ -95,10 +102,8 @@ const items = [
     letter-spacing: 0.01em;
   }
   .bottomnav__link:hover { color: var(--c-text-secondary); }
-  .bottomnav__link[aria-current='page'] {
-    color: var(--c-blue);
-    background: var(--c-blue-soft);   /* pill attiva */
-  }
+  .bottomnav__link[aria-current='page'] { color: var(--c-blue); }
+  .bottomnav__link[aria-current='page'] .bottomnav__icon { background: var(--c-blue-soft); }
 
   @media (max-width: 900px) {
     .bottomnav { display: block; }

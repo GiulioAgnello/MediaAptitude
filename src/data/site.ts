@@ -17,10 +17,27 @@ export const site = {
   locale: 'it_IT',
   lang: 'it',
   email: 'info@media-aptitude.it',
+  // Telefono per link tel: (es. '+39 0832 000000'). Vuoto = pulsante nascosto.
+  phone: '+39 392 670 2839',
+  // WhatsApp: solo cifre in formato internazionale, senza + né spazi (es. '39333...').
+  // Vuoto = FAB WhatsApp nascosto.
+  whatsapp: '393926702839',
+  // Messaggio precompilato all'apertura della chat WhatsApp.
+  whatsappMessage: 'Ciao! Vorrei informazioni sui vostri servizi.',
   // Aree geografiche servite (usate per la SEO locale e lo schema LocalBusiness).
   areaServed: ['Lecce', 'Salento', 'Puglia'],
   // Default Open Graph image (da sostituire con asset reale in S4).
   ogImage: '/og-default.png',
+  // Analytics: inserire il Measurement ID GA4 (es. 'G-XXXXXXXXXX').
+  // Se vuoto, nessuno script di tracciamento viene caricato.
+  analytics: {
+    ga4: '',
+  },
+  // Google Business: Place ID del profilo (pubblico). La API key è segreta e
+  // sta in env (GOOGLE_PLACES_API_KEY). Se vuoto, le recensioni non si caricano.
+  google: {
+    placeId: '',
+  },
 } as const;
 
 export type NavItem = { label: string; href: string; children?: NavItem[] };

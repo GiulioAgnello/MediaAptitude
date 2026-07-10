@@ -145,6 +145,11 @@
   --aurora-blue: rgba(77, 141, 255, 0.26);
   --aurora-opacity: 0.8;
 
+  /* Pill primaria nel tema chiaro: grigio chiaro + testo scuro (meno contrasto,
+     più omogenea al fondo chiaro; nel tema scuro resta scura). */
+  --c-pill-bg: #e9edf4;
+  --c-pill-text: #0d1220;
+
   color-scheme: light;
 }
 
@@ -360,6 +365,10 @@ strong { color: var(--c-text-secondary); font-weight: var(--fw-medium); }
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
+  /* niente animazione nelle transizioni di pagina (View Transitions) */
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) { animation: none !important; }
 }
 
 /* ============================================================

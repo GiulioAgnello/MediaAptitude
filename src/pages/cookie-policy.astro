@@ -1,0 +1,96 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getPage } from '../lib/api';
+import { site } from '../data/site';
+import { breadcrumb } from '../lib/seo';
+
+// Contenuto editabile in WordPress (pagina con slug "cookie-policy").
+const page = await getPage('cookie-policy');
+
+const schema = breadcrumb(
+  [
+    { name: 'Home', path: '/' },
+    { name: 'Cookie Policy', path: '/cookie-policy' },
+  ],
+  site.url
+);
+const updated = page?.modified
+  ? new Date(page.modified).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })
+  : null;
+---
+
+<BaseLayout
+  path="/cookie-policy"
+  title="Cookie Policy"
+  description="Informativa estesa sui cookie usati da Media Aptitude e su come gestire il consenso."
+  schema={schema}
+>
+  <section class="legal">
+    <div class="container legal__inner">
+      <nav class="legal__crumbs" aria-label="Percorso">
+        <a href="/">Home</a><span aria-hidden="true">›</span><span aria-current="page">Cookie Policy</span>
+      </nav>
+      <h1>{page?.title || 'Cookie Policy'}</h1>
+      {updated && <p class="legal__updated">Ultimo aggiornamento: {updated}</p>}
+
+      {page ? (
+        <div class="prose" set:html={page.contentHtml} />
+      ) : (
+        <div class="prose">
+          <p>
+            Questo sito usa i cookie per funzionare correttamente e, previo consenso, per misurare
+            l'utilizzo delle pagine e l'efficacia delle campagne pubblicitarie. Puoi accettare,
+            rifiutare o personalizzare le tue scelte in ogni momento da
+            <a href="#" data-cookie-open> Preferenze cookie</a>.
+          </p>
+
+          <h2>Cookie necessari</h2>
+          <p>
+            Indispensabili al funzionamento del sito e alla memorizzazione delle tue preferenze di
+            consenso. Sono sempre attivi e non richiedono consenso.
+          </p>
+
+          <h2>Cookie di analisi</h2>
+          <p>
+            Utilizziamo Google Analytics 4 (Google Ireland Ltd.) per raccogliere statistiche
+            aggregate e anonime sull'uso del sito. Vengono attivati solo dopo il tuo consenso, con
+            IP anonimizzato e in modalità Consent Mode.
+          </p>
+
+          <h2>Cookie di marketing</h2>
+          <p>
+            Se acconsenti, usiamo cookie di Google e Meta per misurare le conversioni delle
+            campagne pubblicitarie. Restano disattivati finché non concedi il consenso.
+          </p>
+
+          <h2>Come gestire il consenso</h2>
+          <p>
+            Puoi modificare o revocare le tue scelte in qualsiasi momento da
+            <a href="#" data-cookie-open> Preferenze cookie</a>, oppure eliminando i cookie dalle
+            impostazioni del browser. Per il trattamento dei dati vedi la
+            <a href="/privacy">Privacy Policy</a>.
+          </p>
+
+          <p>Titolare: {site.legalName} — <a href={`mailto:${site.email}`}>{site.email}</a>.</p>
+        </div>
+      )}
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .legal { padding-top: clamp(7rem, 5rem + 7vw, 10rem); }
+  .legal__inner { max-width: 760px; }
+  .legal__crumbs { display: flex; gap: var(--sp-2); font-size: var(--fs-xs); margin-bottom: var(--sp-4); }
+  .legal__crumbs a { transition: color var(--dur-fast) var(--ease); }
+  .legal__crumbs a:hover { color: var(--c-text); }
+  .legal__crumbs [aria-current] { color: var(--c-text-secondary); }
+  .legal h1 { font-size: var(--fs-2xl); }
+  .legal__updated { color: var(--c-text-muted); font-size: var(--fs-sm); margin-top: var(--sp-2); }
+
+  .prose { margin-top: var(--sp-6); display: grid; gap: var(--sp-4); }
+  .prose :global(h2) { font-size: var(--fs-lg); margin-top: var(--sp-4); }
+  .prose :global(p) { color: var(--c-text-secondary); }
+  .prose :global(a) { color: var(--c-blue); }
+  .prose :global(ul) { display: grid; gap: var(--sp-2); padding-left: var(--sp-5); color: var(--c-text-secondary); }
+</style>

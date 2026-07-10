@@ -1,0 +1,244 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Section from '../../components/Section.astro';
+import Button from '../../components/Button.astro';
+import { getCaseStudies } from '../../lib/api';
+import type { CaseStudy } from '../../data/content';
+import { site } from '../../data/site';
+import { breadcrumb } from '../../lib/seo';
+
+export async function getStaticPaths() {
+  const items = await getCaseStudies();
+  return items.map((item) => ({
+    params: { slug: item.slug },
+    props: {
+      item,
+      related: items.filter((x) => x.slug !== item.slug).slice(0, 3),
+    },
+  }));
+}
+
+interface Props { item: CaseStudy; related: CaseStudy[]; }
+const { item, related } = Astro.props;
+
+const path = `/lavori/${item.slug}`;
+const schema = [
+  breadcrumb(
+    [
+      { name: 'Home', path: '/' },
+      { name: 'Lavori', path: '/lavori' },
+      { name: item.title, path },
+    ],
+    site.url
+  ),
+  {
+    '@type': 'CreativeWork',
+    name: item.title,
+    about: item.category,
+    creator: { '@type': 'Organization', name: site.legalName },
+    ...(item.summary ? { description: item.summary } : {}),
+  },
+];
+---
+
+<BaseLayout
+  path={path}
+  title={`${item.title} — Case study`}
+  description={item.summary || `${item.category} per ${item.client}: ${item.result}.`}
+  schema={schema}
+>
+  <section class="cs-intro">
+    <div class="container cs-intro__inner">
+      <nav class="cs-crumbs" aria-label="Percorso">
+        <a href="/">Home</a><span aria-hidden="true">›</span>
+        <a href="/lavori">Lavori</a><span aria-hidden="true">›</span>
+        <span aria-current="page">{item.title}</span>
+      </nav>
+
+      <p class="cs-meta">{item.category} · {item.client}</p>
+      <h1 data-enter>{item.title}</h1>
+      {item.summary && <p class="cs-lead" data-enter="2">{item.summary}</p>}
+
+      <div class="cs-headline" data-enter="3">
+        <span class="cs-headline__result">{item.result}</span>
+        {item.url && (
+          <a class="cs-visit" href={item.url} target="_blank" rel="noopener">
+            Visita il sito <span aria-hidden="true">↗</span>
+          </a>
+        )}
+      </div>
+
+      {item.tech.length > 0 && (
+        <ul class="cs-tech" role="list">
+          {item.tech.map((t) => <li class="pill">{t}</li>)}
+        </ul>
+      )}
+    </div>
+  </section>
+
+  {/* Anteprima device desktop + mobile */}
+  <div class="container">
+    <div class="cs-dev">
+      <div class="cs-browser">
+        <div class="cs-bar" aria-hidden="true"><span></span><span></span><span></span></div>
+        <div class="cs-screen">
+          {item.imageDesktop
+            ? <img src={item.imageDesktop.url} width={item.imageDesktop.width} height={item.imageDesktop.height} alt={`Anteprima desktop di ${item.title}`} loading="lazy" />
+            : <div class="cs-ph" aria-hidden="true"></div>}
+        </div>
+      </div>
+      <div class="cs-phone">
+        <div class="cs-phone__screen">
+          {item.imageMobile
+            ? <img src={item.imageMobile.url} width={item.imageMobile.width} height={item.imageMobile.height} alt={`Anteprima mobile di ${item.title}`} loading="lazy" />
+            : <div class="cs-ph cs-ph--phone" aria-hidden="true"></div>}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {/* Sfida + Soluzione */}
+  {(item.challenge || item.solution) && (
+    <Section eyebrow="Il progetto" title="Sfida e soluzione">
+      <div class="cs-two">
+        {item.challenge && (
+          <article class="card cs-block" data-reveal>
+            <h3>La sfida</h3>
+            <p>{item.challenge}</p>
+          </article>
+        )}
+        {item.solution && (
+          <article class="card card--glow cs-block" data-reveal>
+            <h3>La soluzione</h3>
+            <p>{item.solution}</p>
+          </article>
+        )}
+      </div>
+    </Section>
+  )}
+
+  {/* Processo */}
+  {item.process && item.process.length > 0 && (
+    <Section eyebrow="Come ci siamo arrivati" title="Il processo">
+      <ol class="cs-process stagger" role="list">
+        {item.process.map((p, i) => (
+          <li class="cs-step" data-reveal>
+            <span class="cs-step__n" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+            <p>{p}</p>
+          </li>
+        ))}
+      </ol>
+    </Section>
+  )}
+
+  {/* Risultati */}
+  {item.results && item.results.length > 0 && (
+    <Section eyebrow="I numeri" title="Risultati">
+      <ul class="cs-results stagger" role="list">
+        {item.results.map((r) => (
+          <li class="card cs-result" data-reveal>{r}</li>
+        ))}
+      </ul>
+    </Section>
+  )}
+
+  {/* CTA */}
+  <Section align="center">
+    <div class="cs-cta">
+      <h2>Hai un progetto simile?</h2>
+      <p class="lead">Raccontacelo: ti diciamo come lo affronteremmo e cosa aspettarti.</p>
+      <Button href="/contatti" variant="primary">Richiedi informazioni</Button>
+    </div>
+  </Section>
+
+  {/* Correlati */}
+  {related.length > 0 && (
+    <Section eyebrow="Altri lavori" title="Progetti correlati">
+      <div class="cs-related">
+        {related.map((r) => (
+          <a class="card cs-related__item" href={`/lavori/${r.slug}`} data-reveal>
+            <div class="cs-related__media">
+              {r.imageDesktop
+                ? <img src={r.imageDesktop.url} width={r.imageDesktop.width} height={r.imageDesktop.height} alt="" loading="lazy" />
+                : <div class="cs-ph" aria-hidden="true"></div>}
+            </div>
+            <div class="cs-related__body">
+              <p class="cs-meta">{r.category} · {r.client}</p>
+              <h3>{r.title}</h3>
+            </div>
+          </a>
+        ))}
+      </div>
+    </Section>
+  )}
+</BaseLayout>
+
+<style>
+  .cs-intro { padding-top: clamp(7rem, 5rem + 7vw, 10rem); }
+  .cs-intro__inner { display: grid; gap: var(--sp-4); max-width: 820px; }
+  .cs-crumbs { display: flex; flex-wrap: wrap; gap: var(--sp-2); font-size: var(--fs-xs); }
+  .cs-crumbs a { transition: color var(--dur-fast) var(--ease); }
+  .cs-crumbs a:hover { color: var(--c-text); }
+  .cs-crumbs [aria-current] { color: var(--c-text-secondary); }
+  .cs-meta { font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: 0.1em; color: var(--c-text-muted); }
+  .cs-intro h1 { font-size: var(--fs-2xl); }
+  .cs-lead { font-size: var(--fs-md); color: var(--c-text-muted); max-width: 62ch; }
+  .cs-headline { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-4); margin-top: var(--sp-2); }
+  .cs-headline__result {
+    font-family: var(--font-heading);
+    font-size: var(--fs-lg);
+    font-weight: var(--fw-medium);
+    background: var(--grad-signature);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .cs-visit { color: var(--c-blue); font-weight: var(--fw-medium); font-size: var(--fs-sm); }
+  .cs-tech { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-top: var(--sp-2); }
+
+  /* device */
+  .cs-dev { position: relative; width: 100%; max-width: 900px; margin: var(--sp-8) auto 0; }
+  .cs-browser { border: 1px solid var(--c-line); border-radius: var(--radius-md); overflow: hidden; background: var(--c-surface-2); box-shadow: var(--shadow-lg); }
+  .cs-bar { display: flex; gap: 6px; align-items: center; padding: 0.5rem 0.7rem; background: rgba(255,255,255,0.04); border-bottom: 1px solid var(--c-line); }
+  .cs-bar span { width: 9px; height: 9px; border-radius: 50%; background: var(--c-line-strong); }
+  .cs-screen { aspect-ratio: 16 / 10; overflow: hidden; }
+  .cs-screen img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .cs-phone { position: absolute; right: 3%; bottom: -8%; width: 18%; max-width: 150px; padding: 6px; background: #0a0a10; border: 1px solid var(--c-line-strong); border-radius: 20px; box-shadow: var(--shadow-lg); }
+  .cs-phone__screen { aspect-ratio: 9 / 19; border-radius: 14px; overflow: hidden; }
+  .cs-phone__screen img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .cs-ph { height: 100%; background:
+    radial-gradient(60% 80% at 20% 100%, rgba(255,172,10,0.2) 0%, transparent 70%),
+    radial-gradient(70% 90% at 85% 0%, rgba(77,141,255,0.24) 0%, transparent 70%), var(--c-surface-2); }
+  .cs-ph--phone { background:
+    radial-gradient(70% 50% at 50% 0%, rgba(77,141,255,0.3) 0%, transparent 70%),
+    radial-gradient(70% 50% at 50% 100%, rgba(255,172,10,0.22) 0%, transparent 70%), var(--c-surface-2); }
+
+  .cs-two { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-5); }
+  .cs-block { padding: var(--sp-6); display: grid; gap: var(--sp-3); align-content: start; }
+  .cs-block h3 { font-size: var(--fs-lg); }
+  .cs-block p { color: var(--c-text-secondary); }
+
+  .cs-process { display: grid; gap: var(--sp-4); counter-reset: step; }
+  .cs-step { display: grid; grid-template-columns: auto 1fr; gap: var(--sp-4); align-items: baseline; padding: var(--sp-5); border: 1px solid var(--c-line); border-radius: var(--radius-md); }
+  .cs-step__n { font-family: var(--font-heading); font-size: var(--fs-lg); font-weight: var(--fw-medium); background: var(--grad-signature); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .cs-step p { color: var(--c-text-secondary); }
+
+  .cs-results { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-5); }
+  .cs-result { padding: var(--sp-6); font-size: var(--fs-md); color: var(--c-text); }
+
+  .cs-cta { display: grid; justify-items: center; gap: var(--sp-4); text-align: center; }
+  .cs-cta h2 { font-size: var(--fs-xl); }
+
+  .cs-related { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-5); }
+  .cs-related__item { display: grid; transition: border-color var(--dur) var(--ease), transform var(--dur) var(--ease); }
+  .cs-related__item:hover { transform: translateY(-4px); border-color: var(--c-line-strong); }
+  .cs-related__media { aspect-ratio: 16 / 10; overflow: hidden; }
+  .cs-related__media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .cs-related__body { display: grid; gap: var(--sp-2); padding: var(--sp-5); }
+  .cs-related__body h3 { font-size: var(--fs-lg); }
+
+  @media (max-width: 820px) {
+    .cs-two { grid-template-columns: 1fr; }
+    .cs-results { grid-template-columns: 1fr; }
+    .cs-related { grid-template-columns: 1fr; }
+    .cs-phone { bottom: -6%; width: 22%; }
+  }
+</style>

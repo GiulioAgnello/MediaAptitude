@@ -13,8 +13,10 @@ import {
   services as mockServices,
   caseStudies as mockCaseStudies,
   team as mockTeam,
+  stats as mockStats,
 } from '../data/content';
-import type { Service, CaseStudy, TeamMember, MediaImage } from '../data/content';
+import type { Service, CaseStudy, TeamMember, MediaImage, Stat, Testimonial } from '../data/content';
+import { site } from '../data/site';
 
 /** Base URL della REST custom. Override via .env (WP_API_URL). */
 const API_BASE = (
@@ -70,6 +72,65 @@ export const getCaseStudies = () =>
 
 /** Membri del team. */
 export const getTeam = () => fetchApi<TeamMember[]>('team', mockTeam);
+
+/**
+ * Statistiche "trust bar". Dal CPT WP `ma_stat`; se WP è offline o non ne ha,
+ * si usano i placeholder onesti di content.ts (la fascia resta sempre presente).
+ */
+export const getStats = () => fetchApi<Stat[]>('stats', mockStats);
+
+/* ------------------------------------------------------------------ */
+/* Recensioni: importate da Google (Places API) a BUILD-TIME. */
+
+/**
+ * Recensioni dal profilo Google Business, via Places API (New).
+ * - Place ID pubblico in `site.google.placeId`; API key SEGRETA in env
+ *   `GOOGLE_PLACES_API_KEY` (resta nell'ambiente di build, mai nel client).
+ * - Se non configurate o in errore → lista vuota: la sezione recensioni
+ *   semplicemente non compare (si attiva da sola quando ci saranno recensioni).
+ * - Nota: l'API restituisce al massimo 5 recensioni e non è filtrabile.
+ */
+export async function getReviews(): Promise<Testimonial[]> {
+  const placeId = site.google?.placeId ?? '';
+  const key = import.meta.env.GOOGLE_PLACES_API_KEY ?? '';
+  if (!placeId || !key) return [];
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  try {
+    const res = await fetch(`https://places.googleapis.com/v1/places/${encodeURIComponent(placeId)}`, {
+      signal: controller.signal,
+      headers: {
+        'X-Goog-Api-Key': key,
+        'X-Goog-FieldMask': 'reviews',
+        Accept: 'application/json',
+      },
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = (await res.json()) as any;
+    const reviews = Array.isArray(data?.reviews) ? data.reviews : [];
+
+    return reviews
+      .filter((r: any) => r?.text?.text || r?.originalText?.text)
+      .map((r: any): Testimonial => {
+        const attr = r.authorAttribution ?? {};
+        const photoUri = typeof attr.photoUri === 'string' ? attr.photoUri : '';
+        return {
+          quote: String(r.text?.text ?? r.originalText?.text ?? '').trim(),
+          author: String(attr.displayName ?? 'Cliente Google'),
+          role: String(r.relativePublishTimeDescription ?? 'Recensione Google'),
+          rating: typeof r.rating === 'number' ? r.rating : undefined,
+          sourceUrl: typeof attr.uri === 'string' ? attr.uri : undefined,
+          photo: photoUri ? { url: photoUri, width: 44, height: 44 } : null,
+        };
+      });
+  } catch (err) {
+    console.warn(`[api] recensioni Google non disponibili (${(err as Error).message})`);
+    return [];
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 /**
  * Dati SEO (yoast_head_json) per una pagina. Endpoint: /seo?path=...
@@ -157,6 +218,39 @@ export async function getPosts(): Promise<BlogPost[]> {
       image: featuredImage(p),
       yoast: p.yoast_head_json ?? null,
     }));
+}
+
+/* ------------------------------------------------------------------ */
+/* Pagine statiche editabili in WP (Privacy, Cookie Policy, ...) */
+
+/** Pagina WP (contenuto legale/informativo gestito dal cliente nel CMS). */
+export interface WpPage {
+  title: string;
+  /** HTML renderizzato da WP. */
+  contentHtml: string;
+  /** Data ultima modifica (ISO), per il "aggiornato il". */
+  modified?: string;
+  yoast?: Record<string, unknown> | null;
+}
+
+/**
+ * Recupera una pagina WordPress per slug (endpoint core /wp/v2/pages).
+ * Ritorna null se WP è offline o la pagina non esiste → la pagina Astro
+ * usa il proprio contenuto statico di fallback (non resta mai vuota).
+ */
+export async function getPage(slug: string): Promise<WpPage | null> {
+  const raw = await fetchApi<any[]>(
+    `${WP_ROOT}/wp/v2/pages?slug=${encodeURIComponent(slug)}&_fields=title,content,modified_gmt,yoast_head_json`,
+    []
+  );
+  const p = Array.isArray(raw) ? raw[0] : null;
+  if (!p?.content?.rendered) return null;
+  return {
+    title: decodeEntities(String(p.title?.rendered ?? '')),
+    contentHtml: String(p.content.rendered),
+    modified: p.modified_gmt ? `${p.modified_gmt}Z` : undefined,
+    yoast: p.yoast_head_json ?? null,
+  };
 }
 
 /** Payload del form di contatto. `company` è l'honeypot anti-bot (resta vuoto). */

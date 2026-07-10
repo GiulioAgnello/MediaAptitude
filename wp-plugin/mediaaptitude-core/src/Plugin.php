@@ -9,6 +9,7 @@ use MediaAptitude\Core\PostTypes\CaseStudy;
 use MediaAptitude\Core\PostTypes\Lead;
 use MediaAptitude\Core\PostTypes\PostType;
 use MediaAptitude\Core\PostTypes\Service;
+use MediaAptitude\Core\PostTypes\Stat;
 use MediaAptitude\Core\PostTypes\TeamMember;
 use MediaAptitude\Core\Rest\RestController;
 use MediaAptitude\Core\Seo\Seo;
@@ -44,6 +45,7 @@ final class Plugin
             new Service(),
             new CaseStudy(),
             new TeamMember(),
+            new Stat(),
             new Lead(),
         ];
     }

@@ -66,6 +66,23 @@ import { steps } from '../data/content';
     font-weight: var(--fw-semibold);
   }
 
+  /* Mobile: fasi sfogliabili in orizzontale (swipe, stile social) → pagina più corta */
+  @media (max-width: 760px) {
+    .steps {
+      display: flex;
+      gap: var(--sp-4);
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+    .steps::-webkit-scrollbar { display: none; }
+    .steps__item {
+      flex: 0 0 86%;   /* peek della fase successiva */
+      min-width: 0;
+      scroll-snap-align: start;
+    }
+  }
+
   @media (max-width: 640px) {
     .steps__item { grid-template-columns: 1fr; gap: var(--sp-3); padding: var(--sp-5); }
   }

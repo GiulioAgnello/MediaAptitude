@@ -222,6 +222,13 @@ import { mainNav, cta } from '../data/site';
     .nav, .header__cta { display: none; }
     .burger { display: flex; }
     .header__inner { grid-template-columns: 1fr auto; }
+    /* header come piccolo banner nero (stile app) quando c'è il burger */
+    .header {
+      background: color-mix(in srgb, var(--c-bg) 86%, transparent);
+      border-bottom: 1px solid var(--c-line);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
   }
   @media (min-width: 901px) {
     .mobile-menu { display: none; }

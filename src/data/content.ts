@@ -65,6 +65,18 @@ export interface CaseStudy {
   imageDesktop?: MediaImage | null;
   /** Screenshot mobile. */
   imageMobile?: MediaImage | null;
+
+  /* --- Campi per la pagina dettaglio /lavori/[slug] (opzionali) --- */
+  /** Paragrafo introduttivo del progetto. */
+  summary?: string;
+  /** La sfida / il problema di partenza. */
+  challenge?: string;
+  /** La soluzione adottata. */
+  solution?: string;
+  /** Fasi/attività del lavoro (lista). */
+  process?: string[];
+  /** Risultati dettagliati (metriche, una per riga). */
+  results?: string[];
 }
 
 export interface TeamMember {
@@ -106,6 +118,18 @@ export interface Testimonial {
   author: string;
   role: string;
   photo?: MediaImage | null;
+  /** Voto 1–5 (dalle recensioni Google). */
+  rating?: number;
+  /** Link al profilo/recensione su Google (attribuzione). */
+  sourceUrl?: string;
+}
+
+/** Statistica della "trust bar" (numeri di sintesi in home). */
+export interface Stat {
+  value: string;
+  label: string;
+  /** Suffisso opzionale (es. "+", "%", "h"). */
+  suffix?: string;
 }
 
 /* ------------------------------------------------------------------ */
@@ -409,6 +433,17 @@ export const faqs: Faq[] = [
 /** Testimonianze clienti. Vuoto finché non ci sono recensioni reali: la sezione non viene renderizzata. */
 export const testimonials: Testimonial[] = [];
 
+/**
+ * Trust bar — placeholder onesti (coerenti col brand "mai template"), usati
+ * finché non ci sono statistiche reali in WordPress (CPT ma_stat).
+ */
+export const stats: Stat[] = [
+  { value: '0', label: 'Template usati' },
+  { value: '24', label: 'Risposta garantita', suffix: 'h' },
+  { value: '100', label: 'Progetti su misura', suffix: '%' },
+  { value: '7', label: 'Settori del territorio' },
+];
+
 /** Settori serviti — fascia "Soluzioni per settori specifici" (long-tail SEO). */
 export const sectors: Sector[] = [
   { label: 'Edilizia e impiantistica', description: 'Siti e gestionali per imprese edili e installatori.' },
@@ -466,6 +501,23 @@ export const caseStudies: CaseStudy[] = [
     category: 'E-commerce',
     result: '+38% conversioni, LCP < 1.8s',
     tech: ['Astro', 'WordPress', 'REST API'],
+    summary:
+      'Un rivenditore con più cataloghi e migliaia di prodotti aveva bisogno di un negozio online velocissimo e facile da gestire, senza rinunciare al posizionamento su Google.',
+    challenge:
+      'La piattaforma esistente era lenta, difficile da aggiornare e penalizzata sui Core Web Vitals: pagine prodotto sopra i 4 secondi e carrello poco fluido su mobile.',
+    solution:
+      'Abbiamo separato gestione e vetrina: WordPress headless per il catalogo, front-end statico in Astro servito dalla CDN. Pagine generate a build-time, immagini ottimizzate e checkout snellito.',
+    process: [
+      'Analisi del catalogo e mappatura delle esigenze SEO',
+      'Modellazione dei dati e REST API custom su WordPress',
+      'Front-end Astro con generazione statica e ISR sui prodotti',
+      'Ottimizzazione Core Web Vitals e test di conversione',
+    ],
+    results: [
+      '+38% tasso di conversione in 3 mesi',
+      'LCP sceso da 4.1s a meno di 1.8s',
+      'Tempo di pubblicazione di un prodotto ridotto del 70%',
+    ],
   },
   {
     slug: 'gestionale-logistica',
@@ -474,6 +526,23 @@ export const caseStudies: CaseStudy[] = [
     category: 'Gestionale',
     result: '−60% tempo di evasione ordini',
     tech: ['React', 'PHP', 'MySQL'],
+    summary:
+      'Un\'azienda di logistica gestiva ordini e magazzino tra fogli di calcolo ed email. Serviva un unico strumento su misura per tutto il team.',
+    challenge:
+      'Dati sparsi, errori di evasione e nessuna visibilità in tempo reale sulle giacenze: ogni ordine richiedeva passaggi manuali e telefonate.',
+    solution:
+      'Una web application su misura con ruoli, dashboard in tempo reale e automazioni: dall\'ordine alla spedizione in un solo flusso, integrata con i sistemi esistenti.',
+    process: [
+      'Interviste agli operatori e mappatura dei processi',
+      'Progettazione del modello dati e dei ruoli',
+      'Sviluppo dell\'app (React) e delle API (PHP/MySQL)',
+      'Formazione del team e rilascio graduale',
+    ],
+    results: [
+      '−60% tempo medio di evasione ordini',
+      'Errori di magazzino quasi azzerati',
+      'Team autonomo grazie a percorsi di formazione dedicati',
+    ],
   },
   {
     slug: 'corporate-seo',

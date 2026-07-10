@@ -7,10 +7,13 @@ import '@fontsource/inter/latin-500.css';
 import '@fontsource/inter-tight/latin-500.css';
 import '@fontsource/inter-tight/latin-600.css';
 import '../styles/global.css';
+import { ClientRouter } from 'astro:transitions';
 import Seo from '../components/Seo.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import BottomNav from '../components/BottomNav.astro';
+import CookieConsent from '../components/CookieConsent.astro';
+import FloatingContact from '../components/FloatingContact.astro';
 import { site } from '../data/site';
 import { getSeo } from '../lib/api';
 import { parseYoast } from '../lib/seo';
@@ -39,6 +42,9 @@ const wpSeo = parseYoast(await getSeo(path));
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
 
+    {/* View Transitions: navigazione SPA con cross-fade (feel app, niente flash). */}
+    <ClientRouter />
+
     {/* Font self-hosted via @fontsource (import nel frontmatter).
         Nessuna connessione esterna a Google: meglio per latenza e privacy. */}
 
@@ -46,12 +52,17 @@ const wpSeo = parseYoast(await getSeo(path));
         brand); se l'utente ha già scelto, si legge da localStorage. */}
     <script is:inline>
       (function () {
-        try {
-          var t = localStorage.getItem('theme');
-          document.documentElement.setAttribute('data-theme', t === 'light' ? 'light' : 'dark');
-        } catch (e) {
-          document.documentElement.setAttribute('data-theme', 'dark');
+        function applyTheme() {
+          try {
+            var t = localStorage.getItem('theme');
+            document.documentElement.setAttribute('data-theme', t === 'light' ? 'light' : 'dark');
+          } catch (e) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+          }
         }
+        applyTheme();
+        // Ri-applica il tema dopo ogni transizione di pagina (ClientRouter).
+        document.addEventListener('astro:after-swap', applyTheme);
       })();
     </script>
 
@@ -67,27 +78,49 @@ const wpSeo = parseYoast(await getSeo(path));
           if (nativeOk) return;
           if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
           document.documentElement.classList.add('io-reveal');
-          addEventListener('DOMContentLoaded', function () {
+          function run() {
             var io = new IntersectionObserver(function (entries) {
               entries.forEach(function (e) {
                 if (e.isIntersecting) { e.target.classList.add('is-visible'); io.unobserve(e.target); }
               });
             }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
-            document.querySelectorAll('[data-reveal]').forEach(function (el) { io.observe(el); });
-          });
+            document.querySelectorAll('[data-reveal]:not(.is-visible)').forEach(function (el) { io.observe(el); });
+          }
+          // Su ogni pagina (iniziale + dopo ogni transizione).
+          document.addEventListener('astro:page-load', run);
         } catch (err) {}
       })();
     </script>
   </head>
   <body>
-    <div class="aurora" aria-hidden="true"></div>
+    <div class="aurora" aria-hidden="true" transition:persist></div>
     <a href="#main" class="skip-link">Salta al contenuto</a>
-    <Header />
+    <Header transition:persist />
     <main id="main">
       <slot />
     </main>
     <Footer />
-    <BottomNav />
+    <BottomNav transition:persist />
+    <FloatingContact transition:persist />
+    <CookieConsent transition:persist />
+
+    {/* Aggiorna l'active della bottom bar e chiude il menu dopo ogni transizione. */}
+    <script is:inline>
+      document.addEventListener('astro:page-load', function () {
+        var p = location.pathname;
+        document.querySelectorAll('.bottomnav__link').forEach(function (a) {
+          var href = a.getAttribute('href') || '';
+          var active = href === '/' ? p === '/'
+            : (href.charAt(0) === '/' && href.indexOf('#') === -1 && p.indexOf(href) === 0);
+          if (active) a.setAttribute('aria-current', 'page');
+          else a.removeAttribute('aria-current');
+        });
+        var menu = document.querySelector('[data-mobile-menu]');
+        var burger = document.querySelector('[data-burger]');
+        if (menu) menu.hidden = true;
+        if (burger) burger.setAttribute('aria-expanded', 'false');
+      });
+    </script>
 
     <style>
       /* su mobile lascia spazio in fondo per la capsula flottante (app-like) */

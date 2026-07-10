@@ -31,13 +31,20 @@ const year = new Date().getFullYear();
     <div class="footer__contact">
       <h3 class="footer__heading">Contatti</h3>
       <a href={`mailto:${site.email}`} class="footer__link">{site.email}</a>
+      {site.phone && (
+        <a href={`tel:${site.phone.replace(/\s+/g, '')}`} class="footer__link">{site.phone}</a>
+      )}
       <p class="footer__area">{site.areaServed.join(' · ')}</p>
     </div>
   </div>
 
   <div class="footer__bottom">
     <p>© {year} {site.legalName}. Tutti i diritti riservati.</p>
-    <p>{site.tagline}</p>
+    <nav class="footer__legal" aria-label="Note legali">
+      <a href="/privacy">Privacy Policy</a>
+      <a href="/cookie-policy">Cookie Policy</a>
+      <a href="#" data-cookie-open>Preferenze cookie</a>
+    </nav>
   </div>
 </footer>
 
@@ -89,6 +96,8 @@ const year = new Date().getFullYear();
     transition: color var(--dur-fast) var(--ease);
   }
   .footer__nav a:hover, .footer__link:hover { color: var(--c-text); }
+  .footer__link { display: block; }
+  .footer__contact .footer__link + .footer__link { margin-top: var(--sp-2); }
   .footer__area { margin-top: var(--sp-3); font-size: var(--fs-xs); }
 
   .footer__bottom {
@@ -102,6 +111,9 @@ const year = new Date().getFullYear();
     border-top: 1px solid var(--c-line);
     font-size: var(--fs-xs);
   }
+  .footer__legal { display: flex; flex-wrap: wrap; gap: var(--sp-4); }
+  .footer__legal a { transition: color var(--dur-fast) var(--ease); }
+  .footer__legal a:hover { color: var(--c-text); }
 
   @media (max-width: 720px) {
     .footer__main { grid-template-columns: 1fr; gap: var(--sp-6); }

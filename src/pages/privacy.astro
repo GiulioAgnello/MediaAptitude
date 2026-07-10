@@ -1,0 +1,104 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getPage } from '../lib/api';
+import { site } from '../data/site';
+import { breadcrumb } from '../lib/seo';
+
+// Contenuto editabile in WordPress (pagina con slug "privacy-policy").
+// Se WP è offline o la pagina non esiste, si usa il fallback statico sotto.
+const page = await getPage('privacy-policy');
+
+const schema = breadcrumb(
+  [
+    { name: 'Home', path: '/' },
+    { name: 'Privacy Policy', path: '/privacy' },
+  ],
+  site.url
+);
+const updated = page?.modified
+  ? new Date(page.modified).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })
+  : null;
+---
+
+<BaseLayout
+  path="/privacy"
+  title="Privacy Policy"
+  description="Informativa sul trattamento dei dati personali di Media Aptitude ai sensi del GDPR (Regolamento UE 2016/679)."
+  schema={schema}
+>
+  <section class="legal">
+    <div class="container legal__inner">
+      <nav class="legal__crumbs" aria-label="Percorso">
+        <a href="/">Home</a><span aria-hidden="true">›</span><span aria-current="page">Privacy Policy</span>
+      </nav>
+      <h1>{page?.title || 'Privacy Policy'}</h1>
+      {updated && <p class="legal__updated">Ultimo aggiornamento: {updated}</p>}
+
+      {page ? (
+        <div class="prose" set:html={page.contentHtml} />
+      ) : (
+        <div class="prose">
+          <p>
+            La presente informativa descrive come <strong>{site.legalName}</strong> tratta i dati
+            personali degli utenti che visitano {site.url} e utilizzano i moduli di contatto, ai
+            sensi del Regolamento UE 2016/679 (GDPR).
+          </p>
+
+          <h2>Titolare del trattamento</h2>
+          <p>{site.legalName} — email: <a href={`mailto:${site.email}`}>{site.email}</a>.</p>
+
+          <h2>Quali dati raccogliamo</h2>
+          <p>
+            Raccogliamo i dati che ci fornisci volontariamente tramite il modulo di contatto
+            (nome, indirizzo email e contenuto del messaggio) e, previo consenso, dati di
+            navigazione anonimi a fini statistici tramite cookie di analisi.
+          </p>
+
+          <h2>Finalità e base giuridica</h2>
+          <p>
+            I dati del modulo sono trattati per rispondere alle richieste e fornire i servizi
+            richiesti (esecuzione di misure precontrattuali). I dati statistici sono trattati sulla
+            base del consenso, revocabile in qualsiasi momento.
+          </p>
+
+          <h2>Conservazione</h2>
+          <p>
+            I dati di contatto sono conservati per il tempo necessario a gestire la richiesta e gli
+            obblighi di legge; i dati statistici secondo la durata indicata nella Cookie Policy.
+          </p>
+
+          <h2>I tuoi diritti</h2>
+          <p>
+            Puoi esercitare in ogni momento i diritti di accesso, rettifica, cancellazione,
+            limitazione, opposizione e portabilità, e proporre reclamo al Garante per la protezione
+            dei dati personali, scrivendo a <a href={`mailto:${site.email}`}>{site.email}</a>.
+          </p>
+
+          <h2>Cookie</h2>
+          <p>
+            L'uso dei cookie è descritto nella <a href="/cookie-policy">Cookie Policy</a>. Puoi
+            aggiornare le tue scelte in ogni momento da
+            <a href="#" data-cookie-open> Preferenze cookie</a>.
+          </p>
+        </div>
+      )}
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .legal { padding-top: clamp(7rem, 5rem + 7vw, 10rem); }
+  .legal__inner { max-width: 760px; }
+  .legal__crumbs { display: flex; gap: var(--sp-2); font-size: var(--fs-xs); margin-bottom: var(--sp-4); }
+  .legal__crumbs a { transition: color var(--dur-fast) var(--ease); }
+  .legal__crumbs a:hover { color: var(--c-text); }
+  .legal__crumbs [aria-current] { color: var(--c-text-secondary); }
+  .legal h1 { font-size: var(--fs-2xl); }
+  .legal__updated { color: var(--c-text-muted); font-size: var(--fs-sm); margin-top: var(--sp-2); }
+
+  .prose { margin-top: var(--sp-6); display: grid; gap: var(--sp-4); }
+  .prose :global(h2) { font-size: var(--fs-lg); margin-top: var(--sp-4); }
+  .prose :global(p) { color: var(--c-text-secondary); }
+  .prose :global(a) { color: var(--c-blue); }
+  .prose :global(ul) { display: grid; gap: var(--sp-2); padding-left: var(--sp-5); color: var(--c-text-secondary); }
+</style>

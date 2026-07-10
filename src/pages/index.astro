@@ -7,25 +7,32 @@ import ServiceTabs from '../components/ServiceTabs.astro';
 import Steps from '../components/Steps.astro';
 import WorkCarousel from '../components/WorkCarousel.astro';
 import SectorsMarquee from '../components/SectorsMarquee.astro';
+import TrustBar from '../components/TrustBar.astro';
 import Testimonials from '../components/Testimonials.astro';
 import Faq from '../components/Faq.astro';
 import { faqs } from '../data/content';
 import { faqPage } from '../lib/seo';
-import { getCaseStudies } from '../lib/api';
+import { getCaseStudies, getStats, getReviews } from '../lib/api';
 
 // Contenuti dalla REST WP a build-time (fallback automatico ai mock se WP è offline).
-const caseStudies = await getCaseStudies();
+// Le recensioni arrivano da Google (Places API) a build-time; vuote → sezione nascosta.
+const [caseStudies, stats, reviews] = await Promise.all([
+  getCaseStudies(),
+  getStats(),
+  getReviews(),
+]);
 ---
 
 <BaseLayout path="/" schema={faqPage(faqs)}>
   <Hero />
   <Marquee />
   <PartnerHero />
+  <TrustBar items={stats} />
   <ServiceTabs />
   <Steps />
   <WorkCarousel items={caseStudies} moreHref="/lavori" />
   <SectorsMarquee />
-  <Testimonials />
+  <Testimonials items={reviews} />
 
   <Faq items={faqs} />
 </BaseLayout>

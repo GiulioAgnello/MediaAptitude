@@ -120,8 +120,10 @@ const base = apiBase();
 <script>
   import { postLead } from '../lib/api';
 
+  function initContactForm() {
   const form = document.querySelector<HTMLFormElement>('[data-contact-form]');
-  if (form) {
+  if (form && !form.dataset.cfInit) {
+    form.dataset.cfInit = '1';
     const base = form.dataset.api || '';
     const source = form.dataset.source || '';
     const btn = form.querySelector<HTMLButtonElement>('[data-submit]');
@@ -155,11 +157,15 @@ const base = apiBase();
 
       if (res.ok) {
         form.reset();
-        setStatus('Grazie! Ti ricontatteremo a breve.', 'ok');
-      } else {
-        setStatus(res.error || 'Invio non riuscito. Riprova.', 'error');
+        // Rimando alla pagina di ringraziamento (conferma + prossimi passi).
+        window.location.href = '/grazie';
+        return;
       }
+
+      setStatus(res.error || 'Invio non riuscito. Riprova.', 'error');
       btn?.removeAttribute('disabled');
     });
   }
+  }
+  document.addEventListener('astro:page-load', initContactForm);
 </script>

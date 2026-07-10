@@ -47,6 +47,27 @@ final class CaseStudy extends PostType
                 'type'  => 'text',
                 'help'  => 'Il dato che colpisce. Es. "+38% conversioni, LCP < 1.8s".',
             ],
+            'summary' => [
+                'label' => 'Sommario (intro pagina dettaglio)',
+                'type'  => 'textarea',
+                'help'  => 'Uno/due frasi che introducono il progetto.',
+            ],
+            'challenge' => [
+                'label' => 'La sfida',
+                'type'  => 'textarea',
+            ],
+            'solution' => [
+                'label' => 'La soluzione',
+                'type'  => 'textarea',
+            ],
+            'process' => [
+                'label' => 'Processo / fasi (una per riga)',
+                'type'  => 'list',
+            ],
+            'results' => [
+                'label' => 'Risultati dettagliati (uno per riga)',
+                'type'  => 'list',
+            ],
             'tech' => [
                 'label' => 'Tecnologie (una per riga)',
                 'type'  => 'list',
@@ -84,6 +105,11 @@ final class CaseStudy extends PostType
             'title'        => get_the_title($post),
             'category'     => $this->metaString($post->ID, 'category'),
             'result'       => $this->metaString($post->ID, 'result'),
+            'summary'      => $this->metaString($post->ID, 'summary'),
+            'challenge'    => $this->metaString($post->ID, 'challenge'),
+            'solution'     => $this->metaString($post->ID, 'solution'),
+            'process'      => $this->metaList($post->ID, 'process'),
+            'results'      => $this->metaList($post->ID, 'results'),
             'tech'         => $this->metaList($post->ID, 'tech'),
             'url'          => $url !== '' ? esc_url_raw($url) : null,
             'imageDesktop' => $this->metaImage($post->ID, 'imageDesktop', 'large'),

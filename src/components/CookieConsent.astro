@@ -1,0 +1,229 @@
+---
+/**
+ * CookieConsent — banner GDPR con Google Consent Mode v2.
+ * - Default: tutti i consensi "denied" (impostato inline nel <head> via questo script).
+ * - GA4 caricato SOLO se c'è un Measurement ID e SOLO dopo consenso "analytics".
+ * - Scelte: Accetta tutti / Rifiuta / Personalizza (analytics + marketing).
+ * - Consenso salvato in localStorage; riapribile da "Preferenze cookie" (data-cookie-open).
+ * Nessuna libreria esterna. Le policy sono pagine editabili in WP (/privacy, /cookie-policy).
+ */
+import { site } from '../data/site';
+const GA4 = site.analytics.ga4;
+---
+
+{/* Consent Mode v2: default DENIED, prima di qualsiasi tag. */}
+<script is:inline define:vars={{ GA4 }}>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() { dataLayer.push(arguments); }
+  window.gtag = gtag;
+  window.__GA4_ID = GA4 || '';
+  gtag('consent', 'default', {
+    ad_storage: 'denied',
+    ad_user_data: 'denied',
+    ad_personalization: 'denied',
+    analytics_storage: 'denied',
+    functionality_storage: 'granted',
+    security_storage: 'granted',
+    wait_for_update: 500,
+  });
+
+  // Applica un consenso salvato (se presente) e carica GA4 se concesso.
+  (function () {
+    var raw;
+    try { raw = localStorage.getItem('ma-consent'); } catch (e) {}
+    if (!raw) return;
+    var c;
+    try { c = JSON.parse(raw); } catch (e) { return; }
+    var grant = {
+      ad_storage: c.marketing ? 'granted' : 'denied',
+      ad_user_data: c.marketing ? 'granted' : 'denied',
+      ad_personalization: c.marketing ? 'granted' : 'denied',
+      analytics_storage: c.analytics ? 'granted' : 'denied',
+    };
+    gtag('consent', 'update', grant);
+    if (c.analytics && GA4) loadGA(GA4);
+  })();
+
+  function loadGA(id) {
+    if (window.__gaLoaded) return;
+    window.__gaLoaded = true;
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://www.googletagmanager.com/gtag/js?id=' + id;
+    document.head.appendChild(s);
+    gtag('js', new Date());
+    gtag('config', id, { anonymize_ip: true });
+  }
+  window.__loadGA = loadGA;
+</script>
+
+<div class="cc" data-cookie-banner hidden aria-live="polite">
+  <div class="cc__panel" role="dialog" aria-label="Preferenze cookie" aria-modal="false">
+    <div class="cc__body">
+      <h2 class="cc__title">Rispettiamo la tua privacy</h2>
+      <p class="cc__text">
+        Usiamo cookie tecnici (sempre attivi) e, con il tuo consenso, cookie di analisi e
+        marketing per capire come viene usato il sito e migliorarlo. Puoi accettare, rifiutare
+        o scegliere. Dettagli nella <a href="/cookie-policy">Cookie Policy</a> e nella
+        <a href="/privacy">Privacy Policy</a>.
+      </p>
+
+      <div class="cc__options" data-cookie-options hidden>
+        <label class="cc__opt">
+          <span><strong>Necessari</strong><small>Sempre attivi — indispensabili al funzionamento.</small></span>
+          <input type="checkbox" checked disabled />
+        </label>
+        <label class="cc__opt">
+          <span><strong>Analisi</strong><small>Statistiche anonime sull'uso del sito (GA4).</small></span>
+          <input type="checkbox" data-cc="analytics" />
+        </label>
+        <label class="cc__opt">
+          <span><strong>Marketing</strong><small>Misurazione campagne Google/Meta Ads.</small></span>
+          <input type="checkbox" data-cc="marketing" />
+        </label>
+      </div>
+    </div>
+
+    <div class="cc__actions">
+      <button type="button" class="cc__btn cc__btn--ghost" data-cc-action="customize">Personalizza</button>
+      <button type="button" class="cc__btn cc__btn--ghost" data-cc-action="reject">Rifiuta</button>
+      <button type="button" class="cc__btn cc__btn--primary" data-cc-action="accept">Accetta tutti</button>
+      <button type="button" class="cc__btn cc__btn--primary" data-cc-action="save" hidden>Salva preferenze</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .cc {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: var(--z-overlay);
+    padding: var(--sp-4);
+    padding-bottom: calc(var(--sp-4) + env(safe-area-inset-bottom, 0px));
+    display: grid;
+    justify-items: center;
+  }
+  /* l'attributo hidden deve vincere sul display:grid (altrimenti non si chiude) */
+  .cc[hidden] { display: none; }
+  .cc__panel {
+    width: min(100%, 640px);
+    display: grid;
+    gap: var(--sp-4);
+    padding: var(--sp-5);
+    background: color-mix(in srgb, var(--c-bg) 88%, transparent);
+    border: 1px solid var(--c-line-strong);
+    border-radius: var(--radius-lg);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow: var(--shadow-lg);
+  }
+  .cc__title { font-size: var(--fs-lg); }
+  .cc__text { font-size: var(--fs-sm); color: var(--c-text-secondary); }
+  .cc__text a { color: var(--c-blue); }
+
+  .cc__options { display: grid; gap: var(--sp-2); margin-top: var(--sp-2); }
+  .cc__options[hidden] { display: none; }
+  .cc__btn[hidden] { display: none; }
+  .cc__opt {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-4);
+    padding: var(--sp-3);
+    border: 1px solid var(--c-line);
+    border-radius: var(--radius-md);
+  }
+  .cc__opt span { display: grid; gap: 2px; }
+  .cc__opt small { color: var(--c-text-muted); font-size: var(--fs-xs); }
+  .cc__opt input { width: 20px; height: 20px; accent-color: var(--c-blue); flex: none; }
+
+  .cc__actions { display: flex; flex-wrap: wrap; gap: var(--sp-2); justify-content: flex-end; }
+  .cc__btn {
+    padding: 0.65rem 1.2rem;
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-medium);
+    border-radius: var(--radius-full);
+    border: 1px solid var(--c-line-strong);
+    color: var(--c-text-secondary);
+    transition: color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+  }
+  .cc__btn--ghost:hover { color: var(--c-text); border-color: var(--c-line-strong); background: var(--c-surface); }
+  .cc__btn--primary {
+    color: var(--c-pill-text);
+    border-color: transparent;
+    background:
+      linear-gradient(var(--c-pill-bg), var(--c-pill-bg)) padding-box,
+      linear-gradient(100deg, var(--c-amber), rgba(255,255,255,0.25), var(--c-blue)) border-box;
+  }
+
+  @media (max-width: 560px) {
+    .cc__actions { justify-content: stretch; }
+    .cc__btn { flex: 1 1 auto; text-align: center; }
+  }
+</style>
+
+<script>
+  const banner = document.querySelector<HTMLElement>('[data-cookie-banner]');
+  if (banner) {
+    const options = banner.querySelector<HTMLElement>('[data-cookie-options]')!;
+    const saveBtn = banner.querySelector<HTMLElement>('[data-cc-action="save"]')!;
+    const acceptBtn = banner.querySelector<HTMLElement>('[data-cc-action="accept"]')!;
+    const rejectBtn = banner.querySelector<HTMLElement>('[data-cc-action="reject"]')!;
+    const customizeBtn = banner.querySelector<HTMLElement>('[data-cc-action="customize"]')!;
+    const analyticsIn = banner.querySelector<HTMLInputElement>('[data-cc="analytics"]')!;
+    const marketingIn = banner.querySelector<HTMLInputElement>('[data-cc="marketing"]')!;
+
+    const g = (window as any).gtag as (...a: any[]) => void;
+    const loadGA = (window as any).__loadGA as (id: string) => void;
+
+    const hasConsent = () => {
+      try { return !!localStorage.getItem('ma-consent'); } catch { return false; }
+    };
+    const show = () => { banner.hidden = false; };
+    const hide = () => { banner.hidden = true; };
+
+    function apply(consent: { analytics: boolean; marketing: boolean }) {
+      try { localStorage.setItem('ma-consent', JSON.stringify({ ...consent, ts: Date.now() })); } catch {}
+      g?.('consent', 'update', {
+        ad_storage: consent.marketing ? 'granted' : 'denied',
+        ad_user_data: consent.marketing ? 'granted' : 'denied',
+        ad_personalization: consent.marketing ? 'granted' : 'denied',
+        analytics_storage: consent.analytics ? 'granted' : 'denied',
+      });
+      const id = (window as any).__GA4_ID || '';
+      if (consent.analytics && id && loadGA) loadGA(id);
+      hide();
+    }
+
+    acceptBtn.addEventListener('click', () => apply({ analytics: true, marketing: true }));
+    rejectBtn.addEventListener('click', () => apply({ analytics: false, marketing: false }));
+    customizeBtn.addEventListener('click', () => {
+      options.hidden = false;
+      saveBtn.hidden = false;
+      customizeBtn.hidden = true;
+    });
+    saveBtn.addEventListener('click', () =>
+      apply({ analytics: analyticsIn.checked, marketing: marketingIn.checked })
+    );
+
+    // Riapertura da "Preferenze cookie". Delego sul document così funziona
+    // anche per i link che compaiono dopo una transizione di pagina (footer/policy).
+    document.addEventListener('click', (e) => {
+      const trigger = (e.target as HTMLElement)?.closest?.('[data-cookie-open]');
+      if (!trigger) return;
+      e.preventDefault();
+      options.hidden = true;
+      saveBtn.hidden = true;
+      customizeBtn.hidden = false;
+      try {
+        const c = JSON.parse(localStorage.getItem('ma-consent') || '{}');
+        analyticsIn.checked = !!c.analytics;
+        marketingIn.checked = !!c.marketing;
+      } catch {}
+      show();
+    });
+
+    if (!hasConsent()) show();
+  }
+</script>

@@ -51,8 +51,8 @@ import { differentiators } from '../data/content';
              aria-label="Globo connesso: rete di nodi che rappresenta la presenza digitale">
           <defs>
             <radialGradient id="globeCore" cx="42%" cy="40%" r="70%">
-              <stop offset="0%" stop-color="#1a1a24" />
-              <stop offset="100%" stop-color="#05050a" />
+              <stop class="globe-core-1" offset="0%" />
+              <stop class="globe-core-2" offset="100%" />
             </radialGradient>
           </defs>
           <circle cx="200" cy="200" r="150" fill="url(#globeCore)"
@@ -193,9 +193,26 @@ import { differentiators } from '../data/content';
     height: 100%;
     overflow: visible;
     filter: drop-shadow(0 0 42px rgba(77, 141, 255, 0.16));
+    /* colore della sfera pilotabile: scuro di default */
+    --globe-core-1: #1a1a24;
+    --globe-core-2: #05050a;
   }
+  .globe-core-1 { stop-color: var(--globe-core-1); }
+  .globe-core-2 { stop-color: var(--globe-core-2); }
   .globe__edges line { stroke-linecap: round; }
   .globe__nodes circle { transition: none; }
+
+  /* Tema chiaro: sfera grigio-chiara (meno contrasto, più omogenea al fondo) */
+  :global(:root[data-theme='light']) .globe__svg {
+    --globe-core-1: #e6eaf2;
+    --globe-core-2: #ccd4e2;
+    filter: drop-shadow(0 0 42px rgba(77, 141, 255, 0.12));
+  }
+  :global(:root[data-theme='light']) .globe__glow {
+    background:
+      radial-gradient(40% 40% at 30% 38%, rgba(255, 172, 10, 0.16) 0%, transparent 68%),
+      radial-gradient(45% 45% at 72% 60%, rgba(77, 141, 255, 0.18) 0%, transparent 68%);
+  }
 
   /* ---------- responsive ---------- */
   @media (max-width: 900px) {
@@ -217,8 +234,10 @@ import { differentiators } from '../data/content';
 <script>
   // Globo connesso: nodi distribuiti su una sfera (fibonacci), rotazione lenta
   // attorno all'asse verticale, archi tra nodi vicini. Palette firma ambra↔blu.
-  const svg = document.querySelector<SVGSVGElement>('.globe__svg');
-  if (svg) {
+  function initGlobe() {
+    const svg = document.querySelector<SVGSVGElement>('.globe__svg');
+    if (!svg || svg.dataset.globeInit) return;
+    svg.dataset.globeInit = '1';
     const R = 150, CX = 200, CY = 200;
     const N = 46;
     const AMBER = [255, 172, 10];
@@ -346,6 +365,8 @@ import { differentiators } from '../data/content';
 
     // ---- Loop ----
     const loop = () => {
+      // ferma il loop quando il globo esce dal DOM (cambio pagina)
+      if (!document.body.contains(svg)) return;
       if (!dragging) {
         yaw += velYaw;
         pitch += velPitch;
@@ -362,4 +383,6 @@ import { differentiators } from '../data/content';
     };
     requestAnimationFrame(loop);
   }
+
+  document.addEventListener('astro:page-load', initGlobe);
 </script>

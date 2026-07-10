@@ -166,6 +166,23 @@ const groups = serviceGroups.map((g) => ({
     .services__card { position: static; padding: var(--sp-5); }
   }
 
+  /* Mobile: card sfogliabili in orizzontale (swipe, stile social) → non allungano la pagina */
+  @media (max-width: 760px) {
+    .services__cards {
+      display: flex;
+      gap: var(--sp-4);
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+    .services__cards::-webkit-scrollbar { display: none; }
+    .services__card {
+      flex: 0 0 86%;   /* ~14% per intravedere la card successiva (peek) */
+      min-width: 0;
+      scroll-snap-align: start;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .services__card { position: relative; top: auto; animation: none; }
     .services__arrow { transition: none; }
@@ -173,11 +190,15 @@ const groups = serviceGroups.map((g) => ({
 </style>
 
 <script>
-  // Evidenzia nell'indice il gruppo attualmente visibile.
-  const tabs = new Map(
-    [...document.querySelectorAll<HTMLAnchorElement>('[data-tab]')].map((el) => [el.dataset.tab!, el])
-  );
-  if (tabs.size) {
+  // Evidenzia nell'indice il gruppo attualmente visibile. Re-init ad ogni pagina.
+  function initServiceTabs() {
+    const tabs = new Map(
+      [...document.querySelectorAll<HTMLAnchorElement>('[data-tab]')].map((el) => [el.dataset.tab!, el])
+    );
+    if (!tabs.size) return;
+    const groups = [...document.querySelectorAll<HTMLElement>('[data-group]')];
+    if (groups[0]?.dataset.tabsInit) return;
+    if (groups[0]) groups[0].dataset.tabsInit = '1';
     const io = new IntersectionObserver(
       (entries) => {
         for (const e of entries) {
@@ -190,6 +211,7 @@ const groups = serviceGroups.map((g) => ({
       },
       { rootMargin: '-40% 0px -50% 0px' }
     );
-    document.querySelectorAll('[data-group]').forEach((el) => io.observe(el));
+    groups.forEach((el) => io.observe(el));
   }
+  document.addEventListener('astro:page-load', initServiceTabs);
 </script>

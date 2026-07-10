@@ -1,0 +1,51 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Button from '../components/Button.astro';
+---
+
+<BaseLayout
+  path="/404"
+  title="Pagina non trovata"
+  description="La pagina che cerchi non esiste o è stata spostata."
+  noindex={true}
+>
+  <section class="nf">
+    <div class="container nf__inner">
+      <p class="nf__code" aria-hidden="true">404</p>
+      <h1>Questa pagina non esiste</h1>
+      <p class="nf__lead">
+        Il link potrebbe essere errato o la pagina è stata spostata. Torna alla home
+        o scopri i nostri servizi e lavori.
+      </p>
+      <div class="nf__actions">
+        <Button href="/" variant="primary">Torna alla home</Button>
+        <Button href="/lavori" variant="secondary">Vedi i lavori</Button>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .nf {
+    min-height: 62vh;
+    display: grid;
+    place-items: center;
+    padding-top: clamp(7rem, 5rem + 7vw, 10rem);
+    text-align: center;
+  }
+  .nf__inner { display: grid; justify-items: center; gap: var(--sp-4); max-width: 46ch; }
+  .nf__code {
+    font-family: var(--font-heading);
+    font-size: clamp(4rem, 2rem + 12vw, 8rem);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--ls-heading);
+    line-height: 1;
+    background: var(--grad-signature);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .nf h1 { font-size: var(--fs-xl); }
+  .nf__lead { font-size: var(--fs-md); color: var(--c-text-muted); }
+  .nf__actions { display: flex; gap: var(--sp-3); flex-wrap: wrap; justify-content: center; margin-top: var(--sp-3); }
+</style>

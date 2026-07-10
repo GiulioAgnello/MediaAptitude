@@ -75,11 +75,16 @@ const { items, moreHref } = Astro.props;
                 <p class="wc__meta">{item.category} · {item.client}</p>
                 <h3>{item.title}</h3>
                 <p class="wc__result">{item.result}</p>
-                {item.url && (
-                  <a class="wc__visit" href={item.url} target="_blank" rel="noopener">
-                    Visita il sito <span aria-hidden="true">↗</span>
+                <div class="wc__links">
+                  <a class="wc__detail" href={`/lavori/${item.slug}`}>
+                    Vedi il caso studio <span aria-hidden="true">→</span>
                   </a>
-                )}
+                  {item.url && (
+                    <a class="wc__visit" href={item.url} target="_blank" rel="noopener">
+                      Visita il sito <span aria-hidden="true">↗</span>
+                    </a>
+                  )}
+                </div>
               </div>
             </div>
           </li>
@@ -232,8 +237,15 @@ const { items, moreHref } = Astro.props;
   .wc__body h3 { font-size: var(--fs-lg); }
   .wc__meta { font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: 0.1em; color: var(--c-text-muted); }
   .wc__result { font-size: var(--fs-sm); color: var(--c-text-secondary); }
+  .wc__links { display: flex; flex-wrap: wrap; gap: var(--sp-4); align-items: center; margin-top: var(--sp-1); }
+  .wc__detail {
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-medium);
+    color: var(--c-text);
+    transition: color var(--dur-fast) var(--ease);
+  }
+  .wc__detail:hover { color: var(--c-blue); }
   .wc__visit {
-    justify-self: start;
     font-size: var(--fs-sm);
     color: var(--c-blue);
     font-weight: var(--fw-medium);
@@ -321,8 +333,10 @@ const { items, moreHref } = Astro.props;
 </style>
 
 <script>
+  function initCarousel() {
   const root = document.querySelector<HTMLElement>('[data-wc]');
-  if (root) {
+  if (root && !root.dataset.wcInit) {
+    root.dataset.wcInit = '1';
     // Switch Desktop/Mobile per ogni card (attivo solo su mobile via CSS)
     root.querySelectorAll<HTMLElement>('.dev').forEach((dev) => {
       const btns = [...dev.querySelectorAll<HTMLButtonElement>('[data-view-btn]')];
@@ -382,8 +396,14 @@ const { items, moreHref } = Astro.props;
     const touch = window.matchMedia('(hover: none)').matches;
     if (!reduce && !touch && slides.length > 1) {
       let timer: number | undefined;
-      const start = () => { timer = window.setInterval(() => scrollTo(index + 1), 5000); };
       const stop = () => { if (timer) { clearInterval(timer); timer = undefined; } };
+      const start = () => {
+        timer = window.setInterval(() => {
+          // stop se il carosello esce dal DOM (cambio pagina)
+          if (!document.body.contains(root)) { stop(); return; }
+          scrollTo(index + 1);
+        }, 5000);
+      };
       start();
       root.addEventListener('pointerenter', stop);
       root.addEventListener('pointerleave', start);
@@ -392,4 +412,6 @@ const { items, moreHref } = Astro.props;
       document.addEventListener('visibilitychange', () => (document.hidden ? stop() : start()));
     }
   }
+  }
+  document.addEventListener('astro:page-load', initCarousel);
 </script>
