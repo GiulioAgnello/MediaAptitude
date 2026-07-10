@@ -2,15 +2,14 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Hero from '../components/Hero.astro';
 import Marquee from '../components/Marquee.astro';
-import Mission from '../components/Mission.astro';
-import FeatureBento from '../components/FeatureBento.astro';
+import PartnerHero from '../components/PartnerHero.astro';
 import ServiceTabs from '../components/ServiceTabs.astro';
 import Steps from '../components/Steps.astro';
-import WorkGrid from '../components/WorkGrid.astro';
+import WorkCarousel from '../components/WorkCarousel.astro';
+import SectorsMarquee from '../components/SectorsMarquee.astro';
 import Testimonials from '../components/Testimonials.astro';
 import Faq from '../components/Faq.astro';
-import Section from '../components/Section.astro';
-import { sectors, faqs } from '../data/content';
+import { faqs } from '../data/content';
 import { faqPage } from '../lib/seo';
 import { getCaseStudies } from '../lib/api';
 
@@ -21,52 +20,12 @@ const caseStudies = await getCaseStudies();
 <BaseLayout path="/" schema={faqPage(faqs)}>
   <Hero />
   <Marquee />
-  <Mission />
-  <FeatureBento />
+  <PartnerHero />
   <ServiceTabs />
   <Steps />
-  <WorkGrid items={caseStudies} />
+  <WorkCarousel items={caseStudies} moreHref="/lavori" />
+  <SectorsMarquee />
   <Testimonials />
-
-  <!-- SETTORI (long-tail SEO locale) -->
-  <Section
-    id="settori"
-    eyebrow="Settori"
-    title="Esperienza nei settori del territorio"
-    lead="Strategie digitali costruite sulle caratteristiche di ogni mercato."
-  >
-    <div class="sectors stagger">
-      {sectors.map((s) => (
-        <article class="card sector" data-reveal>
-          <h3>{s.label}</h3>
-          <p>{s.description}</p>
-        </article>
-      ))}
-    </div>
-  </Section>
 
   <Faq items={faqs} />
 </BaseLayout>
-
-<style>
-  .sectors {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--sp-5);
-  }
-  .sector {
-    padding: var(--sp-5);
-    display: grid;
-    gap: var(--sp-2);
-    transition: transform var(--dur) var(--ease), border-color var(--dur) var(--ease);
-  }
-  .sector:hover {
-    transform: translateY(-3px);
-    border-color: var(--c-line-strong);
-  }
-  .sector h3 { font-size: var(--fs-lg); }
-  .sector p { font-size: var(--fs-sm); }
-
-  @media (max-width: 900px) { .sectors { grid-template-columns: repeat(2, 1fr); } }
-  @media (max-width: 560px) { .sectors { grid-template-columns: 1fr; } }
-</style>

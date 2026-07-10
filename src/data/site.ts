@@ -32,7 +32,7 @@ export const mainNav: NavItem[] = [
     children: serviceGroups.map((g) => ({ label: g.label, href: `/servizi/${g.slug}` })),
   },
   { label: 'Metodo', href: '/#metodo' },
-  { label: 'Lavori', href: '/#lavori' },
+  { label: 'Lavori', href: '/lavori' },
   { label: 'Blog', href: '/blog' },
   { label: 'Chi siamo', href: '/chi-siamo' },
   { label: 'Contatti', href: '/contatti' },

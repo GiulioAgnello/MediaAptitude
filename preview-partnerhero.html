@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="it" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Preview — PartnerHero (S1)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Inter+Tight:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --c-bg:#000;--c-text:#fff;--c-text-secondary:#d1d4e3;--c-text-muted:#9ba9c4;
+    --c-amber:#ffac0a;--c-blue:#4d8dff;
+    --c-line:rgba(255,255,255,.1);--c-line-strong:rgba(255,255,255,.18);
+    --c-surface:rgba(255,255,255,.03);--c-surface-2:rgba(255,255,255,.055);
+    --font-heading:'Inter Tight','Inter',system-ui,sans-serif;
+    --font-body:'Inter',system-ui,sans-serif;
+    --fs-xs:.8125rem;--fs-sm:.875rem;--fs-md:1.125rem;
+    --fs-lg:clamp(1.35rem,1.1rem + 1.1vw,1.75rem);
+    --fs-2xl:clamp(2.1rem,1.4rem + 3.2vw,3.5rem);
+    --lh-snug:1.3;--lh-normal:1.65;--fw-medium:500;--ls-heading:-.03em;
+    --sp-2:.5rem;--sp-3:.75rem;--sp-4:1rem;--sp-5:1.5rem;--sp-6:2rem;--sp-7:3rem;--sp-8:4rem;
+    --radius-lg:24px;--radius-full:999px;
+    --shadow-lg:0 24px 64px rgba(0,0,0,.6);
+    --ease:cubic-bezier(.22,1,.36,1);--dur-fast:160ms;--dur:300ms;
+    --container-max:1240px;--container-pad:clamp(1.25rem,.5rem + 3vw,2.5rem);
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--c-bg);color:var(--c-text);font-family:var(--font-body);
+    line-height:var(--lh-normal);-webkit-font-smoothing:antialiased;
+    background-image:
+      radial-gradient(40% 30% at 15% 10%,rgba(255,172,10,.06),transparent 70%),
+      radial-gradient(45% 35% at 85% 90%,rgba(77,141,255,.07),transparent 70%);
+    min-height:100vh;}
+  .container{width:100%;max-width:var(--container-max);margin-inline:auto;padding-inline:var(--container-pad);}
+  .section{padding-block:clamp(4.5rem,3rem + 6vw,9rem);}
+  h2,h3{font-family:var(--font-heading);letter-spacing:var(--ls-heading);line-height:var(--lh-snug);font-weight:var(--fw-medium);}
+  .eyebrow{display:inline-flex;font-family:var(--font-body);font-weight:500;font-size:var(--fs-xs);
+    letter-spacing:.14em;text-transform:uppercase;color:var(--c-text-muted);}
+  .section-head__top{padding-bottom:var(--sp-3);border-bottom:1px solid var(--c-line);margin-bottom:var(--sp-6);}
+  .section-head{margin-bottom:var(--sp-7);}
+  .section-head__row{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:var(--sp-6);align-items:end;}
+  .section-head__row h2{font-size:var(--fs-2xl);}
+  .lead{font-size:var(--fs-md);color:var(--c-text-muted);max-width:34ch;justify-self:end;text-align:right;}
+
+  .card{position:relative;background:var(--c-surface);border:1px solid var(--c-line);border-radius:var(--radius-lg);overflow:hidden;}
+  .card--glow::before{content:'';position:absolute;inset:-40%;
+    background:radial-gradient(40% 40% at 25% 30%,rgba(255,172,10,.22) 0%,transparent 70%),
+              radial-gradient(45% 45% at 75% 65%,rgba(77,141,255,.22) 0%,transparent 70%);pointer-events:none;}
+  .card>*{position:relative;}
+
+  .partner{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:var(--sp-8);align-items:center;}
+  .partner__content{display:grid;gap:var(--sp-6);align-content:center;}
+  .partner__visual{display:grid;justify-items:center;gap:var(--sp-3);}
+
+  .folder{position:relative;display:flex;flex-direction:column;}
+  .folder__card{position:relative;padding:var(--sp-4) var(--sp-5);
+    background:linear-gradient(var(--c-surface),var(--c-surface)),var(--c-bg);
+    transition:transform var(--dur) var(--ease),border-color var(--dur) var(--ease),box-shadow var(--dur) var(--ease);}
+  .folder__card + .folder__card{margin-top:calc(-1 * var(--sp-3));}
+  .folder__head{display:flex;align-items:baseline;gap:var(--sp-3);}
+  .folder__num{font-family:var(--font-heading);font-size:var(--fs-sm);color:var(--c-text-muted);letter-spacing:var(--ls-heading);}
+  .folder__head h3{font-size:var(--fs-lg);}
+  .folder__desc{font-size:var(--fs-sm);color:var(--c-text-secondary);max-height:0;margin-top:0;opacity:0;overflow:hidden;
+    transition:max-height var(--dur) var(--ease),margin-top var(--dur) var(--ease),opacity var(--dur) var(--ease);}
+  .folder__card:hover{z-index:5;border-color:var(--c-line-strong);box-shadow:var(--shadow-lg);}
+  .folder__card:hover .folder__desc{max-height:9rem;margin-top:var(--sp-3);opacity:1;}
+  .is-amber.card--glow::before{transform:rotate(180deg);}
+
+  .partner__mission{font-family:var(--font-heading);font-size:var(--fs-lg);font-weight:500;letter-spacing:-.02em;line-height:var(--lh-snug);text-wrap:balance;max-width:40ch;}
+  .globe{position:relative;width:min(100%,380px);aspect-ratio:1;cursor:grab;touch-action:none;}
+  .globe.is-dragging{cursor:grabbing;}
+  .globe__hint{font-size:var(--fs-xs);color:var(--c-text-muted);letter-spacing:.04em;opacity:.7;}
+  .globe__glow{position:absolute;inset:-18%;border-radius:50%;
+    background:radial-gradient(40% 40% at 30% 38%,rgba(255,172,10,.22) 0%,transparent 68%),
+              radial-gradient(45% 45% at 72% 60%,rgba(77,141,255,.24) 0%,transparent 68%);filter:blur(6px);pointer-events:none;}
+  .globe__svg{position:relative;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 0 42px rgba(77,141,255,.16));}
+
+  @media (max-width:900px){.partner{grid-template-columns:1fr;gap:var(--sp-8);}.partner__visual{order:-1;}.partner__mission{max-width:none;}
+    .section-head__row{grid-template-columns:1fr;align-items:start;}.lead{justify-self:start;text-align:left;}}
+  @media (hover:none),(max-width:640px){
+    .folder__card + .folder__card{margin-top:var(--sp-4);}
+    .folder__desc{max-height:none;margin-top:var(--sp-3);opacity:1;}}
+</style>
+</head>
+<body>
+<section class="section">
+  <div class="container">
+    <header class="section-head">
+      <div class="section-head__top"><span class="eyebrow">Cosa ci distingue</span></div>
+      <div class="section-head__row">
+        <h2>Un partner tecnico, non un fornitore di template</h2>
+        <p class="lead">Più veloci, più curati e più vicini di una web agency generalista.</p>
+      </div>
+    </header>
+
+    <div class="partner">
+      <div class="partner__content">
+        <p class="partner__mission">
+          Aiutiamo le imprese del territorio a crescere con siti web, e-commerce,
+          SEO e software su misura. <strong>Un unico partner</strong> per tutta la
+          tua presenza digitale: dalla strategia al codice, dal lancio ai risultati.
+        </p>
+        <div class="folder" id="folder"></div>
+      </div>
+
+      <div class="partner__visual">
+        <div class="globe">
+          <div class="globe__glow"></div>
+          <svg class="globe__svg" viewBox="0 0 400 400" role="img" aria-label="Globo connesso">
+            <defs><radialGradient id="gc" cx="42%" cy="40%" r="70%">
+              <stop offset="0%" stop-color="#1a1a24"/><stop offset="100%" stop-color="#05050a"/>
+            </radialGradient></defs>
+            <circle cx="200" cy="200" r="150" fill="url(#gc)" stroke="rgba(120,140,190,.14)" stroke-width="1"/>
+            <g class="globe__edges"></g><g class="globe__nodes"></g>
+          </svg>
+        </div>
+        <p class="globe__hint">Trascina per ruotare</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  var diff = [
+    {t:'Velocità reale',d:'Architetture statiche e Core Web Vitals verdi: pagine che si aprono in un istante, su qualunque connessione.',tone:'amber'},
+    {t:'Su misura, mai template',d:'Ogni progetto nasce dai tuoi obiettivi e dai tuoi processi: design e codice costruiti intorno alla tua impresa.',tone:'blue'},
+    {t:'SEO dentro l’architettura',d:'La visibilità su Google non è un ritocco finale: la progettiamo dalla prima riga di codice.',tone:'blue'},
+    {t:'Partner, non fornitori',d:'Restiamo al tuo fianco dopo il lancio: misuriamo, ottimizziamo e facciamo crescere il progetto nel tempo.',tone:'amber'}
+  ];
+  var folder = document.getElementById('folder');
+  diff.forEach(function(c,i){
+    var a=document.createElement('article');
+    a.className='card card--glow folder__card is-'+c.tone;
+    a.style.setProperty('--i',i);
+    a.tabIndex=0;
+    a.innerHTML='<div class="folder__head"><span class="folder__num">'+String(i+1).padStart(2,'0')+
+      '</span><h3>'+c.t+'</h3></div><p class="folder__desc">'+c.d+'</p>';
+    folder.appendChild(a);
+  });
+
+  var svg=document.querySelector('.globe__svg');
+  var R=150,CX=200,CY=200,N=46,AMBER=[255,172,10],BLUE=[77,141,255];
+  var base=[],golden=Math.PI*(3-Math.sqrt(5));
+  for(var i=0;i<N;i++){var y=1-(i/(N-1))*2,r=Math.sqrt(Math.max(0,1-y*y)),t=i*golden;
+    base.push({x:Math.cos(t)*r,y:y,z:Math.sin(t)*r});}
+  var edges=[];
+  for(var a=0;a<N;a++)for(var b=a+1;b<N;b++){var dot=base[a].x*base[b].x+base[a].y*base[b].y+base[a].z*base[b].z;
+    if(dot>0.62)edges.push([a,b]);}
+  var ns='http://www.w3.org/2000/svg',gE=svg.querySelector('.globe__edges'),gN=svg.querySelector('.globe__nodes');
+  var lineEls=edges.map(function(){var l=document.createElementNS(ns,'line');gE.appendChild(l);return l;});
+  var nodeEls=base.map(function(_,i){var c=document.createElementNS(ns,'circle');var m=i%2===0?AMBER:BLUE;
+    c.setAttribute('fill','rgb('+m[0]+','+m[1]+','+m[2]+')');gN.appendChild(c);return c;});
+  function frame(yaw,pitch,tiltX,tiltY){
+    var cy=Math.cos(yaw),sy=Math.sin(yaw),cx=Math.cos(pitch),sx=Math.sin(pitch);
+    var proj=base.map(function(p){
+      var x1=p.x*cy+p.z*sy,z1=-p.x*sy+p.z*cy,y1=p.y;
+      var y2=y1*cx-z1*sx,z2=y1*sx+z1*cx;
+      return{sx:CX+x1*R+tiltX,sy:CY-y2*R+tiltY,depth:z2};});
+    for(var i=0;i<nodeEls.length;i++){var pt=proj[i],d=(pt.depth+1)/2;
+      nodeEls[i].setAttribute('cx',pt.sx.toFixed(1));nodeEls[i].setAttribute('cy',pt.sy.toFixed(1));
+      nodeEls[i].setAttribute('r',(1.3+d*2.6).toFixed(2));nodeEls[i].setAttribute('opacity',(0.25+d*0.75).toFixed(2));}
+    for(var j=0;j<edges.length;j++){var e=edges[j],pa=proj[e[0]],pb=proj[e[1]],dd=(pa.depth+pb.depth+2)/4,l=lineEls[j];
+      l.setAttribute('x1',pa.sx.toFixed(1));l.setAttribute('y1',pa.sy.toFixed(1));
+      l.setAttribute('x2',pb.sx.toFixed(1));l.setAttribute('y2',pb.sy.toFixed(1));
+      l.setAttribute('stroke','rgba(120,150,220,'+(0.05+dd*0.28).toFixed(2)+')');
+      l.setAttribute('stroke-width',(0.4+dd*0.7).toFixed(2));}}
+
+  var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var globe=svg.closest('.globe');
+  var AUTO=reduce?0:0.0028;
+  var yaw=0.4,pitch=0.28,velYaw=AUTO,velPitch=0;
+  var tiltX=0,tiltY=0,targetTiltX=0,targetTiltY=0,dragging=false,lastX=0,lastY=0;
+
+  if(globe){
+    globe.addEventListener('pointerdown',function(e){dragging=true;globe.classList.add('is-dragging');
+      lastX=e.clientX;lastY=e.clientY;velYaw=0;velPitch=0;globe.setPointerCapture(e.pointerId);});
+    globe.addEventListener('pointermove',function(e){
+      var r=globe.getBoundingClientRect();
+      targetTiltX=((e.clientX-r.left)/r.width-0.5)*16;
+      targetTiltY=((e.clientY-r.top)/r.height-0.5)*16;
+      if(!dragging)return;
+      var dx=e.clientX-lastX,dy=e.clientY-lastY;lastX=e.clientX;lastY=e.clientY;
+      yaw+=dx*0.008;pitch=Math.max(-1.15,Math.min(1.15,pitch+dy*0.008));
+      velYaw=dx*0.008;velPitch=dy*0.008;});
+    var up=function(e){dragging=false;globe.classList.remove('is-dragging');
+      try{globe.releasePointerCapture(e.pointerId);}catch(_){}};
+    globe.addEventListener('pointerup',up);
+    globe.addEventListener('pointercancel',up);
+    globe.addEventListener('pointerleave',function(){targetTiltX=0;targetTiltY=0;});
+  }
+
+  (function loop(){
+    if(!dragging){yaw+=velYaw;pitch+=velPitch;
+      velYaw+=(AUTO-velYaw)*0.03;velPitch+=(0-velPitch)*0.06;pitch+=(0.28-pitch)*0.01;}
+    tiltX+=(targetTiltX-tiltX)*0.08;tiltY+=(targetTiltY-tiltY)*0.08;
+    frame(yaw,pitch,tiltX,tiltY);requestAnimationFrame(loop);})();
+</script>
+</body>
+</html>

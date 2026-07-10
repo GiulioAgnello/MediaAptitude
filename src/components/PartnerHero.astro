@@ -1,0 +1,365 @@
+---
+/**
+ * PartnerHero — unisce la vecchia sezione "Mission" (testo + orb) con il bento
+ * "Cosa ci distingue". Layout a 2 colonne:
+ *   - sinistra: stack di card "a folder" (sfoglio documenti) dai differentiators
+ *   - destra:  testo mission + globo connesso (SVG animato, palette firma ambra↔blu)
+ * Dati da content.ts, nessun hard-coding. Rispetta prefers-reduced-motion.
+ */
+import Section from './Section.astro';
+import { differentiators } from '../data/content';
+---
+
+<Section
+  id="perche-noi"
+  eyebrow="Cosa ci distingue"
+  title="Un partner tecnico, non un fornitore di template"
+  lead="Più veloci, più curati e più vicini di una web agency generalista."
+>
+  <div class="partner">
+    <!-- SINISTRA: testo mission + folder stack -->
+    <div class="partner__content">
+      <p class="partner__mission" data-reveal="blur">
+        Aiutiamo le imprese del territorio a crescere con siti web, e-commerce,
+        SEO e software su misura. <strong>Un unico partner</strong> per tutta la
+        tua presenza digitale: dalla strategia al codice, dal lancio ai risultati.
+      </p>
+
+      <div class="folder" data-folder>
+        {differentiators.map((d, i) => (
+          <article
+            class:list={['card', 'card--glow', 'folder__card', `is-${d.tone}`]}
+            style={`--i:${i}`}
+            tabindex="0"
+            data-reveal
+          >
+            <div class="folder__head">
+              <span class="folder__num">{String(i + 1).padStart(2, '0')}</span>
+              <h3>{d.title}</h3>
+            </div>
+            <p class="folder__desc">{d.description}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+
+    <!-- DESTRA: globo connesso (interattivo) -->
+    <div class="partner__visual">
+      <div class="globe" data-reveal="scale">
+        <div class="globe__glow" aria-hidden="true"></div>
+        <svg class="globe__svg" viewBox="0 0 400 400" role="img"
+             aria-label="Globo connesso: rete di nodi che rappresenta la presenza digitale">
+          <defs>
+            <radialGradient id="globeCore" cx="42%" cy="40%" r="70%">
+              <stop offset="0%" stop-color="#1a1a24" />
+              <stop offset="100%" stop-color="#05050a" />
+            </radialGradient>
+          </defs>
+          <circle cx="200" cy="200" r="150" fill="url(#globeCore)"
+                  stroke="rgba(120,140,190,0.14)" stroke-width="1" />
+          <g class="globe__edges"></g>
+          <g class="globe__nodes"></g>
+        </svg>
+      </div>
+      <p class="globe__hint" aria-hidden="true">Trascina per ruotare</p>
+    </div>
+  </div>
+</Section>
+
+<style>
+  .partner {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    gap: var(--sp-8);
+    align-items: center;
+  }
+  .partner__content {
+    display: grid;
+    gap: var(--sp-6);
+    align-content: center;
+  }
+  .partner__visual {
+    display: grid;
+    justify-items: center;
+    gap: var(--sp-3);
+  }
+
+  /* ---------- FOLDER STACK (sinistra) ---------- */
+  .folder {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  /* Accordion "a folder": card impilate con leggero overlap; i titoli restano
+     sempre visibili e a distanza stabile. In hover si espande la descrizione
+     e le card sotto scivolano giù in modo fluido (nessun salto). */
+  .folder__card {
+    position: relative;
+    padding: var(--sp-4) var(--sp-5);
+    cursor: default;
+    /* fondo OPACO: la card sopra copre quella sotto (niente bleed del testo) */
+    background: linear-gradient(var(--c-surface), var(--c-surface)), var(--c-bg);
+    transition:
+      transform var(--dur) var(--ease),
+      border-color var(--dur) var(--ease),
+      box-shadow var(--dur) var(--ease);
+  }
+  .folder__card + .folder__card { margin-top: calc(-1 * var(--sp-3)); }
+  .folder__card:focus-visible { outline: 3px solid var(--c-blue); outline-offset: 3px; }
+
+  .folder__head {
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-3);
+  }
+  .folder__num {
+    font-family: var(--font-heading);
+    font-size: var(--fs-sm);
+    color: var(--c-text-muted);
+    letter-spacing: var(--ls-heading);
+  }
+  .folder__head h3 { font-size: var(--fs-lg); }
+
+  .folder__desc {
+    font-size: var(--fs-sm);
+    color: var(--c-text-secondary);
+    max-height: 0;
+    margin-top: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition:
+      max-height var(--dur) var(--ease),
+      margin-top var(--dur) var(--ease),
+      opacity var(--dur) var(--ease);
+  }
+
+  /* hover/focus: la card si stacca sopra le altre e apre la descrizione */
+  .folder__card:hover,
+  .folder__card:focus-within {
+    z-index: 5;
+    border-color: var(--c-line-strong);
+    box-shadow: var(--shadow-lg);
+  }
+  .folder__card:hover .folder__desc,
+  .folder__card:focus-within .folder__desc {
+    max-height: 9rem;
+    margin-top: var(--sp-3);
+    opacity: 1;
+  }
+
+  .is-amber.card--glow::before { transform: rotate(180deg); }
+
+  /* ---------- CONTENT: mission (sinistra) ---------- */
+  .partner__mission {
+    font-family: var(--font-heading);
+    font-size: var(--fs-lg);
+    font-weight: var(--fw-medium);
+    letter-spacing: -0.02em;
+    line-height: var(--lh-snug);
+    color: var(--c-text);
+    text-wrap: balance;
+    max-width: 40ch;
+  }
+  .partner__mission strong { color: var(--c-text); }
+
+  /* ---------- GLOBO (destra, interattivo) ---------- */
+  .globe {
+    position: relative;
+    width: min(100%, 380px);
+    aspect-ratio: 1;
+    cursor: grab;
+    touch-action: none;   /* niente scroll durante il drag su touch */
+  }
+  .globe.is-dragging { cursor: grabbing; }
+  .globe__hint {
+    font-size: var(--fs-xs);
+    color: var(--c-text-muted);
+    letter-spacing: 0.04em;
+    opacity: 0.7;
+  }
+  .globe__glow {
+    position: absolute;
+    inset: -18%;
+    border-radius: 50%;
+    background:
+      radial-gradient(40% 40% at 30% 38%, rgba(255, 172, 10, 0.22) 0%, transparent 68%),
+      radial-gradient(45% 45% at 72% 60%, rgba(77, 141, 255, 0.24) 0%, transparent 68%);
+    filter: blur(6px);
+    pointer-events: none;
+  }
+  .globe__svg {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    filter: drop-shadow(0 0 42px rgba(77, 141, 255, 0.16));
+  }
+  .globe__edges line { stroke-linecap: round; }
+  .globe__nodes circle { transition: none; }
+
+  /* ---------- responsive ---------- */
+  @media (max-width: 900px) {
+    .partner { grid-template-columns: 1fr; gap: var(--sp-8); }
+    .partner__visual { order: -1; }   /* globo sopra su mobile */
+    .partner__mission { max-width: none; }
+  }
+  /* Su touch/mobile: lista leggibile, descrizioni sempre aperte (niente overlap) */
+  @media (hover: none), (max-width: 640px) {
+    .folder__card + .folder__card { margin-top: var(--sp-4); }
+    .folder__desc { max-height: none; margin-top: var(--sp-3); opacity: 1; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .folder__card, .folder__desc { transition: none; }
+  }
+</style>
+
+<script>
+  // Globo connesso: nodi distribuiti su una sfera (fibonacci), rotazione lenta
+  // attorno all'asse verticale, archi tra nodi vicini. Palette firma ambra↔blu.
+  const svg = document.querySelector<SVGSVGElement>('.globe__svg');
+  if (svg) {
+    const R = 150, CX = 200, CY = 200;
+    const N = 46;
+    const AMBER = [255, 172, 10];
+    const BLUE = [77, 141, 255];
+
+    // punti su sfera unitaria
+    type P = { x: number; y: number; z: number };
+    const base: P[] = [];
+    const golden = Math.PI * (3 - Math.sqrt(5));
+    for (let i = 0; i < N; i++) {
+      const y = 1 - (i / (N - 1)) * 2;
+      const r = Math.sqrt(Math.max(0, 1 - y * y));
+      const t = i * golden;
+      base.push({ x: Math.cos(t) * r, y, z: Math.sin(t) * r });
+    }
+
+    // archi tra nodi vicini (dot product alto = angolo piccolo)
+    const edges: [number, number][] = [];
+    for (let a = 0; a < N; a++) {
+      for (let b = a + 1; b < N; b++) {
+        const dot = base[a].x * base[b].x + base[a].y * base[b].y + base[a].z * base[b].z;
+        if (dot > 0.62) edges.push([a, b]);
+      }
+    }
+
+    const ns = 'http://www.w3.org/2000/svg';
+    const gE = svg.querySelector('.globe__edges')!;
+    const gN = svg.querySelector('.globe__nodes')!;
+
+    const lineEls = edges.map(() => {
+      const l = document.createElementNS(ns, 'line');
+      gE.appendChild(l);
+      return l as SVGLineElement;
+    });
+    const nodeEls = base.map((_, i) => {
+      const c = document.createElementNS(ns, 'circle');
+      const mix = (i % 2 === 0 ? AMBER : BLUE);
+      c.setAttribute('fill', `rgb(${mix[0]},${mix[1]},${mix[2]})`);
+      gN.appendChild(c);
+      return c as SVGCircleElement;
+    });
+
+    // Proietta con rotazione yaw (asse Y) + pitch (asse X)
+    function frame(yaw: number, pitch: number, tiltX: number, tiltY: number) {
+      const cy = Math.cos(yaw), sy = Math.sin(yaw);
+      const cx = Math.cos(pitch), sx = Math.sin(pitch);
+      const proj = base.map((p) => {
+        // yaw attorno a Y
+        const x1 = p.x * cy + p.z * sy;
+        const z1 = -p.x * sy + p.z * cy;
+        const y1 = p.y;
+        // pitch attorno a X
+        const y2 = y1 * cx - z1 * sx;
+        const z2 = y1 * sx + z1 * cx;
+        return { sx: CX + x1 * R + tiltX, sy: CY - y2 * R + tiltY, depth: z2 };
+      });
+      for (let i = 0; i < nodeEls.length; i++) {
+        const pt = proj[i];
+        const d = (pt.depth + 1) / 2;            // 0 retro → 1 fronte
+        nodeEls[i].setAttribute('cx', pt.sx.toFixed(1));
+        nodeEls[i].setAttribute('cy', pt.sy.toFixed(1));
+        nodeEls[i].setAttribute('r', (1.3 + d * 2.6).toFixed(2));
+        nodeEls[i].setAttribute('opacity', (0.25 + d * 0.75).toFixed(2));
+      }
+      for (let i = 0; i < edges.length; i++) {
+        const [a, b] = edges[i];
+        const pa = proj[a], pb = proj[b];
+        const d = (pa.depth + pb.depth + 2) / 4;
+        const l = lineEls[i];
+        l.setAttribute('x1', pa.sx.toFixed(1));
+        l.setAttribute('y1', pa.sy.toFixed(1));
+        l.setAttribute('x2', pb.sx.toFixed(1));
+        l.setAttribute('y2', pb.sy.toFixed(1));
+        l.setAttribute('stroke', `rgba(120,150,220,${(0.05 + d * 0.28).toFixed(2)})`);
+        l.setAttribute('stroke-width', (0.4 + d * 0.7).toFixed(2));
+      }
+    }
+
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const globe = svg.closest('.globe') as HTMLElement | null;
+    const AUTO = reduce ? 0 : 0.0028;   // velocità rotazione automatica
+
+    let yaw = 0.4, pitch = 0.28;         // orientamento iniziale
+    let velYaw = AUTO, velPitch = 0;     // velocità per l'inerzia
+    let tiltX = 0, tiltY = 0, targetTiltX = 0, targetTiltY = 0;  // parallax mouse
+    let dragging = false;
+    let lastX = 0, lastY = 0;
+
+    // ---- Drag per ruotare ----
+    if (globe) {
+      const onDown = (e: PointerEvent) => {
+        dragging = true;
+        globe.classList.add('is-dragging');
+        lastX = e.clientX; lastY = e.clientY;
+        velYaw = 0; velPitch = 0;
+        globe.setPointerCapture(e.pointerId);
+      };
+      const onMove = (e: PointerEvent) => {
+        // parallax quando non si trascina
+        const r = globe.getBoundingClientRect();
+        const nx = (e.clientX - r.left) / r.width - 0.5;
+        const ny = (e.clientY - r.top) / r.height - 0.5;
+        targetTiltX = nx * 16;
+        targetTiltY = ny * 16;
+        if (!dragging) return;
+        const dx = e.clientX - lastX, dy = e.clientY - lastY;
+        lastX = e.clientX; lastY = e.clientY;
+        yaw += dx * 0.008;
+        pitch = Math.max(-1.15, Math.min(1.15, pitch + dy * 0.008));
+        velYaw = dx * 0.008;
+        velPitch = dy * 0.008;
+      };
+      const onUp = (e: PointerEvent) => {
+        dragging = false;
+        globe.classList.remove('is-dragging');
+        try { globe.releasePointerCapture(e.pointerId); } catch {}
+      };
+      const onLeave = () => { targetTiltX = 0; targetTiltY = 0; };
+      globe.addEventListener('pointerdown', onDown);
+      globe.addEventListener('pointermove', onMove);
+      globe.addEventListener('pointerup', onUp);
+      globe.addEventListener('pointercancel', onUp);
+      globe.addEventListener('pointerleave', onLeave);
+    }
+
+    // ---- Loop ----
+    const loop = () => {
+      if (!dragging) {
+        yaw += velYaw;
+        pitch += velPitch;
+        // inerzia: le velocità tornano dolcemente all'auto-rotazione
+        velYaw += (AUTO - velYaw) * 0.03;
+        velPitch += (0 - velPitch) * 0.06;
+        // il pitch rientra piano verso l'orizzonte
+        pitch += (0.28 - pitch) * 0.01;
+      }
+      tiltX += (targetTiltX - tiltX) * 0.08;
+      tiltY += (targetTiltY - tiltY) * 0.08;
+      frame(yaw, pitch, tiltX, tiltY);
+      requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
+  }
+</script>

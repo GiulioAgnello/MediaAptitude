@@ -36,8 +36,8 @@ const groups = serviceGroups.map((g) => ({
     </nav>
 
     <div class="services__cards">
-      {groups.map((g) => (
-        <article id={`gruppo-${g.slug}`} class="card services__card" data-group={g.slug}>
+      {groups.map((g, i) => (
+        <article id={`gruppo-${g.slug}`} class="card services__card" data-group={g.slug} style={`--i:${i}`}>
           <div class="services__body">
             <h3>{g.title}</h3>
             <p>{g.description}</p>
@@ -47,7 +47,8 @@ const groups = serviceGroups.map((g) => ({
               ))}
             </ul>
             <a class="services__more" href={`/servizi/${g.slug}`}>
-              Scopri di più <span aria-hidden="true">→</span>
+              <span>Scopri di più</span>
+              <span class="services__arrow" aria-hidden="true">→</span>
             </a>
           </div>
           <div class="services__glow" aria-hidden="true"></div>
@@ -84,11 +85,29 @@ const groups = serviceGroups.map((g) => ({
   .services__tab:hover { color: var(--c-text); }
   .services__tab[aria-current='true'] { color: var(--c-text); border-bottom-color: var(--c-blue); }
 
-  .services__cards { display: grid; gap: var(--sp-5); }
+  .services__cards { display: grid; gap: var(--sp-6); }
+  /* Sticky-stacking: ogni card si "incolla" con un offset crescente, così
+     scorrendo si impilano una sopra l'altra (effetto sovrapposto/scorrimento). */
   .services__card {
-    position: relative;
+    position: sticky;
+    top: calc(96px + var(--i) * 2.4rem);
     padding: var(--sp-7);
     scroll-margin-top: 120px;
+    /* fondo OPACO: la card che sale copre quella sotto senza trasparenze */
+    background: linear-gradient(var(--c-surface-2), var(--c-surface-2)), var(--c-bg);
+    transform-origin: center top;
+    will-change: transform;
+  }
+  /* la card che scorre "sotto" si rimpicciolisce e si attenua */
+  @supports (animation-timeline: view()) {
+    .services__card {
+      animation: cardStack linear both;
+      animation-timeline: view();
+      animation-range: exit 0% exit 100%;
+    }
+    @keyframes cardStack {
+      to { transform: scale(0.93); opacity: 0.55; }
+    }
   }
   .services__body {
     position: relative;
@@ -100,13 +119,35 @@ const groups = serviceGroups.map((g) => ({
   .services__body p { color: var(--c-text-secondary); }
   .services__chips { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
 
+  /* Link "Scopri di più" come pill evidente con freccia animata */
   .services__more {
     justify-self: start;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: 0.6rem 1.15rem;
     font-weight: var(--fw-medium);
-    color: var(--c-text-secondary);
-    transition: color var(--dur-fast) var(--ease);
+    color: var(--c-text);
+    background: var(--c-surface);
+    border: 1px solid var(--c-line-strong);
+    border-radius: var(--radius-full);
+    transition:
+      color var(--dur-fast) var(--ease),
+      border-color var(--dur-fast) var(--ease),
+      background var(--dur-fast) var(--ease);
   }
-  .services__more:hover { color: var(--c-blue); }
+  .services__arrow {
+    display: inline-block;
+    transition: transform var(--dur) var(--ease);
+  }
+  .services__more:hover,
+  .services__more:focus-visible {
+    color: var(--c-blue);
+    border-color: var(--c-blue);
+    background: var(--c-blue-soft);
+  }
+  .services__more:hover .services__arrow,
+  .services__more:focus-visible .services__arrow { transform: translateX(4px); }
 
   /* Alone gradiente nell'angolo della card */
   .services__glow {
@@ -121,7 +162,13 @@ const groups = serviceGroups.map((g) => ({
   @media (max-width: 900px) {
     .services { grid-template-columns: 1fr; }
     .services__index { display: none; }
-    .services__card { padding: var(--sp-5); }
+    /* niente sticky-stacking su mobile: lista normale */
+    .services__card { position: static; padding: var(--sp-5); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .services__card { position: relative; top: auto; animation: none; }
+    .services__arrow { transition: none; }
   }
 </style>
 

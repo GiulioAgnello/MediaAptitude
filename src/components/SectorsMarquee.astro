@@ -1,0 +1,57 @@
+---
+/**
+ * SectorsMarquee — striscia a scorrimento con i settori serviti, in home.
+ * Sostituisce la sezione Settori completa (spostata nella pagina /lavori).
+ * Riusa il sistema .marquee globale (loop CSS, reduced-motion gestito lì).
+ * Tutta la striscia è un link a /lavori dove i settori sono approfonditi.
+ */
+import { sectors } from '../data/content';
+const labels = sectors.map((s) => s.label);
+---
+
+<a class="sectors-marquee marquee" href="/lavori" aria-label="Scopri i settori in cui operiamo">
+  <div class="marquee__track">
+    {[false, true].map((clone) => (
+      <ul class="marquee__group" role="list" aria-hidden={clone || undefined}>
+        {labels.map((label) => (
+          <li class="marquee__item sectors-marquee__item">
+            <span class="sectors-marquee__dot" aria-hidden="true"></span>
+            {label}
+          </li>
+        ))}
+      </ul>
+    ))}
+  </div>
+</a>
+
+<style>
+  .sectors-marquee {
+    display: block;
+    padding-block: var(--sp-6);
+    border-block: 1px solid var(--c-line);
+  }
+  .marquee__group {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-7);
+    padding-right: var(--sp-7);
+  }
+  .sectors-marquee__item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-3);
+    font-family: var(--font-heading);
+    font-size: var(--fs-lg);
+    font-weight: var(--fw-medium);
+    letter-spacing: var(--ls-heading);
+    color: var(--c-text-muted);
+    white-space: nowrap;
+    transition: color var(--dur-fast) var(--ease);
+  }
+  .sectors-marquee__dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--grad-signature);
+  }
+  .sectors-marquee:hover .sectors-marquee__item { color: var(--c-text-secondary); }
+</style>

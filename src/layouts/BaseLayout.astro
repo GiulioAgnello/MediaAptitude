@@ -10,6 +10,7 @@ import '../styles/global.css';
 import Seo from '../components/Seo.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import BottomNav from '../components/BottomNav.astro';
 import { site } from '../data/site';
 import { getSeo } from '../lib/api';
 import { parseYoast } from '../lib/seo';
@@ -86,8 +87,13 @@ const wpSeo = parseYoast(await getSeo(path));
       <slot />
     </main>
     <Footer />
+    <BottomNav />
 
     <style>
+      /* su mobile lascia spazio in fondo per la capsula flottante (app-like) */
+      @media (max-width: 900px) {
+        body { padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px)); }
+      }
       .skip-link {
         position: absolute;
         left: var(--sp-4);

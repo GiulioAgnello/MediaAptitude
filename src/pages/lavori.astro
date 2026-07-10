@@ -1,0 +1,98 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/Section.astro';
+import WorkGrid from '../components/WorkGrid.astro';
+import { sectors } from '../data/content';
+import { getCaseStudies } from '../lib/api';
+import { site } from '../data/site';
+import { breadcrumb } from '../lib/seo';
+
+// Progetti dalla REST WP a build-time (fallback ai mock se WP è offline).
+const caseStudies = await getCaseStudies();
+
+const schema = breadcrumb(
+  [
+    { name: 'Home', path: '/' },
+    { name: 'Lavori', path: '/lavori' },
+  ],
+  site.url
+);
+---
+
+<BaseLayout
+  path="/lavori"
+  title="Lavori: progetti web, e-commerce e software a Lecce"
+  description="I progetti di Media Aptitude: siti web, e-commerce, gestionali e SEO per imprese di Lecce e del Salento. Risultati misurabili, settore per settore."
+  schema={schema}
+>
+  <section class="intro">
+    <div class="container intro__inner">
+      <nav class="intro__crumbs" aria-label="Percorso">
+        <a href="/">Home</a>
+        <span aria-hidden="true">›</span>
+        <span aria-current="page">Lavori</span>
+      </nav>
+      <h1 data-enter>Progetti che portano risultati</h1>
+      <p class="intro__lead" data-enter="2">
+        Ogni progetto nasce da un obiettivo di business e si misura sui numeri.
+        Ecco una selezione dei lavori realizzati per imprese di Lecce e del Salento —
+        siti, e-commerce, gestionali e strategie SEO.
+      </p>
+    </div>
+  </section>
+
+  <WorkGrid items={caseStudies} />
+
+  <!-- SETTORI (spostati dalla home: long-tail SEO locale) -->
+  <Section
+    id="settori"
+    eyebrow="Settori"
+    title="Esperienza nei settori del territorio"
+    lead="Strategie digitali costruite sulle caratteristiche di ogni mercato."
+  >
+    <div class="sectors stagger">
+      {sectors.map((s) => (
+        <article class="card sector" data-reveal>
+          <h3>{s.label}</h3>
+          <p>{s.description}</p>
+        </article>
+      ))}
+    </div>
+  </Section>
+</BaseLayout>
+
+<style>
+  .intro {
+    padding-top: clamp(7rem, 5rem + 7vw, 10rem);
+    background:
+      radial-gradient(45% 40% at 50% 12%, rgba(77, 141, 255, 0.13) 0%, transparent 70%),
+      radial-gradient(28% 22% at 34% 6%, rgba(255, 172, 10, 0.07) 0%, transparent 70%);
+  }
+  .intro__inner { display: grid; gap: var(--sp-5); max-width: 880px; }
+  .intro__crumbs { display: flex; gap: var(--sp-2); font-size: var(--fs-xs); }
+  .intro__crumbs a { transition: color var(--dur-fast) var(--ease); }
+  .intro__crumbs a:hover { color: var(--c-text); }
+  .intro__crumbs [aria-current] { color: var(--c-text-secondary); }
+  .intro__lead { font-size: var(--fs-md); max-width: 60ch; }
+
+  .sectors {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--sp-5);
+  }
+  .sector {
+    padding: var(--sp-5);
+    display: grid;
+    gap: var(--sp-2);
+    transition: transform var(--dur) var(--ease), border-color var(--dur) var(--ease);
+  }
+  .sector:hover {
+    transform: translateY(-3px);
+    border-color: var(--c-line-strong);
+  }
+  .sector h3 { font-size: var(--fs-lg); }
+  .sector p { font-size: var(--fs-sm); }
+
+  @media (max-width: 900px) { .sectors { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .sectors { grid-template-columns: 1fr; } }
+</style>

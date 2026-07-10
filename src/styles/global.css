@@ -163,6 +163,8 @@ html {
 
 body {
   position: relative;
+  max-width: 100%;
+  overflow-x: clip;   /* mai scroll orizzontale (oltre a html) */
   font-family: var(--font-body);
   font-size: var(--fs-base);
   line-height: var(--lh-normal);
@@ -172,6 +174,9 @@ body {
   text-rendering: optimizeLegibility;
   transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
 }
+
+/* il contenitore principale non deve mai far scorrere orizzontalmente la pagina */
+#main { overflow-x: clip; }
 
 /* ============================================================
    AURORA — layer decorativo fisso dietro ai contenuti.

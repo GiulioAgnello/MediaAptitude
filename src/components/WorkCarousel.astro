@@ -1,0 +1,395 @@
+---
+/**
+ * WorkCarousel — sezione Lavori in home, versione "veloce": un progetto alla
+ * volta con cornice desktop + telefono sovrapposto (mostra l'adattabilità),
+ * peek della slide successiva, scroll-snap + frecce/dots, autoplay con pausa
+ * su hover/focus. Immagini da backend (imageDesktop/imageMobile); se assenti,
+ * fallback a mockup con placeholder a gradiente. La griglia completa vive nella
+ * pagina dedicata (/lavori).
+ */
+import Section from './Section.astro';
+import type { CaseStudy } from '../data/content';
+
+interface Props { items: CaseStudy[]; moreHref?: string; }
+const { items, moreHref } = Astro.props;
+---
+
+<Section
+  id="lavori"
+  eyebrow="Lavori"
+  title="Progetti che portano risultati"
+  lead="Ogni progetto nasce da un obiettivo di business e si misura sui numeri."
+>
+  <div class="wc" data-wc>
+    <div class="wc__viewport">
+      <ul class="wc__track" role="list">
+        {items.map((item, i) => (
+          <li class="wc__slide" data-index={i}>
+            <div class="card wc__card">
+              <div class="dev" data-view="desktop">
+                <div class="dev__stage">
+                  <div class="dev__browser">
+                    <div class="dev__bar" aria-hidden="true">
+                      <span></span><span></span><span></span>
+                    </div>
+                    <div class="dev__screen">
+                      {item.imageDesktop ? (
+                        <img
+                          src={item.imageDesktop.url}
+                          width={item.imageDesktop.width}
+                          height={item.imageDesktop.height}
+                          alt={item.imageDesktop.alt ?? `Anteprima desktop del progetto ${item.title}`}
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div class="dev__ph" aria-hidden="true"></div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div class="dev__phone">
+                    <div class="dev__phone-screen">
+                      {item.imageMobile ? (
+                        <img
+                          src={item.imageMobile.url}
+                          width={item.imageMobile.width}
+                          height={item.imageMobile.height}
+                          alt={item.imageMobile.alt ?? `Anteprima mobile del progetto ${item.title}`}
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div class="dev__ph dev__ph--phone" aria-hidden="true"></div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* switch Desktop/Mobile: visibile solo su mobile */}
+                <div class="dev__toggle" role="group" aria-label="Scegli anteprima">
+                  <button type="button" class="dev__toggle-btn" data-view-btn="desktop" aria-pressed="true">Desktop</button>
+                  <button type="button" class="dev__toggle-btn" data-view-btn="mobile" aria-pressed="false">Mobile</button>
+                </div>
+              </div>
+
+              <div class="wc__body">
+                <p class="wc__meta">{item.category} · {item.client}</p>
+                <h3>{item.title}</h3>
+                <p class="wc__result">{item.result}</p>
+                {item.url && (
+                  <a class="wc__visit" href={item.url} target="_blank" rel="noopener">
+                    Visita il sito <span aria-hidden="true">↗</span>
+                  </a>
+                )}
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    <div class="wc__controls">
+      <button type="button" class="wc__arrow" data-prev aria-label="Progetto precedente">
+        <span aria-hidden="true">←</span>
+      </button>
+      <div class="wc__dots" role="tablist" aria-label="Seleziona progetto">
+        {items.map((_, i) => (
+          <button type="button" class="wc__dot" data-dot={i} aria-label={`Vai al progetto ${i + 1}`}></button>
+        ))}
+      </div>
+      <button type="button" class="wc__arrow" data-next aria-label="Progetto successivo">
+        <span aria-hidden="true">→</span>
+      </button>
+    </div>
+
+    {moreHref && (
+      <a class="wc__more" href={moreHref}>
+        <span>Tutti i progetti</span>
+        <span class="wc__more-arrow" aria-hidden="true">→</span>
+      </a>
+    )}
+  </div>
+</Section>
+
+<style>
+  .wc { display: grid; gap: var(--sp-5); justify-items: stretch; }
+
+  /* link alla pagina dedicata */
+  .wc__more {
+    justify-self: center;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    font-weight: var(--fw-medium);
+    color: var(--c-text);
+    transition: color var(--dur-fast) var(--ease);
+  }
+  .wc__more-arrow { transition: transform var(--dur) var(--ease); }
+  .wc__more:hover { color: var(--c-blue); }
+  .wc__more:hover .wc__more-arrow { transform: translateX(4px); }
+
+  /* viewport: clippa alla larghezza del container (niente spill) + leggera mask ai lati */
+  .wc__viewport {
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 5%, #000 95%, transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 5%, #000 95%, transparent 100%);
+  }
+  .wc__track {
+    display: flex;
+    gap: var(--sp-5);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    padding-bottom: var(--sp-2);
+    scrollbar-width: none;
+  }
+  .wc__track::-webkit-scrollbar { display: none; }
+
+  /* slide < viewport → si intravede la successiva (peek) */
+  .wc__slide {
+    flex: 0 0 min(90%, 880px);
+    max-width: 100%;
+    min-width: 0;
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+  }
+
+  .wc__card {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: var(--sp-7);
+    align-items: center;
+    padding: var(--sp-6);
+    height: 100%;
+    min-width: 0;
+    max-width: 100%;
+    /* niente overflow:visible → la card non sfora mai il viewport (body ha overflow-x:clip);
+       il telefono sovrapposto sta dentro i bordi della card, non serve farlo debordare */
+  }
+
+  /* ---------- device cluster: desktop + telefono sovrapposto ---------- */
+  .dev {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 540px;
+    min-width: 0;
+    margin-inline: auto;
+  }
+  .dev__stage { position: relative; width: 100%; min-width: 0; }
+  .dev__toggle { display: none; }   /* desktop: nascosto (si vedono entrambi i device) */
+  .dev__browser {
+    border: 1px solid var(--c-line);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--c-surface-2);
+    box-shadow: var(--shadow-md);
+  }
+  .dev__bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0.5rem 0.7rem;
+    background: rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid var(--c-line);
+  }
+  .dev__bar span { width: 9px; height: 9px; border-radius: 50%; background: var(--c-line-strong); }
+  .dev__screen { aspect-ratio: 16 / 10; overflow: hidden; }
+  .dev__screen img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  .dev__phone {
+    position: absolute;
+    right: 4%;
+    bottom: 5%;      /* sovrapposto all'angolo del browser, tutto dentro la card */
+    width: 22%;
+    max-width: 118px;
+    padding: 5px;
+    background: #0a0a10;
+    border: 1px solid var(--c-line-strong);
+    border-radius: 18px;
+    box-shadow: var(--shadow-lg);
+  }
+  .dev__phone-screen { aspect-ratio: 9 / 19; border-radius: 12px; overflow: hidden; }
+  .dev__phone-screen img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  /* placeholder a gradiente (fallback mockup, firma ambra↔blu) */
+  .dev__ph {
+    height: 100%;
+    background:
+      radial-gradient(60% 80% at 20% 100%, rgba(255, 172, 10, 0.22) 0%, transparent 70%),
+      radial-gradient(70% 90% at 85% 0%, rgba(77, 141, 255, 0.26) 0%, transparent 70%),
+      var(--c-surface-2);
+  }
+  .dev__ph--phone {
+    background:
+      radial-gradient(70% 50% at 50% 0%, rgba(77, 141, 255, 0.3) 0%, transparent 70%),
+      radial-gradient(70% 50% at 50% 100%, rgba(255, 172, 10, 0.22) 0%, transparent 70%),
+      var(--c-surface-2);
+  }
+
+  /* ---------- body ---------- */
+  .wc__body { display: grid; gap: var(--sp-2); align-content: center; }
+  .wc__body h3 { font-size: var(--fs-lg); }
+  .wc__meta { font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: 0.1em; color: var(--c-text-muted); }
+  .wc__result { font-size: var(--fs-sm); color: var(--c-text-secondary); }
+  .wc__visit {
+    justify-self: start;
+    font-size: var(--fs-sm);
+    color: var(--c-blue);
+    font-weight: var(--fw-medium);
+    transition: color var(--dur-fast) var(--ease);
+  }
+  .wc__visit:hover { color: var(--c-text); }
+
+  /* ---------- controlli ---------- */
+  .wc__controls { display: flex; align-items: center; justify-content: center; gap: var(--sp-4); }
+  .wc__arrow {
+    display: inline-grid;
+    place-items: center;
+    width: 44px; height: 44px;
+    color: var(--c-text);
+    background: var(--c-surface);
+    border: 1px solid var(--c-line-strong);
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    transition: color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+  }
+  .wc__arrow:hover { color: var(--c-blue); border-color: var(--c-blue); background: var(--c-blue-soft); }
+
+  .wc__dots { display: flex; gap: var(--sp-2); }
+  .wc__dot {
+    width: 8px; height: 8px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: var(--c-line-strong);
+    cursor: pointer;
+    transition: background var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+  }
+  .wc__dot[aria-current='true'] { background: var(--c-blue); transform: scale(1.35); }
+
+  /* sotto i 760px: una colonna, una vista alla volta con switch Desktop/Mobile */
+  @media (max-width: 760px) {
+    .wc__viewport { -webkit-mask-image: none; mask-image: none; }
+    .wc__slide { flex-basis: 100%; scroll-snap-align: start; }
+    .wc__card { grid-template-columns: minmax(0, 1fr); gap: var(--sp-5); padding: var(--sp-5); }
+    .dev { max-width: 460px; gap: var(--sp-4); }
+
+    /* toggle visibile e attivo su mobile */
+    .dev__toggle {
+      display: inline-flex;
+      gap: 4px;
+      padding: 4px;
+      background: var(--c-surface);
+      border: 1px solid var(--c-line);
+      border-radius: var(--radius-full);
+      order: -1;   /* switch sopra la preview */
+    }
+    .dev__toggle-btn {
+      padding: 0.45rem 1rem;
+      border: 0;
+      background: transparent;
+      color: var(--c-text-muted);
+      border-radius: var(--radius-full);
+      font-size: var(--fs-sm);
+      font-weight: var(--fw-medium);
+      cursor: pointer;
+      transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+    }
+    .dev__toggle-btn[aria-pressed='true'] { background: var(--c-blue-soft); color: var(--c-blue); }
+
+    /* il telefono torna in flusso, centrato e grande (formato verticale) */
+    .dev__phone {
+      position: static;
+      width: min(60%, 230px);
+      max-width: 230px;
+      margin-inline: auto;
+    }
+    /* una vista alla volta secondo lo switch */
+    .dev[data-view='desktop'] .dev__phone { display: none; }
+    .dev[data-view='mobile'] .dev__browser { display: none; }
+
+    /* slider "social": swipe a piena larghezza, solo dots (niente frecce) */
+    .wc__arrow { display: none; }
+    .wc__dot { width: 9px; height: 9px; }
+
+    /* anti-spill: nulla dentro la card può spingere oltre la larghezza */
+    .dev__browser, .dev__phone, .dev__screen img, .dev__phone-screen img { max-width: 100%; }
+    .wc__body, .wc__meta, .wc__result { min-width: 0; overflow-wrap: anywhere; }
+    .wc__body h3 { overflow-wrap: anywhere; }
+  }
+</style>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-wc]');
+  if (root) {
+    // Switch Desktop/Mobile per ogni card (attivo solo su mobile via CSS)
+    root.querySelectorAll<HTMLElement>('.dev').forEach((dev) => {
+      const btns = [...dev.querySelectorAll<HTMLButtonElement>('[data-view-btn]')];
+      btns.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const view = btn.dataset.viewBtn!;
+          dev.dataset.view = view;
+          btns.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+        });
+      });
+    });
+
+    const track = root.querySelector<HTMLElement>('.wc__track')!;
+    const slides = [...root.querySelectorAll<HTMLElement>('.wc__slide')];
+    const dots = [...root.querySelectorAll<HTMLButtonElement>('[data-dot]')];
+    const prev = root.querySelector<HTMLButtonElement>('[data-prev]')!;
+    const next = root.querySelector<HTMLButtonElement>('[data-next]')!;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let index = 0;
+    const clamp = (i: number) => (i + slides.length) % slides.length;
+
+    function scrollTo(i: number) {
+      index = clamp(i);
+      const slide = slides[index];
+      // scroll SOLO orizzontale dentro al track (niente scrollIntoView:
+      // altrimenti la pagina scrolla in verticale alla sezione a ogni avanzamento)
+      const left = slide.offsetLeft - (track.clientWidth - slide.clientWidth) / 2;
+      track.scrollTo({ left, behavior: reduce ? 'auto' : 'smooth' });
+      setActive(index);
+    }
+    function setActive(i: number) {
+      dots.forEach((d, k) => (k === i ? d.setAttribute('aria-current', 'true') : d.removeAttribute('aria-current')));
+    }
+
+    prev.addEventListener('click', () => scrollTo(index - 1));
+    next.addEventListener('click', () => scrollTo(index + 1));
+    dots.forEach((d, k) => d.addEventListener('click', () => scrollTo(k)));
+
+    // aggiorna dot attivo seguendo lo scroll (anche swipe)
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            index = slides.indexOf(e.target as HTMLElement);
+            setActive(index);
+          }
+        }
+      },
+      { root: track, threshold: 0.6 }
+    );
+    slides.forEach((s) => io.observe(s));
+    setActive(0);
+
+    // autoplay con pausa su hover/focus. Disattivato con reduced-motion e su
+    // touch (mobile "social": si sfoglia a mano con lo swipe, come Instagram).
+    const touch = window.matchMedia('(hover: none)').matches;
+    if (!reduce && !touch && slides.length > 1) {
+      let timer: number | undefined;
+      const start = () => { timer = window.setInterval(() => scrollTo(index + 1), 5000); };
+      const stop = () => { if (timer) { clearInterval(timer); timer = undefined; } };
+      start();
+      root.addEventListener('pointerenter', stop);
+      root.addEventListener('pointerleave', start);
+      root.addEventListener('focusin', stop);
+      root.addEventListener('focusout', start);
+      document.addEventListener('visibilitychange', () => (document.hidden ? stop() : start()));
+    }
+  }
+</script>

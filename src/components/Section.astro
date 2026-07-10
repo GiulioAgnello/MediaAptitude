@@ -61,6 +61,7 @@ const { id, eyebrow, title, lead, align = 'split', class: extra } = Astro.props;
 
   @media (max-width: 760px) {
     .is-split .section-head__row { grid-template-columns: 1fr; align-items: start; }
-    .is-split .lead { justify-self: start; text-align: left; }
+    /* su mobile il lead riempie il container (niente hug a sinistra → margini pari) */
+    .is-split .lead { justify-self: stretch; text-align: left; max-width: none; }
   }
 </style>
