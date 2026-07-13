@@ -17,7 +17,7 @@ export interface Service {
   title: string;
   summary: string;
   bullets: string[];
-  icon: 'web' | 'app' | 'ecommerce' | 'seo' | 'ads' | 'crm' | 'training';
+  icon: 'web' | 'app' | 'ecommerce' | 'seo' | 'ads' | 'crm' | 'training' | 'ai';
 }
 
 /** Gruppo di servizi: sezione a tab in home + pagina dedicata /servizi/[slug]. */
@@ -226,6 +226,45 @@ export const services: Service[] = [
     ],
     icon: 'training',
   },
+  {
+    slug: 'ai-assistenti',
+    title: 'Chatbot e assistenti virtuali AI',
+    summary:
+      'Realizziamo assistenti virtuali e chatbot basati sull’intelligenza artificiale che rispondono ai clienti 24 ore su 24, qualificano le richieste e alleggeriscono il lavoro del tuo team.',
+    bullets: [
+      'Chatbot per sito e WhatsApp',
+      'Risposte automatiche H24 alle domande frequenti',
+      'Qualifica e raccolta dei contatti',
+      'Addestrati sui contenuti della tua azienda',
+    ],
+    icon: 'ai',
+  },
+  {
+    slug: 'ai-processi',
+    title: 'Automazioni intelligenti e agenti AI',
+    summary:
+      'Automatizziamo le attività ripetitive con flussi e agenti AI: dalla gestione di email e documenti alla generazione di contenuti, per far risparmiare ore al tuo team ogni settimana.',
+    bullets: [
+      'Automazione di email, documenti e report',
+      'Generazione assistita di testi e contenuti',
+      'Smistamento e sintesi delle richieste',
+      'Flussi su misura per i tuoi processi',
+    ],
+    icon: 'ai',
+  },
+  {
+    slug: 'ai-integrazioni',
+    title: 'Integrazione AI in gestionali e CRM',
+    summary:
+      'Portiamo l’intelligenza artificiale dentro gli strumenti che usi già: gestionali, CRM ed e-commerce diventano più veloci grazie a ricerca intelligente, suggerimenti e analisi automatica dei dati.',
+    bullets: [
+      'Ricerca e suggerimenti intelligenti nei gestionali',
+      'Analisi automatica di dati e testi',
+      'Integrazione con i sistemi esistenti via API',
+      'AI applicata con criterio, non come slogan',
+    ],
+    icon: 'ai',
+  },
 ];
 
 /** I 3 gruppi = tab della sezione servizi in home + pagine /servizi/[slug]. */
@@ -329,6 +368,40 @@ export const serviceGroups: ServiceGroup[] = [
         question: 'Il nostro team saprà usare il nuovo strumento?',
         answer:
           'La formazione fa parte del progetto: sessioni pratiche sul vostro caso reale, documentazione essenziale e supporto nei primi mesi di utilizzo. Il software funziona solo se le persone lo usano volentieri.',
+      },
+    ],
+  },
+  {
+    slug: 'ai-automazioni',
+    title: 'Intelligenza artificiale e automazioni su misura',
+    label: 'AI & Automazioni',
+    description:
+      'Chatbot che rispondono ai clienti H24, automazioni che liberano ore di lavoro e AI dentro i gestionali che usi già: l’intelligenza artificiale applicata a problemi concreti della tua impresa.',
+    icon: 'ai',
+    serviceSlugs: ['ai-assistenti', 'ai-processi', 'ai-integrazioni'],
+    seo: {
+      title: 'Soluzioni AI e automazioni per imprese a Lecce e nel Salento',
+      description:
+        'Chatbot, automazioni e integrazione dell’intelligenza artificiale nei gestionali per imprese di Lecce e del Salento. AI applicata a risultati concreti: più tempo, meno lavoro ripetitivo. Analisi gratuita.',
+      h1: 'Intelligenza artificiale e automazioni per la tua impresa',
+      intro:
+        'L’intelligenza artificiale non è un gadget da vetrina: usata bene, risponde ai clienti quando tu non ci sei, elimina le attività ripetitive e rende più veloci gli strumenti che usi ogni giorno. Progettiamo chatbot, automazioni e integrazioni AI partendo da un problema reale della tua azienda — non dalla tecnologia — e le colleghiamo ai sistemi che hai già.',
+    },
+    faqs: [
+      {
+        question: 'Un chatbot AI può davvero rispondere ai miei clienti?',
+        answer:
+          'Sì, se è addestrato sui contenuti reali della tua azienda: servizi, orari, domande frequenti. Risponde H24 alle richieste semplici, qualifica i contatti e passa a te solo ciò che richiede una persona. Definiamo insieme cosa deve e cosa non deve fare.',
+      },
+      {
+        question: 'L’AI sostituisce il mio team?',
+        answer:
+          'No: lo alleggerisce. L’AI si occupa delle attività ripetitive — smistare email, preparare bozze, cercare dati — così le persone dedicano tempo a ciò che conta davvero. L’obiettivo è farvi risparmiare ore, non sostituire competenze.',
+      },
+      {
+        question: 'I dati della mia azienda restano al sicuro?',
+        answer:
+          'Sì: scegliamo soluzioni che rispettano la privacy e il GDPR, definiamo quali dati l’AI può usare e configuriamo tutto in modo trasparente. Ti spieghiamo dove risiedono i dati e come vengono trattati, senza tecnicismi.',
       },
     ],
   },
