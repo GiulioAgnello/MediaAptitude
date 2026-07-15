@@ -27,6 +27,19 @@ const API_BASE = (
 const TIMEOUT_MS = 8000;
 
 /**
+ * ID univoco per ogni build (valutato una volta al caricamento del modulo).
+ * Aggiunto come query param alle GET build-time per BYPASSARE la cache
+ * server-side di Aruba (AHSC), che altrimenti servirebbe dati vecchi e il
+ * sito statico "cuocerebbe" contenuti non aggiornati. Non tocca il runtime.
+ */
+const BUILD_ID = Date.now();
+
+/** Accoda il cache-buster all'URL, rispettando eventuali query già presenti. */
+function bustCache(url: string): string {
+  return `${url}${url.includes('?') ? '&' : '?'}_cb=${BUILD_ID}`;
+}
+
+/**
  * Esegue la GET su un endpoint e ritorna il JSON tipizzato.
  * Accetta path relativi alla REST custom oppure URL assoluti (REST core).
  * In caso di errore (rete, HTTP non 2xx, timeout, payload vuoto) ritorna
@@ -40,7 +53,7 @@ async function fetchApi<T>(endpoint: string, fallback: T): Promise<T> {
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
   try {
-    const res = await fetch(url, {
+    const res = await fetch(bustCache(url), {
       signal: controller.signal,
       headers: { Accept: 'application/json' },
     });

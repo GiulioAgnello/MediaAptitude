@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MediaAptitude\Core;
 
 use MediaAptitude\Core\Admin\MetaBoxes;
+use MediaAptitude\Core\Deploy\DeployHook;
 use MediaAptitude\Core\PostTypes\CaseStudy;
 use MediaAptitude\Core\PostTypes\Lead;
 use MediaAptitude\Core\PostTypes\PostType;
@@ -65,6 +66,10 @@ final class Plugin
 
         // Passthrough SEO (Yoast) + fallback.
         (new Seo())->register();
+
+        // Auto-deploy: avvisa Cloudflare Pages quando i contenuti cambiano.
+        // Attivo solo se MA_DEPLOY_HOOK_URL è definita in wp-config.php.
+        (new DeployHook($this->postTypes))->register();
     }
 
     /**
