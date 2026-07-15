@@ -6,6 +6,9 @@ import '@fontsource/inter/latin-400.css';
 import '@fontsource/inter/latin-500.css';
 import '@fontsource/inter-tight/latin-500.css';
 import '@fontsource/inter-tight/latin-600.css';
+// URL con hash dei woff2 critici above-the-fold → preload per un LCP più rapido.
+import interTight500 from '@fontsource/inter-tight/files/inter-tight-latin-500-normal.woff2?url';
+import inter400 from '@fontsource/inter/files/inter-latin-400-normal.woff2?url';
 import '../styles/global.css';
 import { ClientRouter } from 'astro:transitions';
 import Seo from '../components/Seo.astro';
@@ -41,6 +44,11 @@ const wpSeo = parseYoast(await getSeo(path));
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
+
+    {/* Preload dei font critici above-the-fold (h1 heading + body): riducono
+        il ritardo dell'LCP evitando di scoprirli solo dopo il parse del CSS. */}
+    <link rel="preload" href={interTight500} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={inter400} as="font" type="font/woff2" crossorigin />
 
     {/* View Transitions: navigazione SPA con cross-fade (feel app, niente flash). */}
     <ClientRouter />

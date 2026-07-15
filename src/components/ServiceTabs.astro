@@ -85,7 +85,9 @@ const groups = serviceGroups.map((g) => ({
   .services__tab:hover { color: var(--c-text); }
   .services__tab[aria-current='true'] { color: var(--c-text); border-bottom-color: var(--c-blue); }
 
-  .services__cards { display: grid; gap: var(--sp-6); }
+  /* overflow-anchor:none evita che lo scroll anchoring del browser annulli
+     lo scroll verso l'alto quando le card sticky si ri-scalano. */
+  .services__cards { display: grid; gap: var(--sp-6); overflow-anchor: none; }
   /* Sticky-stacking: ogni card si "incolla" con un offset crescente, così
      scorrendo si impilano una sopra l'altra (effetto sovrapposto/scorrimento). */
   .services__card {
@@ -97,6 +99,7 @@ const groups = serviceGroups.map((g) => ({
     background: linear-gradient(var(--c-surface-2), var(--c-surface-2)), var(--c-bg);
     transform-origin: center top;
     will-change: transform;
+    overflow-anchor: none;
   }
   /* la card che scorre "sotto" si rimpicciolisce e si attenua */
   @supports (animation-timeline: view()) {
@@ -199,6 +202,37 @@ const groups = serviceGroups.map((g) => ({
     const groups = [...document.querySelectorAll<HTMLElement>('[data-group]')];
     if (groups[0]?.dataset.tabsInit) return;
     if (groups[0]) groups[0].dataset.tabsInit = '1';
+
+    // Scroll manuale al click: gli anchor nativi non funzionano con le card
+    // sticky (il browser le considera già visibili e scrolla di pochissimo).
+    const HEADER_OFFSET = 100;
+    // Posizione REALE della card nel flusso: la sticky falsa offsetTop/rect,
+    // quindi la forzo per un istante a position:static, misuro, ripristino.
+    const flowTop = (card: HTMLElement) => {
+      const prev = card.style.position;
+      card.style.position = 'static';
+      const y = card.getBoundingClientRect().top + window.scrollY;
+      card.style.position = prev;
+      return y;
+    };
+    tabs.forEach((tab, slug) => {
+      if (tab.dataset.bound) return;
+      tab.dataset.bound = '1';
+      tab.addEventListener('click', (ev) => {
+        const card = document.getElementById(`gruppo-${slug}`);
+        if (!card) return;
+        ev.preventDefault();
+        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        window.scrollTo({
+          top: Math.max(0, flowTop(card) - HEADER_OFFSET),
+          behavior: reduce ? 'auto' : 'smooth',
+        });
+        tabs.forEach((t, k) =>
+          k === slug ? t.setAttribute('aria-current', 'true') : t.removeAttribute('aria-current')
+        );
+      });
+    });
+
     const io = new IntersectionObserver(
       (entries) => {
         for (const e of entries) {

@@ -26,6 +26,19 @@ export const site = {
   whatsappMessage: 'Ciao! Vorrei informazioni sui vostri servizi.',
   // Aree geografiche servite (usate per la SEO locale e lo schema LocalBusiness).
   areaServed: ['Lecce', 'Salento', 'Puglia'],
+  // --- Dati per la SEO locale (schema ProfessionalService) ---------------
+  // Fascia di prezzo indicativa mostrata nei rich result (€, €€, €€€).
+  priceRange: '€€',
+  // Indirizzo: se compilati, arricchiscono lo schema e la coerenza NAP.
+  // Lasciare '' i campi non ancora disponibili: vengono omessi dallo schema.
+  streetAddress: '',
+  postalCode: '',
+  // Coordinate geo: compilare con lat/lng reali della sede (Google Maps →
+  // click destro sul punto → coordinate). Vuote = omesse dallo schema.
+  geo: { lat: '', lng: '' },
+  // Profili social ufficiali → sameAs (aiuta Google a collegare l'entità).
+  // Es. ['https://www.instagram.com/...','https://www.linkedin.com/company/...']
+  social: [] as string[],
   // Default Open Graph image (da sostituire con asset reale in S4).
   ogImage: '/og-default.png',
   // Analytics: inserire il Measurement ID GA4 (es. 'G-XXXXXXXXXX').

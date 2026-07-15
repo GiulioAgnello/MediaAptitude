@@ -57,13 +57,14 @@ const organizationSchema = {
   name: site.legalName,
   url: site.url,
   email: site.email,
+  telephone: site.phone || undefined,
   description: site.description,
   logo: {
     '@type': 'ImageObject',
     url: new URL('/logo.png', site.url).href,
   },
-  // sameAs: profili ufficiali (social). Vuoto finché non li forniamo.
-  sameAs: [] as string[],
+  // sameAs: profili ufficiali (social). Compilare site.social in data/site.ts.
+  ...(site.social.length ? { sameAs: site.social } : {}),
 };
 
 // LocalBusiness/ProfessionalService: leva SEO locale (Lecce e Salento).
@@ -74,16 +75,25 @@ const localBusinessSchema = {
   name: site.name,
   url: site.url,
   email: site.email,
+  telephone: site.phone || undefined,
+  priceRange: site.priceRange,
   description: site.description,
   image: new URL(site.ogImage, site.url).href,
   parentOrganization: { '@id': orgId },
   areaServed: site.areaServed.map((name) => ({ '@type': 'AdministrativeArea', name })),
   address: {
     '@type': 'PostalAddress',
+    ...(site.streetAddress ? { streetAddress: site.streetAddress } : {}),
     addressLocality: 'Lecce',
+    ...(site.postalCode ? { postalCode: site.postalCode } : {}),
     addressRegion: 'Puglia',
     addressCountry: 'IT',
   },
+  // geo incluso solo se lat/lng reali sono stati inseriti in data/site.ts
+  ...(site.geo.lat && site.geo.lng
+    ? { geo: { '@type': 'GeoCoordinates', latitude: site.geo.lat, longitude: site.geo.lng } }
+    : {}),
+  ...(site.social.length ? { sameAs: site.social } : {}),
 };
 
 const websiteSchema = {
@@ -107,7 +117,10 @@ const jsonLd = {
 <title>{fullTitle}</title>
 <meta name="description" content={metaDescription} />
 <link rel="canonical" href={canonical} />
-{isNoindex && <meta name="robots" content="noindex, nofollow" />}
+<meta name="theme-color" content="#000000" />
+{isNoindex
+  ? <meta name="robots" content="noindex, nofollow" />
+  : <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />}
 
 <!-- Open Graph -->
 <meta property="og:type" content="website" />
@@ -117,6 +130,10 @@ const jsonLd = {
 <meta property="og:description" content={metaDescription} />
 <meta property="og:url" content={canonical} />
 <meta property="og:image" content={ogImageUrl} />
+<meta property="og:image:secure_url" content={ogImageUrl} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content={fullTitle} />
 
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image" />

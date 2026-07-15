@@ -2,10 +2,12 @@
 /**
  * Hero home: badge, h1 con entrata blur-in, lead, CTA e foto grande
  * incorniciata con glow gradiente (stile riferimento).
- * La foto è un placeholder: sostituire /img/home-team.jpg con lo scatto reale.
+ * La foto è un placeholder: sostituire src/assets/home-team.jpg con lo scatto reale.
  */
+import { Picture } from 'astro:assets';
 import Button from './Button.astro';
 import { cta } from '../data/site';
+import heroImg from '../assets/home-team.jpg';
 ---
 
 <section class="hero">
@@ -27,11 +29,15 @@ import { cta } from '../data/site';
     </div>
 
     <figure class="hero__media" data-enter="4">
-      <img
-        src="/img/home-team.jpg"
+      {/* astro:assets: genera AVIF/WebP responsive + width/height (no CLS).
+          È l'immagine LCP → eager + fetchpriority alta. */}
+      <Picture
+        src={heroImg}
+        formats={['avif', 'webp']}
+        widths={[640, 960, 1280, 1600]}
+        sizes="(max-width: 1140px) 100vw, 1080px"
         alt="Il team di Media Aptitude al lavoro nello studio di Lecce"
-        width="1600"
-        height="900"
+        loading="eager"
         fetchpriority="high"
       />
     </figure>
