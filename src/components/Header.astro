@@ -4,7 +4,7 @@ import Button from './Button.astro';
 import { mainNav, cta } from '../data/site';
 ---
 
-<header class="header" data-header>
+<header class="header" id="site-header" data-header>
   <div class="header__inner">
     <Logo />
 
@@ -236,26 +236,11 @@ import { mainNav, cta } from '../data/site';
 </style>
 
 <script>
-  // Toggle menu mobile. JS vanilla, zero dipendenze.
-  const burger = document.querySelector('[data-burger]');
-  const menu = document.querySelector('[data-mobile-menu]') as HTMLElement | null;
+  // Header persistito tra le pagine (transition:persist). Se il matching persist
+  // fallisce, ClientRouter inietta un header "fresco" senza listener: per questo
+  // l'init è idempotente (guard data-bound) e rigira ad ogni astro:page-load,
+  // così i bottoni sono sempre agganciati anche dopo uno swap.
 
-  const setMenu = (open: boolean) => {
-    if (!burger || !menu) return;
-    burger.setAttribute('aria-expanded', String(open));
-    burger.setAttribute('aria-label', open ? 'Chiudi menu' : 'Apri menu');
-    menu.hidden = !open;
-  };
-
-  burger?.addEventListener('click', () => {
-    setMenu(burger.getAttribute('aria-expanded') !== 'true');
-  });
-  document.querySelectorAll('[data-mobile-link]').forEach((link) =>
-    link.addEventListener('click', () => setMenu(false))
-  );
-
-  // Toggle tema (dark/light). Init già fatto in <head> per evitare il flash;
-  // qui gestiamo click, persistenza e testo/aria dei bottoni.
   const currentTheme = () =>
     document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
 
@@ -275,8 +260,45 @@ import { mainNav, cta } from '../data/site';
     syncToggles(theme);
   };
 
-  syncToggles(currentTheme());
-  document.querySelectorAll('[data-theme-toggle]').forEach((btn) =>
-    btn.addEventListener('click', () => setTheme(currentTheme() === 'light' ? 'dark' : 'light'))
-  );
+  const setMenu = (open: boolean) => {
+    const burger = document.querySelector('[data-burger]');
+    const menu = document.querySelector('[data-mobile-menu]') as HTMLElement | null;
+    if (!burger || !menu) return;
+    burger.setAttribute('aria-expanded', String(open));
+    burger.setAttribute('aria-label', open ? 'Chiudi menu' : 'Apri menu');
+    menu.hidden = !open;
+  };
+
+  // Esposta al layout: unica fonte di verità per chiudere il menu (es. al cambio pagina).
+  (window as any).__closeMobileMenu = () => setMenu(false);
+
+  const bind = () => {
+    const burger = document.querySelector('[data-burger]') as HTMLElement | null;
+    // Bind una sola volta per nodo: dopo un persist ok l'header è lo stesso,
+    // dopo uno swap è nuovo e privo del flag → viene ri-agganciato.
+    if (burger && burger.dataset.bound !== 'true') {
+      burger.dataset.bound = 'true';
+      burger.addEventListener('click', () =>
+        setMenu(burger.getAttribute('aria-expanded') !== 'true')
+      );
+      document.querySelectorAll('[data-mobile-link]').forEach((link) =>
+        link.addEventListener('click', () => setMenu(false))
+      );
+    }
+
+    document.querySelectorAll('[data-theme-toggle]').forEach((btn) => {
+      const el = btn as HTMLElement;
+      if (el.dataset.bound === 'true') return;
+      el.dataset.bound = 'true';
+      el.addEventListener('click', () =>
+        setTheme(currentTheme() === 'light' ? 'dark' : 'light')
+      );
+    });
+
+    syncToggles(currentTheme());
+  };
+
+  bind();
+  // Ri-aggancia dopo ogni transizione e chiude il menu sul cambio pagina.
+  document.addEventListener('astro:page-load', () => { bind(); setMenu(false); });
 </script>

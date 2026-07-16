@@ -112,7 +112,8 @@ const wpSeo = parseYoast(await getSeo(path));
     <FloatingContact transition:persist />
     <CookieConsent transition:persist />
 
-    {/* Aggiorna l'active della bottom bar e chiude il menu dopo ogni transizione. */}
+    {/* Aggiorna solo l'active della bottom bar dopo ogni transizione.
+        La chiusura del menu mobile è gestita da Header.astro (unica fonte di verità). */}
     <script is:inline>
       document.addEventListener('astro:page-load', function () {
         var p = location.pathname;
@@ -123,10 +124,6 @@ const wpSeo = parseYoast(await getSeo(path));
           if (active) a.setAttribute('aria-current', 'page');
           else a.removeAttribute('aria-current');
         });
-        var menu = document.querySelector('[data-mobile-menu]');
-        var burger = document.querySelector('[data-burger]');
-        if (menu) menu.hidden = true;
-        if (burger) burger.setAttribute('aria-expanded', 'false');
       });
     </script>
 
