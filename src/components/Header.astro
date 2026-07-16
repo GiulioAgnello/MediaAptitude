@@ -48,12 +48,25 @@ import { mainNav, cta } from '../data/site';
     <nav aria-label="Navigazione mobile">
       <ul role="list">
         {mainNav.map((item) => (
-          <>
+          item.children ? (
+            <li>
+              {/* Accordion nativo: chiuso di default, così il menu resta corto. */}
+              <details class="mobile-menu__group">
+                <summary class="mobile-menu__summary">
+                  <span>{item.label}</span>
+                  <svg class="mobile-menu__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
+                </summary>
+                <a class="mobile-menu__sub" href={item.href} data-mobile-link>Tutti i servizi</a>
+                {item.children.map((child) => (
+                  <a class="mobile-menu__sub" href={child.href} data-mobile-link>{child.label}</a>
+                ))}
+              </details>
+            </li>
+          ) : (
             <li><a href={item.href} data-mobile-link>{item.label}</a></li>
-            {item.children?.map((child) => (
-              <li><a class="mobile-menu__sub" href={child.href} data-mobile-link>{child.label}</a></li>
-            ))}
-          </>
+          )
         ))}
         <li><a href={cta.href} class="mobile-menu__cta" data-mobile-link>{cta.label}</a></li>
         <li>
@@ -186,6 +199,11 @@ import { mainNav, cta } from '../data/site';
     border-radius: var(--radius-lg);
     backdrop-filter: blur(14px);
     padding: var(--sp-4);
+    /* Non superare mai l'altezza utile: se il contenuto è lungo scrolla
+       internamente invece di finire sotto la bottom bar / capsula flottante. */
+    max-height: calc(100dvh - 92px - env(safe-area-inset-bottom, 0px) - var(--sp-5));
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
   .mobile-menu ul { display: flex; flex-direction: column; gap: var(--sp-1); }
   .mobile-menu a {
@@ -201,6 +219,29 @@ import { mainNav, cta } from '../data/site';
     font-size: var(--fs-sm);
     color: var(--c-text-muted) !important;
   }
+
+  /* Accordion "Servizi": <summary> come voce di menu + chevron che ruota. */
+  .mobile-menu__group { border-radius: var(--radius-md); }
+  .mobile-menu__summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-2);
+    font-weight: var(--fw-medium);
+    color: var(--c-text-secondary);
+    padding: var(--sp-3) var(--sp-3);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    list-style: none;
+  }
+  .mobile-menu__summary::-webkit-details-marker { display: none; }
+  .mobile-menu__summary:hover { background: var(--c-surface-2); color: var(--c-text); }
+  .mobile-menu__chevron {
+    width: 18px; height: 18px;
+    flex: none;
+    transition: transform var(--dur-fast) var(--ease);
+  }
+  .mobile-menu__group[open] .mobile-menu__chevron { transform: rotate(180deg); }
   .mobile-menu__cta {
     margin-top: var(--sp-2);
     text-align: center;
