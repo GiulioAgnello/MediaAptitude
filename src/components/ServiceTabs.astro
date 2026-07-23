@@ -6,13 +6,10 @@
  */
 import Section from './Section.astro';
 import Icon from './Icon.astro';
-import { serviceGroups, services } from '../data/content';
+import { getServiceGroups } from '../lib/api';
 
-const bySlug = new Map(services.map((s) => [s.slug, s]));
-const groups = serviceGroups.map((g) => ({
-  ...g,
-  items: g.serviceSlugs.map((slug) => bySlug.get(slug)!).filter(Boolean),
-}));
+// Gruppi da WP (o mock in fallback), già con i servizi inclusi risolti.
+const groups = await getServiceGroups();
 ---
 
 <Section
@@ -42,7 +39,7 @@ const groups = serviceGroups.map((g) => ({
             <h3>{g.title}</h3>
             <p>{g.description}</p>
             <ul class="services__chips" role="list">
-              {g.items.map((s) => (
+              {(g.services ?? []).map((s) => (
                 <li class="pill"><Icon name={s.icon} />{s.title}</li>
               ))}
             </ul>

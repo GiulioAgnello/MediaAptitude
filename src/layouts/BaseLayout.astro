@@ -19,7 +19,7 @@ import CookieConsent from '../components/CookieConsent.astro';
 import FloatingContact from '../components/FloatingContact.astro';
 import { site } from '../data/site';
 import { getSeo } from '../lib/api';
-import { parseYoast } from '../lib/seo';
+import { parseYoast, type WpSeo } from '../lib/seo';
 
 interface Props {
   title?: string;
@@ -28,13 +28,22 @@ interface Props {
   noindex?: boolean;
   /** Schemi JSON-LD specifici della pagina (vedi Seo.astro). */
   schema?: Record<string, unknown> | Record<string, unknown>[];
+  /**
+   * SEO nativa per contenuto (es. campi SEO di un case study). Se presente,
+   * i suoi campi valorizzati vincono su Yoast e sui default (stesso canale WpSeo).
+   */
+  seo?: WpSeo | null;
 }
 
-const { title, description, path = '/', noindex, schema } = Astro.props;
+const { title, description, path = '/', noindex, schema, seo } = Astro.props;
 
 // SEO da WordPress (Yoast) per questo path, a build-time.
 // Se WP è offline o non ha dati, parseYoast torna null → restano i default.
-const wpSeo = parseYoast(await getSeo(path));
+// La SEO nativa del contenuto (prop `seo`), se presente, ha la precedenza.
+const yoastSeo = parseYoast(await getSeo(path));
+const wpSeo: WpSeo | null = (seo || yoastSeo)
+  ? { ...(yoastSeo ?? {}), ...(seo ?? {}) }
+  : null;
 ---
 
 <!doctype html>

@@ -11,11 +11,12 @@
  */
 import {
   services as mockServices,
+  serviceGroups as mockServiceGroups,
   caseStudies as mockCaseStudies,
   team as mockTeam,
   stats as mockStats,
 } from '../data/content';
-import type { Service, CaseStudy, TeamMember, MediaImage, Stat, Testimonial } from '../data/content';
+import type { Service, ServiceGroup, CaseStudy, TeamMember, MediaImage, Stat, Testimonial } from '../data/content';
 import { site } from '../data/site';
 
 /** Base URL della REST custom. Override via .env (WP_API_URL). */
@@ -39,19 +40,28 @@ function bustCache(url: string): string {
   return `${url}${url.includes('?') ? '&' : '?'}_cb=${BUILD_ID}`;
 }
 
+/** Tentativi per endpoint prima di arrendersi ai mock (rete/Aruba lenta). */
+const FETCH_ATTEMPTS = 3;
+/** Attesa tra un tentativo e l'altro. */
+const RETRY_DELAY_MS = 500;
+
 /**
- * Esegue la GET su un endpoint e ritorna il JSON tipizzato.
- * Accetta path relativi alla REST custom oppure URL assoluti (REST core).
- * In caso di errore (rete, HTTP non 2xx, timeout, payload vuoto) ritorna
- * il fallback fornito e logga un avviso, senza propagare l'eccezione.
+ * Cache dei risultati RIUSCITI e dedup delle richieste in volo, per build.
+ * Motivo: ogni pagina statica chiama gli stessi endpoint; senza questa cache
+ * si fanno N richieste identiche a WP e basta che UNA vada in timeout perché
+ * quella pagina "cada" sui mock (es. home coi lavori finti mentre /lavori ok).
+ * Cachiamo solo i successi: un fallback non viene memorizzato, così una pagina
+ * successiva può ritentare e, se WP risponde, ottenere comunque il dato reale.
  */
-async function fetchApi<T>(endpoint: string, fallback: T): Promise<T> {
-  const url = /^https?:\/\//.test(endpoint)
-    ? endpoint
-    : `${API_BASE}/${endpoint.replace(/^\//, '')}`;
+const successCache = new Map<string, unknown>();
+const inflight = new Map<string, Promise<unknown>>();
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** Singola GET con timeout; lancia in caso di errore o payload vuoto. */
+async function fetchOnce<T>(url: string, fallback: T): Promise<T> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
-
   try {
     const res = await fetch(bustCache(url), {
       signal: controller.signal,
@@ -66,18 +76,78 @@ async function fetchApi<T>(endpoint: string, fallback: T): Promise<T> {
       throw new Error('payload vuoto o non valido');
     }
     return data;
-  } catch (err) {
-    console.warn(
-      `[api] fallback ai mock per "${endpoint}" (${(err as Error).message})`
-    );
-    return fallback;
   } finally {
     clearTimeout(timer);
   }
 }
 
+/**
+ * Esegue la GET su un endpoint e ritorna il JSON tipizzato.
+ * Accetta path relativi alla REST custom oppure URL assoluti (REST core).
+ * Ritenta fino a FETCH_ATTEMPTS volte; se tutti i tentativi falliscono ritorna
+ * il fallback (mock) senza propagare l'eccezione. Risultati riusciti e
+ * richieste concorrenti sono condivisi via cache/dedup (vedi sopra).
+ */
+async function fetchApi<T>(endpoint: string, fallback: T): Promise<T> {
+  if (successCache.has(endpoint)) {
+    return successCache.get(endpoint) as T;
+  }
+  const pending = inflight.get(endpoint);
+  if (pending) {
+    return pending as Promise<T>;
+  }
+
+  const url = /^https?:\/\//.test(endpoint)
+    ? endpoint
+    : `${API_BASE}/${endpoint.replace(/^\//, '')}`;
+
+  const run = (async (): Promise<T> => {
+    for (let attempt = 1; attempt <= FETCH_ATTEMPTS; attempt++) {
+      try {
+        const data = await fetchOnce<T>(url, fallback);
+        successCache.set(endpoint, data); // solo i successi vengono cachati
+        return data;
+      } catch (err) {
+        const last = attempt === FETCH_ATTEMPTS;
+        console.warn(
+          `[api] "${endpoint}" tentativo ${attempt}/${FETCH_ATTEMPTS} fallito (${(err as Error).message})${last ? ' → mock' : ' → ritento'}`
+        );
+        if (last) return fallback; // non cachato: ritentabile da altre pagine
+        await sleep(RETRY_DELAY_MS);
+      }
+    }
+    return fallback;
+  })().finally(() => inflight.delete(endpoint));
+
+  inflight.set(endpoint, run);
+  return run as Promise<T>;
+}
+
 /** Servizi offerti (sezione "Servizi"). */
 export const getServices = () => fetchApi<Service[]>('services', mockServices);
+
+/**
+ * Gruppi di servizi = pagine /servizi/[slug] + tab in home.
+ * Da WP arrivano già coi servizi inclusi risolti (`services`). Se WP non ha
+ * gruppi (o è offline) si ricade sui mock di content.ts, risolvendo gli
+ * `serviceSlugs` nei rispettivi servizi così la shape resta identica.
+ */
+export async function getServiceGroups(): Promise<ServiceGroup[]> {
+  const groups = await fetchApi<ServiceGroup[] | null>('service-groups', null);
+  if (Array.isArray(groups) && groups.length > 0) {
+    return groups;
+  }
+
+  // Fallback: risolvo gli serviceSlugs dei mock in oggetti `services`.
+  const bySlug = new Map(mockServices.map((s) => [s.slug, s]));
+  return mockServiceGroups.map((g) => ({
+    ...g,
+    services: g.serviceSlugs
+      .map((slug) => bySlug.get(slug))
+      .filter((s): s is Service => Boolean(s))
+      .map((s) => ({ icon: s.icon, title: s.title, summary: s.summary, bullets: s.bullets })),
+  }));
+}
 
 /** Case study / lavori (collage portfolio). */
 export const getCaseStudies = () =>

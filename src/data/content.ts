@@ -20,6 +20,14 @@ export interface Service {
   icon: 'web' | 'app' | 'ecommerce' | 'seo' | 'ads' | 'crm' | 'training' | 'ai';
 }
 
+/** Servizio incluso in un gruppo (card della pagina dedicata + chip in home). */
+export interface ServiceSummary {
+  icon: Service['icon'];
+  title: string;
+  summary: string;
+  bullets: string[];
+}
+
 /** Gruppo di servizi: sezione a tab in home + pagina dedicata /servizi/[slug]. */
 export interface ServiceGroup {
   slug: string;
@@ -28,8 +36,13 @@ export interface ServiceGroup {
   label: string;
   description: string;
   icon: Service['icon'];
-  /** Slug dei servizi inclusi (chips nella card). */
+  /** Slug dei servizi inclusi (solo nei mock; da WP arrivano già in `services`). */
   serviceSlugs: string[];
+  /**
+   * Servizi inclusi già risolti. Popolato da `getServiceGroups()`:
+   * da WP arriva diretto, dai mock viene risolto dagli `serviceSlugs`.
+   */
+  services?: ServiceSummary[];
   /** SEO della pagina dedicata: title tag, meta description, h1 e intro. */
   seo: {
     title: string;
@@ -39,6 +52,10 @@ export interface ServiceGroup {
   };
   /** FAQ specifiche del gruppo (schema FAQPage della pagina dedicata). */
   faqs: Faq[];
+  /** Immagine Open Graph dedicata (URL assoluto). Solo da WP. */
+  seoImage?: string;
+  /** noindex della pagina. Solo da WP. */
+  seoNoindex?: boolean;
 }
 
 /** Settore di mercato servito, per la fascia "Soluzioni per settori specifici". */
@@ -79,6 +96,16 @@ export interface CaseStudy {
   process?: string[];
   /** Risultati dettagliati (metriche, una per riga). */
   results?: string[];
+
+  /* --- SEO per singolo case study (vince sui default nel dettaglio) --- */
+  /** Meta title della pagina dettaglio. Se vuoto usa il titolo del progetto. */
+  seoTitle?: string;
+  /** Meta description. Se vuota usa il sommario. */
+  seoDescription?: string;
+  /** Immagine Open Graph dedicata (URL assoluto). Se vuota usa quella del sito. */
+  seoImage?: string;
+  /** Se true, la pagina dettaglio è noindex. */
+  seoNoindex?: boolean;
 }
 
 export interface TeamMember {

@@ -95,6 +95,41 @@ final class CaseStudy extends PostType
         ];
     }
 
+    /** Campi SEO → box "SEO" dedicato (anteprima snippet + contatori). */
+    public function seoFields(): array
+    {
+        return [
+            'seoTitle' => [
+                'label'      => 'Meta title',
+                'type'       => 'text',
+                'seoCounter' => 'title',
+                'help'       => 'Titolo per Google e social. Se vuoto usa il titolo del progetto.',
+            ],
+            'seoDescription' => [
+                'label'      => 'Meta description',
+                'type'       => 'textarea',
+                'seoCounter' => 'description',
+                'help'       => 'Riassunto mostrato nei risultati Google. Se vuoto usa il sommario.',
+            ],
+            'seoImage' => [
+                'label' => 'Immagine di anteprima (Open Graph)',
+                'type'  => 'image',
+                'help'  => 'Immagine per la condivisione social. Se vuota usa quella di default del sito. 1200×630.',
+            ],
+            'seoNoindex' => [
+                'label'         => 'Visibilità',
+                'type'          => 'checkbox',
+                'checkboxLabel' => 'Escludi questo progetto da Google (noindex)',
+                'help'          => 'Attiva solo se non vuoi che il progetto compaia nei risultati di ricerca.',
+            ],
+        ];
+    }
+
+    public function seoPathPrefix(): string
+    {
+        return 'lavori';
+    }
+
     public function restBase(): ?string
     {
         return 'case-studies';
@@ -123,6 +158,12 @@ final class CaseStudy extends PostType
             'url'          => $url !== '' ? esc_url_raw($url) : null,
             'imageDesktop' => $this->metaImage($post->ID, 'imageDesktop', 'large'),
             'imageMobile'  => $this->metaImage($post->ID, 'imageMobile', 'medium_large'),
+
+            // SEO per singolo case study (vince sui default nella pagina dettaglio).
+            'seoTitle'       => $this->metaString($post->ID, 'seoTitle'),
+            'seoDescription' => $this->metaString($post->ID, 'seoDescription'),
+            'seoImage'       => $this->metaImageUrl($post->ID, 'seoImage', 'full'),
+            'seoNoindex'     => $this->metaBool($post->ID, 'seoNoindex'),
         ];
     }
 }

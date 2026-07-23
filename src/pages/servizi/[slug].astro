@@ -9,20 +9,28 @@ import Section from '../../components/Section.astro';
 import Icon from '../../components/Icon.astro';
 import Button from '../../components/Button.astro';
 import Faq from '../../components/Faq.astro';
-import { serviceGroups, services } from '../../data/content';
+import { getServiceGroups } from '../../lib/api';
 import { breadcrumb, faqPage } from '../../lib/seo';
 import { site, cta } from '../../data/site';
 
-export function getStaticPaths() {
-  return serviceGroups.map((group) => ({ params: { slug: group.slug }, props: { group } }));
+export async function getStaticPaths() {
+  const groups = await getServiceGroups();
+  return groups.map((group) => ({
+    params: { slug: group.slug },
+    props: { group, others: groups.filter((g) => g.slug !== group.slug) },
+  }));
 }
 
-const { group } = Astro.props;
+const { group, others } = Astro.props;
 const path = `/servizi/${group.slug}`;
 
-const bySlug = new Map(services.map((s) => [s.slug, s]));
-const items = group.serviceSlugs.map((slug) => bySlug.get(slug)!).filter(Boolean);
-const others = serviceGroups.filter((g) => g.slug !== group.slug);
+const items = group.services ?? [];
+
+// SEO nativa del gruppo (OG image / noindex) → canale WpSeo di BaseLayout.
+const seo = {
+  ...(group.seoImage ? { ogImage: group.seoImage } : {}),
+  ...(group.seoNoindex ? { noindex: true } : {}),
+};
 
 const schema = [
   breadcrumb(
@@ -43,7 +51,7 @@ const schema = [
 ];
 ---
 
-<BaseLayout title={group.seo.title} description={group.seo.description} path={path} schema={schema}>
+<BaseLayout title={group.seo.title} description={group.seo.description} path={path} schema={schema} seo={seo}>
   <section class="intro">
     <div class="container intro__inner">
       <nav class="intro__crumbs" aria-label="Percorso">

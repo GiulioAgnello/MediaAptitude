@@ -84,9 +84,9 @@ const localBusinessSchema = {
   address: {
     '@type': 'PostalAddress',
     ...(site.streetAddress ? { streetAddress: site.streetAddress } : {}),
-    addressLocality: 'Lecce',
+    addressLocality: site.addressLocality,
     ...(site.postalCode ? { postalCode: site.postalCode } : {}),
-    addressRegion: 'Puglia',
+    addressRegion: site.addressRegion,
     addressCountry: 'IT',
   },
   // geo incluso solo se lat/lng reali sono stati inseriti in data/site.ts

@@ -39,6 +39,14 @@ const schema = [
     ...(item.summary ? { description: item.summary } : {}),
   },
 ];
+
+// SEO nativa del case study: solo i campi valorizzati vincono sui default.
+const seo = {
+  ...(item.seoTitle ? { title: item.seoTitle } : {}),
+  ...(item.seoDescription ? { description: item.seoDescription } : {}),
+  ...(item.seoImage ? { ogImage: item.seoImage } : {}),
+  ...(item.seoNoindex ? { noindex: true } : {}),
+};
 ---
 
 <BaseLayout
@@ -46,6 +54,7 @@ const schema = [
   title={`${item.title} — Case study`}
   description={item.summary || `${item.category} per ${item.client}: ${item.result}.`}
   schema={schema}
+  seo={seo}
 >
   <section class="cs-intro">
     <div class="container cs-intro__inner">

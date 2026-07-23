@@ -42,6 +42,36 @@ abstract class PostType
     /** @return array<string,array<string,mixed>> */
     abstract public function fields(): array;
 
+    /**
+     * Campi SEO del contenuto, mostrati nel box "SEO" (stile Yoast) separato.
+     * Default: nessuno. I CPT che vogliono la SEO per-contenuto lo sovrascrivono.
+     *
+     * @return array<string,array<string,mixed>>
+     */
+    public function seoFields(): array
+    {
+        return [];
+    }
+
+    /**
+     * Prefisso di path della pagina pubblica del contenuto (per l'anteprima
+     * snippet: es. 'lavori' → media-aptitude.it/lavori/slug). '' = radice.
+     */
+    public function seoPathPrefix(): string
+    {
+        return '';
+    }
+
+    /**
+     * Tutti i campi (dettagli + SEO), usati per registrazione meta e salvataggio.
+     *
+     * @return array<string,array<string,mixed>>
+     */
+    public function allFields(): array
+    {
+        return array_merge($this->fields(), $this->seoFields());
+    }
+
     abstract public function restBase(): ?string;
 
     /** @return array<string,mixed> */
@@ -104,30 +134,58 @@ abstract class PostType
      */
     protected function registerMeta(): void
     {
-        foreach ($this->fields() as $name => $config) {
-            $type      = $config['type'] ?? 'text';
-            $isList    = $type === 'list';
-            $isImage   = $type === 'image';
-            $isWysiwyg = $type === 'wysiwyg';
+        foreach ($this->allFields() as $name => $config) {
+            $type        = $config['type'] ?? 'text';
+            $isList      = $type === 'list';
+            $isImage     = $type === 'image';
+            $isWysiwyg   = $type === 'wysiwyg';
+            $isCheckbox  = $type === 'checkbox';
+            $isRepeater  = $type === 'repeater';
 
             // Sanitize per tipo: liste → array pulito, immagini → ID intero,
-            // wysiwyg → HTML sicuro (wp_kses_post), resto → testo semplice.
+            // checkbox → booleano, repeater → struttura ripulita, wysiwyg → HTML
+            // sicuro (wp_kses_post), resto → testo semplice.
             if ($isList) {
                 $sanitize = [self::class, 'sanitizeList'];
             } elseif ($isImage) {
                 $sanitize = 'absint';
+            } elseif ($isCheckbox) {
+                $sanitize = 'rest_sanitize_boolean';
+            } elseif ($isRepeater) {
+                $sanitize = [self::class, 'sanitizeRepeater'];
             } elseif ($isWysiwyg) {
                 $sanitize = 'wp_kses_post';
             } else {
                 $sanitize = 'sanitize_textarea_field';
             }
 
+            // Tipo del meta: array per liste/repeater, integer per immagini,
+            // boolean per i checkbox, altrimenti stringa.
+            if ($isList || $isRepeater) {
+                $metaType = 'array';
+            } elseif ($isImage) {
+                $metaType = 'integer';
+            } elseif ($isCheckbox) {
+                $metaType = 'boolean';
+            } else {
+                $metaType = 'string';
+            }
+
+            // Esposizione in REST core: le liste sì (schema semplice); i repeater
+            // NO (struttura annidata → li serviamo solo dal nostro endpoint custom
+            // via transform, evitando schemi complessi che WP rifiuterebbe).
+            if ($isRepeater) {
+                $showInRest = false;
+            } elseif ($isList) {
+                $showInRest = ['schema' => ['type' => 'array', 'items' => ['type' => 'string']]];
+            } else {
+                $showInRest = true;
+            }
+
             register_post_meta($this->key(), self::META_PREFIX . $name, [
-                'type'              => $isList ? 'array' : ($isImage ? 'integer' : 'string'),
+                'type'              => $metaType,
                 'single'            => true,
-                'show_in_rest'      => $isList
-                    ? ['schema' => ['type' => 'array', 'items' => ['type' => 'string']]]
-                    : true,
+                'show_in_rest'      => $showInRest,
                 'sanitize_callback' => $sanitize,
                 'auth_callback'     => static fn (): bool => current_user_can('edit_posts'),
             ]);
@@ -149,6 +207,41 @@ abstract class PostType
         $clean = array_map(static fn ($item): string => sanitize_text_field((string) $item), $value);
 
         return array_values(array_filter($clean, static fn (string $item): bool => $item !== ''));
+    }
+
+    /**
+     * Sanitizza il valore di un repeater: array di righe (ognuna array di
+     * sottocampi). Ripulisce ricorsivamente stringhe e sotto-liste, senza
+     * conoscere i tipi (la struttura corretta la impone il salvataggio del box).
+     *
+     * @param mixed $value
+     * @return array<int,array<string,mixed>>
+     */
+    public static function sanitizeRepeater($value): array
+    {
+        if (!is_array($value)) {
+            return [];
+        }
+
+        $rows = [];
+        foreach ($value as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $clean = [];
+            foreach ($row as $key => $field) {
+                $key = sanitize_key((string) $key);
+                if (is_array($field)) {
+                    // Sottocampo lista: array di stringhe.
+                    $clean[$key] = self::sanitizeList($field);
+                } else {
+                    $clean[$key] = sanitize_textarea_field((string) $field);
+                }
+            }
+            $rows[] = $clean;
+        }
+
+        return $rows;
     }
 
     /**
@@ -181,6 +274,32 @@ abstract class PostType
         $value = $this->meta($postId, $name);
 
         return is_array($value) ? array_values($value) : [];
+    }
+
+    /** Helper: legge un meta come booleano (checkbox). */
+    protected function metaBool(int $postId, string $name): bool
+    {
+        return (bool) $this->meta($postId, $name);
+    }
+
+    /**
+     * Helper: legge un meta repeater come array di righe (array associativi).
+     *
+     * @return array<int,array<string,mixed>>
+     */
+    protected function metaRepeater(int $postId, string $name): array
+    {
+        $value = $this->meta($postId, $name);
+
+        return is_array($value) ? array_values($value) : [];
+    }
+
+    /** Helper: URL assoluto di un meta immagine, '' se non impostato. */
+    protected function metaImageUrl(int $postId, string $name, string $size = 'large'): string
+    {
+        $image = $this->metaImage($postId, $name, $size);
+
+        return $image['url'] ?? '';
     }
 
     /**
