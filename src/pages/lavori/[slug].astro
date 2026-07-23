@@ -97,6 +97,13 @@ const schema = [
     </div>
   </div>
 
+  {/* Descrizione lunga del progetto (editor WP) */}
+  {item.bodyHtml && (
+    <Section eyebrow="Il progetto" title="Descrizione">
+      <div class="cs-prose" set:html={item.bodyHtml} />
+    </Section>
+  )}
+
   {/* Sfida + Soluzione */}
   {(item.challenge || item.solution) && (
     <Section eyebrow="Il progetto" title="Sfida e soluzione">
@@ -210,6 +217,30 @@ const schema = [
   .cs-ph--phone { background:
     radial-gradient(70% 50% at 50% 0%, rgba(77,141,255,0.3) 0%, transparent 70%),
     radial-gradient(70% 50% at 50% 100%, rgba(255,172,10,0.22) 0%, transparent 70%), var(--c-surface-2); }
+
+  /* blocco descrizione lunga dall'editor WP (HTML) */
+  .cs-prose { max-width: 72ch; color: var(--c-text-secondary); font-size: var(--fs-md); }
+  .cs-prose :global(> * + *) { margin-top: var(--sp-4); }
+  .cs-prose :global(h2) { font-size: var(--fs-xl); color: var(--c-text); margin-top: var(--sp-7); }
+  .cs-prose :global(h3) { font-size: var(--fs-lg); color: var(--c-text); margin-top: var(--sp-6); }
+  .cs-prose :global(h4) { font-size: var(--fs-md); color: var(--c-text); margin-top: var(--sp-5); }
+  .cs-prose :global(p) { line-height: 1.75; }
+  .cs-prose :global(a) { color: var(--c-blue); text-decoration: underline; text-underline-offset: 3px; }
+  .cs-prose :global(strong) { color: var(--c-text); font-weight: var(--fw-medium); }
+  .cs-prose :global(ul),
+  .cs-prose :global(ol) { padding-left: 1.4em; display: grid; gap: var(--sp-2); }
+  .cs-prose :global(li) { line-height: 1.7; }
+  .cs-prose :global(ul) { list-style: disc; }
+  .cs-prose :global(ol) { list-style: decimal; }
+  .cs-prose :global(blockquote) {
+    margin: var(--sp-5) 0;
+    padding-left: var(--sp-4);
+    border-left: 3px solid var(--c-line-strong);
+    color: var(--c-text-muted);
+    font-style: italic;
+  }
+  .cs-prose :global(hr) { border: 0; border-top: 1px solid var(--c-line); margin: var(--sp-6) 0; }
+  .cs-prose :global(img) { max-width: 100%; height: auto; border-radius: var(--radius-md); }
 
   .cs-two { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-5); }
   .cs-block { padding: var(--sp-6); display: grid; gap: var(--sp-3); align-content: start; }

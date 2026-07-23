@@ -21,7 +21,7 @@ if (!defined('ABSPATH')) {
  * Formato di un campo in fields():
  *   'summary' => [
  *       'label'   => 'Riepilogo',
- *       'type'    => 'text' | 'textarea' | 'list' | 'select',
+ *       'type'    => 'text' | 'textarea' | 'wysiwyg' | 'list' | 'select' | 'image',
  *       'options' => ['web', 'ux'],   // solo per type 'select'
  *       'help'    => 'Testo di aiuto', // opzionale
  *   ]
@@ -105,9 +105,22 @@ abstract class PostType
     protected function registerMeta(): void
     {
         foreach ($this->fields() as $name => $config) {
-            $type    = $config['type'] ?? 'text';
-            $isList  = $type === 'list';
-            $isImage = $type === 'image';
+            $type      = $config['type'] ?? 'text';
+            $isList    = $type === 'list';
+            $isImage   = $type === 'image';
+            $isWysiwyg = $type === 'wysiwyg';
+
+            // Sanitize per tipo: liste → array pulito, immagini → ID intero,
+            // wysiwyg → HTML sicuro (wp_kses_post), resto → testo semplice.
+            if ($isList) {
+                $sanitize = [self::class, 'sanitizeList'];
+            } elseif ($isImage) {
+                $sanitize = 'absint';
+            } elseif ($isWysiwyg) {
+                $sanitize = 'wp_kses_post';
+            } else {
+                $sanitize = 'sanitize_textarea_field';
+            }
 
             register_post_meta($this->key(), self::META_PREFIX . $name, [
                 'type'              => $isList ? 'array' : ($isImage ? 'integer' : 'string'),
@@ -115,9 +128,7 @@ abstract class PostType
                 'show_in_rest'      => $isList
                     ? ['schema' => ['type' => 'array', 'items' => ['type' => 'string']]]
                     : true,
-                'sanitize_callback' => $isList
-                    ? [self::class, 'sanitizeList']
-                    : ($isImage ? 'absint' : 'sanitize_textarea_field'),
+                'sanitize_callback' => $sanitize,
                 'auth_callback'     => static fn (): bool => current_user_can('edit_posts'),
             ]);
         }

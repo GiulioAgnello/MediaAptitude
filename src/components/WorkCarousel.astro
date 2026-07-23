@@ -236,7 +236,17 @@ const { items, moreHref } = Astro.props;
   .wc__body { display: grid; gap: var(--sp-2); align-content: center; }
   .wc__body h3 { font-size: var(--fs-lg); }
   .wc__meta { font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: 0.1em; color: var(--c-text-muted); }
-  .wc__result { font-size: var(--fs-sm); color: var(--c-text-secondary); }
+  .wc__result {
+    font-size: var(--fs-sm);
+    color: var(--c-text-secondary);
+    /* sicurezza: in home la card è una preview → il risultato resta breve,
+       anche se in WP qualcuno inserisse un testo lungo per errore */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    overflow: hidden;
+  }
   .wc__links { display: flex; flex-wrap: wrap; gap: var(--sp-4); align-items: center; margin-top: var(--sp-1); }
   .wc__detail {
     font-size: var(--fs-sm);

@@ -123,10 +123,33 @@ JS;
             $inputId  = 'ma_' . $name;
             $current  = get_post_meta($post->ID, $postType->metaKey($name), true);
 
-            echo '<p class="ma-field">';
+            // Il wysiwyg usa un wrapper <div> (wp_editor genera blocchi propri,
+            // non può stare dentro un <p>).
+            $wrapTag = $type === 'wysiwyg' ? 'div' : 'p';
+            printf('<%s class="ma-field ma-field--%s">', $wrapTag, esc_attr($type));
             printf('<label for="%s"><strong>%s</strong></label>', esc_attr($inputId), esc_html($label));
 
             switch ($type) {
+                case 'wysiwyg':
+                    // Editor visuale nativo con toolbar completa (kitchen sink):
+                    // titoli, grassetto/corsivo, elenchi, rientri, allineamento,
+                    // link, citazioni. Massima personalizzazione del testo.
+                    wp_editor(
+                        is_string($current) ? $current : '',
+                        $inputId,
+                        [
+                            'textarea_name' => $inputId,
+                            'textarea_rows' => 12,
+                            'media_buttons' => true,
+                            'tinymce'       => [
+                                'toolbar1' => 'formatselect,bold,italic,underline,bullist,numlist,blockquote,alignleft,aligncenter,alignright,link,unlink,outdent,indent,undo,redo,wp_adv',
+                                'toolbar2' => 'strikethrough,hr,forecolor,pastetext,removeformat,charmap,wp_more,fullscreen',
+                            ],
+                            'quicktags'     => ['buttons' => 'strong,em,ul,ol,li,link,block,h2,h3'],
+                        ]
+                    );
+                    break;
+
                 case 'textarea':
                     printf(
                         '<textarea id="%s" name="%s" rows="3" class="widefat">%s</textarea>',
@@ -199,7 +222,7 @@ JS;
                 printf('<span class="ma-help">%s</span>', esc_html($help));
             }
 
-            echo '</p>';
+            printf('</%s>', $wrapTag);
         }
 
         echo '</div>';
@@ -254,6 +277,13 @@ JS;
                 } else {
                     delete_post_meta($postId, $metaKey);
                 }
+                continue;
+            }
+
+            if ($fieldType === 'wysiwyg') {
+                // Mantiene l'HTML della formattazione, ripulito da tag/attributi
+                // non ammessi (stesso set consentito nei contenuti dei post).
+                update_post_meta($postId, $metaKey, wp_kses_post((string) $raw));
                 continue;
             }
 

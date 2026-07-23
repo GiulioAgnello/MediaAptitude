@@ -69,6 +69,8 @@ export interface CaseStudy {
   /* --- Campi per la pagina dettaglio /lavori/[slug] (opzionali) --- */
   /** Paragrafo introduttivo del progetto. */
   summary?: string;
+  /** Descrizione lunga del progetto in HTML (editor WP). Solo pagina dettaglio. */
+  bodyHtml?: string;
   /** La sfida / il problema di partenza. */
   challenge?: string;
   /** La soluzione adottata. */

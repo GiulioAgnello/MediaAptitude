@@ -10,7 +10,7 @@ if (!defined('ABSPATH')) {
 
 /**
  * CPT Case study / Lavoro. Shape JSON (uguale a content.ts → CaseStudy):
- *   { slug, client, title, category, result, tech[], url?,
+ *   { slug, client, title, category, result, summary?, bodyHtml?, tech[], url?,
  *     imageDesktop?: {url,width,height,alt}, imageMobile?: {...} }
  */
 final class CaseStudy extends PostType
@@ -51,6 +51,11 @@ final class CaseStudy extends PostType
                 'label' => 'Sommario (intro pagina dettaglio)',
                 'type'  => 'textarea',
                 'help'  => 'Uno/due frasi che introducono il progetto.',
+            ],
+            'body' => [
+                'label' => 'Descrizione progetto',
+                'type'  => 'wysiwyg',
+                'help'  => 'Testo lungo del progetto, con formattazione (titoli, grassetto, elenchi, rientri). Compare solo nella pagina dettaglio, non in home.',
             ],
             'challenge' => [
                 'label' => 'La sfida',
@@ -97,7 +102,8 @@ final class CaseStudy extends PostType
 
     public function transform(\WP_Post $post): array
     {
-        $url = $this->metaString($post->ID, 'url');
+        $url  = $this->metaString($post->ID, 'url');
+        $body = $this->metaString($post->ID, 'body');
 
         return [
             'slug'         => $post->post_name,
@@ -106,6 +112,9 @@ final class CaseStudy extends PostType
             'category'     => $this->metaString($post->ID, 'category'),
             'result'       => $this->metaString($post->ID, 'result'),
             'summary'      => $this->metaString($post->ID, 'summary'),
+            // HTML pronto per il render: wpautop trasforma i capoversi in <p>
+            // anche quando il testo è stato inserito senza tag di blocco.
+            'bodyHtml'     => $body !== '' ? wpautop($body) : '',
             'challenge'    => $this->metaString($post->ID, 'challenge'),
             'solution'     => $this->metaString($post->ID, 'solution'),
             'process'      => $this->metaList($post->ID, 'process'),
