@@ -7,17 +7,7 @@ const { variant = 'dark' } = Astro.props;
 
 <a href="/" class:list={['logo', `logo--${variant}`]} aria-label={`${site.name} — home`}>
   <span class="logo__mark" aria-hidden="true">
-    <svg viewBox="0 0 32 32" width="28" height="28" fill="none">
-      <defs>
-        <linearGradient id="logo-grad" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-          <stop stop-color="var(--c-amber)" />
-          <stop offset="1" stop-color="var(--c-blue)" />
-        </linearGradient>
-      </defs>
-      <rect x="2" y="2" width="28" height="28" rx="9" fill="url(#logo-grad)" />
-      <path d="M9 22V11l7 6 7-6v11" stroke="#000" stroke-width="2.4"
-        stroke-linecap="round" stroke-linejoin="round" />
-    </svg>
+    <img src="/logo-mark-white.png" alt="" width="34" height="32" loading="eager" />
   </span>
   <span class="logo__text">Media Aptitude</span>
 </a>
@@ -25,6 +15,7 @@ const { variant = 'dark' } = Astro.props;
 <style>
   .logo { display: inline-flex; align-items: center; gap: var(--sp-2); }
   .logo__mark { display: inline-flex; }
+  .logo__mark img { height: 32px; width: auto; display: block; }
   .logo__text {
     font-family: var(--font-heading);
     font-weight: var(--fw-semibold);
