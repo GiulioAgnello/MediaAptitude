@@ -10,7 +10,6 @@ use MediaAptitude\Core\Deploy\DeployHook;
 use MediaAptitude\Core\PostTypes\CaseStudy;
 use MediaAptitude\Core\PostTypes\Lead;
 use MediaAptitude\Core\PostTypes\PostType;
-use MediaAptitude\Core\PostTypes\Service;
 use MediaAptitude\Core\PostTypes\ServiceGroup;
 use MediaAptitude\Core\PostTypes\Stat;
 use MediaAptitude\Core\PostTypes\TeamMember;
@@ -45,7 +44,6 @@ final class Plugin
     {
         // Ordine = ordine di apparizione nel menu admin.
         $this->postTypes = [
-            new Service(),
             new ServiceGroup(),
             new CaseStudy(),
             new TeamMember(),
