@@ -116,7 +116,17 @@ async function requestSettings(): Promise<SiteOverrides> {
  */
 export async function getHero(): Promise<HeroContent> {
   const { hero } = await fetchSettings();
-  if (!hero || typeof hero !== 'object') return {};
+
+  // Diagnostica nel log di build: dice a colpo d'occhio cosa ha risposto WP.
+  if (!hero || typeof hero !== 'object') {
+    console.info('[hero] WP non ha restituito la sezione hero → default statici');
+    return {};
+  }
+  console.info(
+    `[hero] campi da WP: ${Object.keys(hero).join(', ') || 'nessuno'} | immagine: ${
+      hero.image?.url ?? 'assente'
+    }`
+  );
 
   if (hero.image?.url && !(await isReachable(hero.image.url))) {
     console.warn('[hero] immagine WP non raggiungibile, uso il fallback locale');

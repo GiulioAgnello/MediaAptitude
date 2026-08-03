@@ -17,6 +17,10 @@ export default defineConfig({
     remotePatterns: [
       { protocol: 'https', hostname: 'media-aptitude.it' },
       { protocol: 'https', hostname: 'www.media-aptitude.it' },
+      // Sottodominio da cui è raggiunto WordPress in produzione: a seconda di
+      // come sono impostate le option siteurl/home, gli URL degli allegati
+      // possono arrivare da qui. Se l'host non è autorizzato la build FALLISCE.
+      { protocol: 'https', hostname: 'cms.media-aptitude.it' },
       // Ambiente di sviluppo locale (LocalWP).
       { protocol: 'http', hostname: 'mediaaptitude.local' },
     ],
