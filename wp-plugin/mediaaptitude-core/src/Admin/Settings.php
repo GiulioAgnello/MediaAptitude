@@ -54,6 +54,17 @@ final class Settings
                 'description' => ['label' => 'Meta description di default', 'type' => 'textarea', 'help' => 'Usata quando una pagina non ne fornisce una propria. 150-160 caratteri consigliati.'],
                 'ogImage'     => ['label' => 'Immagine Open Graph di default', 'type' => 'image', 'help' => 'Anteprima social (consigliato 1200×630).'],
             ],
+            'Hero home (prima schermata del sito)' => [
+                'heroBadge'     => ['label' => 'Etichetta sopra il titolo', 'type' => 'text', 'help' => 'La pillola piccola in cima. Vuoto = testo di default del sito.'],
+                'heroTitle'     => ['label' => 'Titolo (H1)', 'type' => 'textarea', 'help' => 'È l\'H1 della home: il testo più importante per la SEO. Tienilo sotto i 70 caratteri e includi il servizio + la zona (es. "…per le imprese del Salento").'],
+                'heroLead'      => ['label' => 'Testo introduttivo', 'type' => 'textarea', 'help' => '1-2 frasi sotto al titolo. 150-250 caratteri.'],
+                'heroCtaLabel'  => ['label' => 'Pulsante principale — testo', 'type' => 'text'],
+                'heroCtaHref'   => ['label' => 'Pulsante principale — link', 'type' => 'text', 'help' => 'Es. /contatti'],
+                'heroCta2Label' => ['label' => 'Pulsante secondario — testo', 'type' => 'text'],
+                'heroCta2Href'  => ['label' => 'Pulsante secondario — link', 'type' => 'text', 'help' => 'Es. /#servizi'],
+                'heroImage'     => ['label' => 'Immagine', 'type' => 'image', 'help' => 'Orizzontale, almeno 1600px di larghezza. Viene ottimizzata in automatico alla pubblicazione (AVIF/WebP responsive).'],
+                'heroImageAlt'  => ['label' => 'Testo alternativo immagine', 'type' => 'text', 'help' => 'Descrive la foto a Google e a chi usa screen reader. Es. "Il team di Media Aptitude nello studio di Lecce".'],
+            ],
             'Contatti' => [
                 'email'           => ['label' => 'Email', 'type' => 'text'],
                 'phone'           => ['label' => 'Telefono', 'type' => 'text', 'help' => 'Formato internazionale, es. +39 392 670 2839.'],
@@ -369,7 +380,71 @@ JS;
             $out['google'] = ['placeId' => $placeId];
         }
 
+        $hero = $this->heroPayload($o);
+        if ($hero !== []) {
+            $out['hero'] = $hero;
+        }
+
         return new \WP_REST_Response($out, 200);
+    }
+
+    /**
+     * Nodo `hero` della REST: solo i campi valorizzati, così il frontend può
+     * fondere con i propri default senza rischiare di svuotarli.
+     *
+     * @param array<string,mixed> $o
+     * @return array<string,mixed>
+     */
+    private function heroPayload(array $o): array
+    {
+        $hero = [];
+
+        $map = [
+            'heroBadge'     => 'badge',
+            'heroTitle'     => 'title',
+            'heroLead'      => 'lead',
+            'heroCtaLabel'  => 'ctaLabel',
+            'heroCta2Label' => 'cta2Label',
+            'heroImageAlt'  => 'imageAlt',
+        ];
+        foreach ($map as $key => $out) {
+            $val = isset($o[$key]) && is_string($o[$key]) ? trim($o[$key]) : '';
+            if ($val !== '') {
+                $hero[$out] = $val;
+            }
+        }
+
+        // Link: passati da esc_url_raw (accetta anche i path relativi tipo /contatti).
+        foreach (['heroCtaHref' => 'ctaHref', 'heroCta2Href' => 'cta2Href'] as $key => $out) {
+            $val = isset($o[$key]) && is_string($o[$key]) ? trim($o[$key]) : '';
+            if ($val !== '') {
+                $hero[$out] = esc_url_raw($val);
+            }
+        }
+
+        // Immagine: URL assoluto + dimensioni reali (servono al frontend per
+        // riservare lo spazio ed evitare il layout shift sull'elemento LCP).
+        $attId = isset($o['heroImage']) ? (int) $o['heroImage'] : 0;
+        if ($attId > 0) {
+            $src = wp_get_attachment_image_src($attId, 'full');
+            if (is_array($src) && !empty($src[0])) {
+                $hero['image'] = [
+                    'url'    => $src[0],
+                    'width'  => (int) ($src[1] ?? 0),
+                    'height' => (int) ($src[2] ?? 0),
+                ];
+                // Se non è stato compilato il campo alt qui, uso quello della
+                // libreria media dell'allegato.
+                if (!isset($hero['imageAlt'])) {
+                    $alt = get_post_meta($attId, '_wp_attachment_image_alt', true);
+                    if (is_string($alt) && trim($alt) !== '') {
+                        $hero['imageAlt'] = trim($alt);
+                    }
+                }
+            }
+        }
+
+        return $hero;
     }
 
     /** Stile della pagina impostazioni. Palette neutra blue/grey. */

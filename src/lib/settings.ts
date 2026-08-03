@@ -19,6 +19,27 @@ const RETRY_DELAY_MS = 500;
 /** Cache-buster per bypassare l'eventuale cache server-side di Aruba. */
 const BUILD_ID = Date.now();
 
+/** Immagine hero risolta da WP: URL assoluto + dimensioni reali (anti-CLS). */
+export interface HeroImage {
+  url: string;
+  width: number;
+  height: number;
+}
+
+/** Contenuti della hero home editabili da WP. Tutti opzionali: i campi non
+ *  compilati non vengono nemmeno inviati e restano ai default di Hero.astro. */
+export interface HeroContent {
+  badge?: string;
+  title?: string;
+  lead?: string;
+  ctaLabel?: string;
+  ctaHref?: string;
+  cta2Label?: string;
+  cta2Href?: string;
+  image?: HeroImage;
+  imageAlt?: string;
+}
+
 /** Override provenienti da WP: sottoinsieme dei campi di `site`. */
 export interface SiteOverrides {
   name?: string;
@@ -40,12 +61,24 @@ export interface SiteOverrides {
   ogImage?: string;
   analytics?: { ga4: string };
   google?: { placeId: string };
+  hero?: HeroContent;
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+/**
+ * Memoize della richiesta: l'endpoint viene interrogato UNA volta per build
+ * anche se più moduli lo usano (site.ts a top-level, Hero.astro via getHero).
+ */
+let settingsPromise: Promise<SiteOverrides> | null = null;
+
 /** Legge le impostazioni globali; in caso di errore ritorna {} (usa i default). */
-export async function fetchSettings(): Promise<SiteOverrides> {
+export function fetchSettings(): Promise<SiteOverrides> {
+  settingsPromise ??= requestSettings();
+  return settingsPromise;
+}
+
+async function requestSettings(): Promise<SiteOverrides> {
   const url = `${API_BASE}/settings?_cb=${BUILD_ID}`;
 
   for (let attempt = 1; attempt <= ATTEMPTS; attempt++) {
@@ -71,4 +104,43 @@ export async function fetchSettings(): Promise<SiteOverrides> {
   }
 
   return {};
+}
+
+/**
+ * Contenuti della hero home. Ritorna {} se WP non è raggiungibile o la sezione
+ * non è compilata: Hero.astro usa i propri default.
+ *
+ * L'immagine viene tenuta SOLO se effettivamente scaricabile: `astro:assets`
+ * ottimizza le immagini remote a build-time e, se l'URL non risponde, farebbe
+ * fallire l'intera build. Meglio ricadere sull'asset locale.
+ */
+export async function getHero(): Promise<HeroContent> {
+  const { hero } = await fetchSettings();
+  if (!hero || typeof hero !== 'object') return {};
+
+  if (hero.image?.url && !(await isReachable(hero.image.url))) {
+    console.warn('[hero] immagine WP non raggiungibile, uso il fallback locale');
+    const { image, ...rest } = hero;
+    return rest;
+  }
+
+  return hero;
+}
+
+/** HEAD (con fallback GET) per verificare che l'immagine remota esista. */
+async function isReachable(url: string): Promise<boolean> {
+  for (const method of ['HEAD', 'GET'] as const) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+    try {
+      const res = await fetch(url, { method, signal: controller.signal });
+      if (res.ok) return true;
+    } catch {
+      /* provo il metodo successivo */
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  return false;
 }

@@ -2,44 +2,83 @@
 /**
  * Hero home: badge, h1 con entrata blur-in, lead, CTA e foto grande
  * incorniciata con glow gradiente (stile riferimento).
- * La foto è un placeholder: sostituire src/assets/home-team.jpg con lo scatto reale.
+ *
+ * CONTENUTI EDITABILI DA WORDPRESS: Impostazioni → Media Aptitude → "Hero home".
+ * Ogni campo lasciato vuoto in WP ricade sui default qui sotto, così il sito
+ * resta coerente anche se il CMS è offline o la sezione non è compilata.
+ * Nota: essendo un sito statico, le modifiche vanno online alla ripubblicazione.
  */
 import { Picture } from 'astro:assets';
 import Button from './Button.astro';
 import { cta } from '../data/site';
+import { getHero } from '../lib/settings';
 import heroImg from '../assets/home-team.jpg';
+
+const hero = await getHero();
+
+/** Default statici: fonte di verità quando WP non fornisce il valore. */
+const badge = hero.badge ?? 'Agenzia digitale a Lecce e nel Salento';
+const title = hero.title ?? 'Il digitale che porta clienti alle imprese del Salento';
+const lead =
+  hero.lead ??
+  'Siti web, e-commerce, SEO e software su misura per aziende e professionisti di Lecce e provincia. Progetti veloci, curati e costruiti per farti trovare.';
+const ctaLabel = hero.ctaLabel ?? cta.label;
+const ctaHref = hero.ctaHref ?? cta.href;
+const cta2Label = hero.cta2Label ?? 'Scopri i servizi';
+const cta2Href = hero.cta2Href ?? '/#servizi';
+const imageAlt = hero.imageAlt ?? 'Il team di Media Aptitude al lavoro nello studio di Lecce';
+
+// Foto: quella caricata in WP se presente, altrimenti l'asset locale.
+// In entrambi i casi passa da astro:assets → AVIF/WebP responsive a build-time.
+const remoteImage = hero.image;
+// Non chiedo varianti più larghe dell'originale: sarebbe upscaling inutile.
+const sourceWidth = remoteImage?.width ?? heroImg.width;
+const candidates = [640, 960, 1280, 1600].filter((w) => w <= sourceWidth);
+const widths = candidates.length > 0 ? candidates : [sourceWidth];
+const sizes = '(max-width: 1140px) 100vw, 1080px';
 ---
 
 <section class="hero">
   <div class="container hero__inner">
-    <p class="hero__badge" data-enter>Agenzia digitale a Lecce e nel Salento</p>
+    <p class="hero__badge" data-enter>{badge}</p>
 
-    <h1 data-enter="2">
-      Il digitale che porta clienti alle imprese del Salento
-    </h1>
+    <h1 data-enter="2">{title}</h1>
 
-    <p class="hero__lead" data-enter="3">
-      Siti web, e-commerce, SEO e software su misura per aziende e professionisti
-      di Lecce e provincia. Progetti veloci, curati e costruiti per farti trovare.
-    </p>
+    <p class="hero__lead" data-enter="3">{lead}</p>
 
     <div class="hero__actions" data-enter="4">
-      <Button href={cta.href} variant="primary">{cta.label}</Button>
-      <Button href="/#servizi" variant="secondary">Scopri i servizi</Button>
+      <Button href={ctaHref} variant="primary">{ctaLabel}</Button>
+      {cta2Label && <Button href={cta2Href} variant="secondary">{cta2Label}</Button>}
     </div>
 
     <figure class="hero__media" data-enter="4">
       {/* astro:assets: genera AVIF/WebP responsive + width/height (no CLS).
           È l'immagine LCP → eager + fetchpriority alta. */}
-      <Picture
-        src={heroImg}
-        formats={['avif', 'webp']}
-        widths={[640, 960, 1280, 1600]}
-        sizes="(max-width: 1140px) 100vw, 1080px"
-        alt="Il team di Media Aptitude al lavoro nello studio di Lecce"
-        loading="eager"
-        fetchpriority="high"
-      />
+      {
+        remoteImage ? (
+          <Picture
+            src={remoteImage.url}
+            width={remoteImage.width}
+            height={remoteImage.height}
+            formats={['avif', 'webp']}
+            widths={widths}
+            sizes={sizes}
+            alt={imageAlt}
+            loading="eager"
+            fetchpriority="high"
+          />
+        ) : (
+          <Picture
+            src={heroImg}
+            formats={['avif', 'webp']}
+            widths={widths}
+            sizes={sizes}
+            alt={imageAlt}
+            loading="eager"
+            fetchpriority="high"
+          />
+        )
+      }
     </figure>
   </div>
 </section>

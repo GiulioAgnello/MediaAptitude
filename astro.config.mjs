@@ -9,6 +9,18 @@ export default defineConfig({
   site: 'https://www.media-aptitude.it',
   // Genera /sitemap-index.xml a build-time leggendo tutte le route statiche.
   integrations: [sitemap()],
+  image: {
+    // Domini da cui è lecito ottimizzare immagini remote: le foto caricate in
+    // WordPress (es. la hero della home) vengono scaricate e riconvertite in
+    // AVIF/WebP responsive a BUILD-TIME, come fossero asset locali.
+    // Nessuna richiesta a WordPress dal browser dell'utente.
+    remotePatterns: [
+      { protocol: 'https', hostname: 'media-aptitude.it' },
+      { protocol: 'https', hostname: 'www.media-aptitude.it' },
+      // Ambiente di sviluppo locale (LocalWP).
+      { protocol: 'http', hostname: 'mediaaptitude.local' },
+    ],
+  },
   build: {
     // HTML statico per la massima SEO (SSG).
     format: 'directory',
