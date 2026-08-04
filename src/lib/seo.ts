@@ -23,7 +23,9 @@ export function breadcrumb(crumbs: Crumb[], baseUrl: string) {
       '@type': 'ListItem',
       position: i + 1,
       name: c.name,
-      item: new URL(c.path, baseUrl).href,
+      // Slash finale come nel canonical: gli URL degli item devono coincidere
+      // con quelli realmente serviti, altrimenti Google li vede come redirect.
+      item: new URL(c.path.endsWith('/') ? c.path : `${c.path}/`, baseUrl).href,
     })),
   };
 }

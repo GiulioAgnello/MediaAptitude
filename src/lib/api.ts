@@ -25,7 +25,54 @@ const API_BASE = (
 ).replace(/\/$/, '');
 
 /** Timeout per evitare build appese se WP è irraggiungibile. */
-const TIMEOUT_MS = 8000;
+const TIMEOUT_MS = 20_000;
+
+/**
+ * MODALITÀ STRICT: attiva quando la build punta a un CMS REMOTO (produzione).
+ *
+ * Perché esiste: i mock sono una rete di sicurezza per lo sviluppo, ma in
+ * produzione un fallback silenzioso è PEGGIO di un errore. È già successo:
+ * `getStaticPaths` di /lavori/[slug] ha ricevuto i mock (una fetch andata in
+ * timeout) mentre le pagine renderizzate dopo hanno ricevuto i dati veri →
+ * sono state generate le pagine dei case study FINTI, e i link ai lavori reali
+ * puntavano a URL inesistenti (404), con la sitemap piena di slug sbagliati.
+ *
+ * Con STRICT attivo, un endpoint CRITICO che non risponde fa fallire la build:
+ * Cloudflare non pubblica nulla e resta online l'ultimo deploy buono.
+ *
+ * Disattivabile con `ALLOW_MOCK_FALLBACK=1` (build di emergenza col CMS giù).
+ */
+const IS_LOCAL_CMS = /\/\/[^/]*(localhost|\.local|127\.0\.0\.1)/i.test(API_BASE);
+const STRICT =
+  import.meta.env.PROD && // solo in build: `npm run dev` non deve mai crashare
+  !IS_LOCAL_CMS &&
+  import.meta.env.ALLOW_MOCK_FALLBACK !== '1';
+
+/**
+ * Massimo di richieste in volo verso WP.
+ * Astro valuta TUTTI i `getStaticPaths` in parallelo all'inizio della build:
+ * senza freno partono N richieste insieme e l'hosting condiviso (Aruba, con il
+ * cache-buster che bypassa AHSC) va in timeout proprio nella fase in cui si
+ * decidono le route. Le richieste vengono quindi messe in coda.
+ */
+const MAX_CONCURRENCY = 2;
+
+let active = 0;
+const queue: (() => void)[] = [];
+
+/** Semaforo: esegue `task` quando c'è uno slot libero. */
+async function withSlot<T>(task: () => Promise<T>): Promise<T> {
+  if (active >= MAX_CONCURRENCY) {
+    await new Promise<void>((resolve) => queue.push(resolve));
+  }
+  active++;
+  try {
+    return await task();
+  } finally {
+    active--;
+    queue.shift()?.();
+  }
+}
 
 /**
  * ID univoco per ogni build (valutato una volta al caricamento del modulo).
@@ -40,10 +87,10 @@ function bustCache(url: string): string {
   return `${url}${url.includes('?') ? '&' : '?'}_cb=${BUILD_ID}`;
 }
 
-/** Tentativi per endpoint prima di arrendersi ai mock (rete/Aruba lenta). */
-const FETCH_ATTEMPTS = 3;
-/** Attesa tra un tentativo e l'altro. */
-const RETRY_DELAY_MS = 500;
+/** Tentativi per endpoint prima di arrendersi (rete/Aruba lenta). */
+const FETCH_ATTEMPTS = 4;
+/** Attesa prima del tentativo successivo: cresce (500ms, 1s, 2s). */
+const retryDelay = (attempt: number) => 500 * 2 ** (attempt - 1);
 
 /**
  * Cache dei risultati RIUSCITI e dedup delle richieste in volo, per build.
@@ -57,6 +104,13 @@ const successCache = new Map<string, unknown>();
 const inflight = new Map<string, Promise<unknown>>();
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * WP ha risposto correttamente ma la lista è vuota (es. nessuna statistica
+ * inserita nel CMS). NON è un guasto: niente retry e niente build fallita,
+ * si usano semplicemente i mock/placeholder.
+ */
+class EmptyPayloadError extends Error {}
 
 /** Singola GET con timeout; lancia in caso di errore o payload vuoto. */
 async function fetchOnce<T>(url: string, fallback: T): Promise<T> {
@@ -73,7 +127,7 @@ async function fetchOnce<T>(url: string, fallback: T): Promise<T> {
 
     // Liste vuote o malformate: meglio il fallback dei mock.
     if (Array.isArray(fallback) && (!Array.isArray(data) || data.length === 0)) {
-      throw new Error('payload vuoto o non valido');
+      throw new EmptyPayloadError('payload vuoto o non valido');
     }
     return data;
   } finally {
@@ -81,14 +135,38 @@ async function fetchOnce<T>(url: string, fallback: T): Promise<T> {
   }
 }
 
+/** Opzioni per endpoint. */
+interface FetchOptions {
+  /**
+   * Endpoint da cui dipende la STRUTTURA del sito (route generate, link,
+   * sitemap). Se non risponde, in produzione la build deve fallire: pubblicare
+   * una versione parziale genererebbe 404 e slug sbagliati in sitemap.
+   */
+  critical?: boolean;
+  /**
+   * Una lista vuota è un ERRORE, non un caso legittimo. Vale per i contenuti
+   * che in produzione ci sono per forza (i case study): se WP li restituisce
+   * vuoti, pubblicheremmo i lavori FINTI di `content.ts` spacciandoli per veri.
+   * Per il blog, invece, "nessun articolo" è uno stato normale.
+   */
+  emptyIsError?: boolean;
+}
+
 /**
  * Esegue la GET su un endpoint e ritorna il JSON tipizzato.
  * Accetta path relativi alla REST custom oppure URL assoluti (REST core).
- * Ritenta fino a FETCH_ATTEMPTS volte; se tutti i tentativi falliscono ritorna
- * il fallback (mock) senza propagare l'eccezione. Risultati riusciti e
- * richieste concorrenti sono condivisi via cache/dedup (vedi sopra).
+ *
+ * Ritenta fino a FETCH_ATTEMPTS volte con attesa crescente. Poi:
+ * - endpoint CRITICO + build di produzione → lancia (build fallita, vedi STRICT);
+ * - altrimenti → ritorna il fallback (mock) con un warning.
+ *
+ * Risultati riusciti e richieste concorrenti sono condivisi via cache/dedup.
  */
-async function fetchApi<T>(endpoint: string, fallback: T): Promise<T> {
+async function fetchApi<T>(
+  endpoint: string,
+  fallback: T,
+  { critical = false, emptyIsError = false }: FetchOptions = {}
+): Promise<T> {
   if (successCache.has(endpoint)) {
     return successCache.get(endpoint) as T;
   }
@@ -104,16 +182,46 @@ async function fetchApi<T>(endpoint: string, fallback: T): Promise<T> {
   const run = (async (): Promise<T> => {
     for (let attempt = 1; attempt <= FETCH_ATTEMPTS; attempt++) {
       try {
-        const data = await fetchOnce<T>(url, fallback);
+        const data = await withSlot(() => fetchOnce<T>(url, fallback));
         successCache.set(endpoint, data); // solo i successi vengono cachati
         return data;
       } catch (err) {
+        const message = (err as Error).message;
+
+        // Risposta valida ma vuota: non è un guasto, inutile insistere.
+        if (err instanceof EmptyPayloadError) {
+          if (emptyIsError && STRICT) {
+            throw new Error(
+              `[api] "${endpoint}" ha risposto ma non contiene nulla.\n` +
+                `      Build interrotta: pubblicheremmo i contenuti di esempio al posto di quelli reali.\n` +
+                `      Controlla che i contenuti siano pubblicati in WordPress, poi rilancia il deploy.`
+            );
+          }
+          console.info(`[api] "${endpoint}" non ha contenuti in WP → uso i dati statici`);
+          return fallback;
+        }
+
         const last = attempt === FETCH_ATTEMPTS;
-        console.warn(
-          `[api] "${endpoint}" tentativo ${attempt}/${FETCH_ATTEMPTS} fallito (${(err as Error).message})${last ? ' → mock' : ' → ritento'}`
-        );
-        if (last) return fallback; // non cachato: ritentabile da altre pagine
-        await sleep(RETRY_DELAY_MS);
+        if (!last) {
+          console.warn(
+            `[api] "${endpoint}" tentativo ${attempt}/${FETCH_ATTEMPTS} fallito (${message}) → ritento`
+          );
+          await sleep(retryDelay(attempt));
+          continue;
+        }
+
+        if (critical && STRICT) {
+          // Fallire qui è VOLUTO: meglio nessun deploy che un deploy incoerente.
+          throw new Error(
+            `[api] endpoint critico "${endpoint}" irraggiungibile dopo ${FETCH_ATTEMPTS} tentativi (${message}).\n` +
+              `      Build interrotta per non pubblicare un sito con contenuti finti e link rotti.\n` +
+              `      Verifica che ${API_BASE} risponda, poi rilancia il deploy.\n` +
+              `      (Solo per emergenze: ALLOW_MOCK_FALLBACK=1 forza la build coi dati statici.)`
+          );
+        }
+
+        console.warn(`[api] "${endpoint}" non disponibile (${message}) → uso i dati statici`);
+        return fallback; // non cachato: ritentabile da altre pagine
       }
     }
     return fallback;
@@ -133,7 +241,10 @@ export const getServices = () => fetchApi<Service[]>('services', mockServices);
  * `serviceSlugs` nei rispettivi servizi così la shape resta identica.
  */
 export async function getServiceGroups(): Promise<ServiceGroup[]> {
-  const groups = await fetchApi<ServiceGroup[] | null>('service-groups', null);
+  // Critico: da qui nascono le route /servizi/[slug] e le voci del menu.
+  const groups = await fetchApi<ServiceGroup[] | null>('service-groups', null, {
+    critical: true,
+  });
   if (Array.isArray(groups) && groups.length > 0) {
     return groups;
   }
@@ -149,9 +260,16 @@ export async function getServiceGroups(): Promise<ServiceGroup[]> {
   }));
 }
 
-/** Case study / lavori (collage portfolio). */
+/**
+ * Case study / lavori. CRITICO: genera le route /lavori/[slug], i link delle
+ * card e le voci di sitemap. Un fallback qui, con le altre pagine sui dati
+ * veri, produce link a pagine mai generate (404) — è il bug del 04/08/2026.
+ */
 export const getCaseStudies = () =>
-  fetchApi<CaseStudy[]>('case-studies', mockCaseStudies);
+  fetchApi<CaseStudy[]>('case-studies', mockCaseStudies, {
+    critical: true,
+    emptyIsError: true,
+  });
 
 /** Membri del team. */
 export const getTeam = () => fetchApi<TeamMember[]>('team', mockTeam);
@@ -215,16 +333,22 @@ export async function getReviews(): Promise<Testimonial[]> {
   }
 }
 
-/**
- * Dati SEO (yoast_head_json) per una pagina. Endpoint: /seo?path=...
- * Ritorna null in fallback: la SEO ricade sui default di `site.ts`.
- * Il wiring completo nei componenti arriva con S4 (SEO tecnica).
+/*
+ * RIMOSSO (04/08/2026) — `getSeo(path)` / endpoint `/seo?path=...`.
+ *
+ * Il passthrough Yoast non risolveva l'URL nel post corrispondente e cadeva
+ * SEMPRE sulla front page di WordPress: ogni pagina del sito riceveva title,
+ * description e og:* della home (per giunta ancora il testo demo inglese del
+ * vecchio tema). Duplicazione di title/description su tutto il sito = il danno
+ * SEO peggiore che potessimo farci.
+ *
+ * La SEO ora ha due sole sorgenti, entrambe nostre e prevedibili:
+ * 1) i campi SEO nativi del CMS (box "SEO" sui case study / gruppi servizi),
+ *    passati alle pagine via la prop `seo` di BaseLayout;
+ * 2) i default per pagina (title/description scritti in ogni .astro).
+ * Per i post del blog resta `parseYoast(post.yoast)`, che legge lo yoast_head_json
+ * del SINGOLO post incluso nel payload di /wp/v2/posts (quello è corretto).
  */
-export const getSeo = (path = '/') =>
-  fetchApi<Record<string, unknown> | null>(
-    `seo?path=${encodeURIComponent(path)}`,
-    null
-  );
 
 /* ------------------------------------------------------------------ */
 /* Blog: post nativi WordPress (endpoint core /wp/v2, non il namespace custom) */
@@ -283,9 +407,12 @@ function featuredImage(raw: any): MediaImage | null {
  * senza articoli e /blog mostra l'empty state; la build non si rompe).
  */
 export async function getPosts(): Promise<BlogPost[]> {
+  // Critico: genera le route /blog/[slug]. Lista vuota = blog senza articoli
+  // (non è un errore); irraggiungibile in produzione = build fermata.
   const raw = await fetchApi<any[]>(
     `${WP_ROOT}/wp/v2/posts?status=publish&per_page=100&_embed=wp:featuredmedia`,
-    []
+    [],
+    { critical: true }
   );
   if (!Array.isArray(raw)) return [];
 

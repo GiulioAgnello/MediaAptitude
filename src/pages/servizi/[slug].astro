@@ -99,7 +99,7 @@ const schema = [
   <Section eyebrow="Esplora" title="Gli altri servizi" lead="Un unico partner per tutta la presenza digitale.">
     <div class="others stagger">
       {others.map((g) => (
-        <a class="card others__card" href={`/servizi/${g.slug}`} data-reveal>
+        <a class="card others__card" href={`/servizi/${g.slug}/`} data-reveal>
           <span class="detail__icon"><Icon name={g.icon} /></span>
           <h3>{g.title}</h3>
           <p>{g.description}</p>

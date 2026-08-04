@@ -18,7 +18,7 @@ const { items } = Astro.props;
 >
   <div class="work stagger">
     {items.map((item) => (
-      <a class="card work__card is-link" href={`/lavori/${item.slug}`} data-reveal>
+      <a class="card work__card is-link" href={`/lavori/${item.slug}/`} data-reveal>
         <figure class="work__media">
           {item.imageDesktop ? (
             <img

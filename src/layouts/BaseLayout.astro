@@ -18,8 +18,7 @@ import BottomNav from '../components/BottomNav.astro';
 import CookieConsent from '../components/CookieConsent.astro';
 import FloatingContact from '../components/FloatingContact.astro';
 import { site } from '../data/site';
-import { getSeo } from '../lib/api';
-import { parseYoast, type WpSeo } from '../lib/seo';
+import type { WpSeo } from '../lib/seo';
 
 interface Props {
   title?: string;
@@ -29,21 +28,20 @@ interface Props {
   /** Schemi JSON-LD specifici della pagina (vedi Seo.astro). */
   schema?: Record<string, unknown> | Record<string, unknown>[];
   /**
-   * SEO nativa per contenuto (es. campi SEO di un case study). Se presente,
-   * i suoi campi valorizzati vincono su Yoast e sui default (stesso canale WpSeo).
+   * SEO nativa del contenuto: i campi del box "SEO" di WordPress (case study,
+   * gruppi servizi) oppure lo yoast_head_json del singolo post del blog.
+   * I campi valorizzati vincono sui default della pagina.
    */
   seo?: WpSeo | null;
 }
 
 const { title, description, path = '/', noindex, schema, seo } = Astro.props;
 
-// SEO da WordPress (Yoast) per questo path, a build-time.
-// Se WP è offline o non ha dati, parseYoast torna null → restano i default.
-// La SEO nativa del contenuto (prop `seo`), se presente, ha la precedenza.
-const yoastSeo = parseYoast(await getSeo(path));
-const wpSeo: WpSeo | null = (seo || yoastSeo)
-  ? { ...(yoastSeo ?? {}), ...(seo ?? {}) }
-  : null;
+// NIENTE passthrough Yoast per path (rimosso il 04/08/2026): l'endpoint
+// /seo?path non risolveva la pagina e restituiva la SEO della home a TUTTI,
+// rendendo title e description identici su tutto il sito. Ora la SEO arriva
+// solo dai campi nativi del contenuto (prop `seo`) e dai default di pagina.
+const wpSeo: WpSeo | null = seo ?? null;
 ---
 
 <!doctype html>

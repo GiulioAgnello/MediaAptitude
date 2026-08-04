@@ -172,7 +172,7 @@ const seo = {
     <Section eyebrow="Altri lavori" title="Progetti correlati">
       <div class="cs-related">
         {related.map((r) => (
-          <a class="card cs-related__item" href={`/lavori/${r.slug}`} data-reveal>
+          <a class="card cs-related__item" href={`/lavori/${r.slug}/`} data-reveal>
             <div class="cs-related__media">
               {r.imageDesktop
                 ? <img src={r.imageDesktop.url} width={r.imageDesktop.width} height={r.imageDesktop.height} alt="" loading="lazy" />

@@ -76,7 +76,7 @@ const { items, moreHref } = Astro.props;
                 <h3>{item.title}</h3>
                 <p class="wc__result">{item.result}</p>
                 <div class="wc__links">
-                  <a class="wc__detail" href={`/lavori/${item.slug}`}>
+                  <a class="wc__detail" href={`/lavori/${item.slug}/`}>
                     Vedi il caso studio <span aria-hidden="true">→</span>
                   </a>
                   {item.url && (

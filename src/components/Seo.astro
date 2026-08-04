@@ -40,7 +40,11 @@ const fullTitle =
   (title ? `${title} — ${site.name}` : `${site.name} — ${site.tagline}`);
 const metaDescription = wpSeo?.description ?? description;
 const isNoindex = wpSeo?.noindex ?? noindex;
-const canonical = new URL(path, site.url).href;
+// Canonical SEMPRE con lo slash finale: è la forma con cui Cloudflare serve
+// davvero le pagine (`build.format: 'directory'`). Senza normalizzazione il
+// canonical puntava a un URL che risponde 308 verso sé stesso con lo slash.
+const canonicalPath = /\.[a-z0-9]+$/i.test(path) || path.endsWith('/') ? path : `${path}/`;
+const canonical = new URL(canonicalPath, site.url).href;
 const ogImageUrl = new URL(wpSeo?.ogImage ?? image, site.url).href;
 
 // --- Dati strutturati site-wide ----------------------------------------

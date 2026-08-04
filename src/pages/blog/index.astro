@@ -44,7 +44,7 @@ const dateFmt = new Intl.DateTimeFormat('it-IT', { day: 'numeric', month: 'long'
     {posts.length > 0 ? (
       <div class="posts stagger">
         {posts.map((post) => (
-          <a class="card post" href={`/blog/${post.slug}`} data-reveal>
+          <a class="card post" href={`/blog/${post.slug}/`} data-reveal>
             <figure class="post__media">
               {post.image ? (
                 <img
