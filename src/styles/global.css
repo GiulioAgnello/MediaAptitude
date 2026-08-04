@@ -327,7 +327,13 @@ strong { color: var(--c-text-secondary); font-weight: var(--fw-medium); }
   background: var(--c-surface);
   border: 1px solid var(--c-line);
   border-radius: var(--radius-full);
-  white-space: nowrap;
+  /* Il testo delle pill arriva dal CMS (tech dei case study, servizi inclusi
+     nei gruppi). Erano `white-space: nowrap` perché pensate per etichette
+     brevi: bastava una voce lunga — es. il tech stack di /lavori/colmac — per
+     rendere la pill più larga dello schermo e sfondare il layout su mobile.
+     Ora vanno a capo; con le etichette brevi non cambia nulla. */
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 .pill svg { width: 16px; height: 16px; color: var(--c-text-muted); }
 
