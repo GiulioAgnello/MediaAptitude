@@ -1,0 +1,3 @@
+# Scorciatoie verso il pannello hosting SupportHost (server gaia.svrsh.com)
+/cpanel   https://gaia.svrsh.com:2083  302
+/cpanel/  https://gaia.svrsh.com:2083  302
