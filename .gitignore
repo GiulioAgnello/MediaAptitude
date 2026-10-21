@@ -11,3 +11,7 @@ npm-debug.log*
 .DS_Store
 # astro
 .astro/
+#key
+.key/
+#ma-restore (configurazione di backup)
+.ma-restore/
